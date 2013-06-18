@@ -139,34 +139,34 @@ public class UploadTerms2OTO{
     			//insert dataset prefix
     			commands[6] = "insert into datasetprefix (prefix) value ('"+datasetprefix+"');";
     			//table _comments
-    			commands[7] = "create table "+datasetprefix+"_comments like fna_gloss_comments;";
+    			commands[7] = "create table "+datasetprefix+"_comments like OTO_Demo_comments;";
     			 
     			//table _review_history
-    			commands[8] = "create table "+datasetprefix+"_review_history like fna_gloss_review_history;";
+    			commands[8] = "create table "+datasetprefix+"_review_history like OTO_Demo_review_history;";
     			//page Group Terms
     			//categories
     			commands[9] = "create table "+datasetprefix+"_categories like categories;";
     			//get default records from table categories
     			commands[10] = "insert "+datasetprefix+"_categories select * from categories;";
-    			commands[11] = "create table "+datasetprefix+"_web_grouped_terms like fna_gloss_web_grouped_terms;";
-    			//commands[12] = "create table "+datasetprefix+"_finalized_terms like fna_gloss_finalized_terms;";
-    			commands[12] = "create table "+datasetprefix+"_confirmed_category like fna_gloss_confirmed_category;";
-    			commands[13] = "create table "+datasetprefix+"_user_terms_decisions like fna_gloss_user_terms_decisions;";
-    			commands[14] = "create table "+datasetprefix+"_user_terms_relations like fna_gloss_user_terms_relations;";
-    			commands[15] = "create table "+datasetprefix+"_sentence like fna_gloss_sentence;";
+    			commands[11] = "create table "+datasetprefix+"_web_grouped_terms like OTO_Demo_web_grouped_terms;";
+    			//commands[12] = "create table "+datasetprefix+"_finalized_terms like OTO_Demo_finalized_terms;";
+    			commands[12] = "create table "+datasetprefix+"_confirmed_category like OTO_Demo_confirmed_category;";
+    			commands[13] = "create table "+datasetprefix+"_user_terms_decisions like OTO_Demo_user_terms_decisions;";
+    			commands[14] = "create table "+datasetprefix+"_user_terms_relations like OTO_Demo_user_terms_relations;";
+    			commands[15] = "create table "+datasetprefix+"_sentence like OTO_Demo_sentence;";
     			
     			//page Hierarchy Tree
-    			commands[16] = "create table "+datasetprefix+"_web_tags like fna_gloss_web_tags;";
-    			//commands[17] = "create table "+datasetprefix+"_finalized_tags like fna_gloss_finalized_tags;";
-    			commands[17] = "create table "+datasetprefix+"_confirmed_paths like fna_gloss_confirmed_paths;";
-    			commands[18] = "create table "+datasetprefix+"_user_tags_decisions like fna_gloss_user_tags_decisions;";
+    			commands[16] = "create table "+datasetprefix+"_web_tags like OTO_Demo_web_tags;";
+    			//commands[17] = "create table "+datasetprefix+"_finalized_tags like OTO_Demo_finalized_tags;";
+    			commands[17] = "create table "+datasetprefix+"_confirmed_paths like OTO_Demo_confirmed_paths;";
+    			commands[18] = "create table "+datasetprefix+"_user_tags_decisions like OTO_Demo_user_tags_decisions;";
     			
     			//page Orders
-    			//commands[19] = "create table "+datasetprefix+"_finalized_orders like fna_gloss_finalized_orders;";
-    			commands[19] = "create table "+datasetprefix+"_confirmed_orders like fna_gloss_confirmed_orders;";
-    			commands[20] = "create table "+datasetprefix+"_user_orders_decisions like fna_gloss_user_orders_decisions;";
-    			commands[21] = "create table "+datasetprefix+"_web_orders like fna_gloss_web_orders;";
-    			commands[22] = "create table "+datasetprefix+"_web_orders_terms like fna_gloss_web_orders_terms;";
+    			//commands[19] = "create table "+datasetprefix+"_finalized_orders like OTO_Demo_finalized_orders;";
+    			commands[19] = "create table "+datasetprefix+"_confirmed_orders like OTO_Demo_confirmed_orders;";
+    			commands[20] = "create table "+datasetprefix+"_user_orders_decisions like OTO_Demo_user_orders_decisions;";
+    			commands[21] = "create table "+datasetprefix+"_web_orders like OTO_Demo_web_orders;";
+    			commands[22] = "create table "+datasetprefix+"_web_orders_terms like OTO_Demo_web_orders_terms;";
     			
     			//Insert terms into table _web_grouped_terms
     			commands[23] = "insert into "+datasetprefix+"_web_grouped_terms(term, groupid) select distinct term, 1 as groupid from "+dataprefix+"_term_category;";
