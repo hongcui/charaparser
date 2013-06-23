@@ -1877,7 +1877,8 @@ public class ChunkedSentence {
 			token = token.matches(".*?\\d.*")? NumericalHandler.originalNumForm(token) : token;
 			try{
 				if(type != null){
-					Class c = Class.forName("fna.charactermarkup."+type);
+					//Class c = Class.forName("fna.charactermarkup."+type);
+					Class c = Class.forName("edu.arizona.sirls.biosemantics.charactermarkup."+type);
 					Constructor cons = c.getConstructor(String.class);
 					pointer++;
 					//deal with any unassignedmodifier when EOS is approached.
@@ -1977,7 +1978,7 @@ public class ChunkedSentence {
 					token = start+scs+end;
 					try{
 						if(type !=null){//r[p[as]] without o[]
-							Class c = Class.forName("fna.charactermarkup."+type);
+							Class c = Class.forName("edu.arizona.sirls.biosemantics.charactermarkup."+type);
 							Constructor cons = c.getConstructor(String.class);
 							pointer = i+1;
 							return (Chunk)cons.newInstance(token.trim());

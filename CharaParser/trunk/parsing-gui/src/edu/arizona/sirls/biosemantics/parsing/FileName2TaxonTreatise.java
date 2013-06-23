@@ -56,7 +56,7 @@ public class FileName2TaxonTreatise extends FileName2Taxon {
 	}
 
 	/* (non-Javadoc)
-	 * @see fna.parsing.FileName2Taxon#populateFilename2TaxonTableUsing(java.io.File)
+	 * @see edu.arizona.sirls.biosemantics.charactermarkup.FileName2Taxon#populateFilename2TaxonTableUsing(java.io.File)
 	 */
 	@Override
 	/**

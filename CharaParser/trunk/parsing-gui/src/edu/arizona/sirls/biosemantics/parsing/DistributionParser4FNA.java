@@ -24,7 +24,7 @@ public class DistributionParser4FNA extends EnumerativeElementParser {
 	}
 
 	/* (non-Javadoc)
-	 * @see fna.parsing.ElementParser#parse()
+	 * @see edu.arizona.sirls.biosemantics.parsing.ElementParser#parse()
 	 */
 	@Override
 	protected Element parse() {

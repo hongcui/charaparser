@@ -57,7 +57,7 @@ public class VolumeFinalizer extends Thread {
     private static boolean standalone = Boolean.valueOf(ApplicationUtilities.getProperty("charaparser.standalone"));
     //standalone set to true if running from the stanfordparser.java. Also have to set the standalonefolder to the current folder that is processed.
     //standalone set to false when running from the interface.
-	private static String standalonefolder = "E:/Data/Diatom";
+	private static String standalonefolder =  ApplicationUtilities.getProperty("target").replaceFirst("//target", "");
 
     //private static String standalonefolder = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt";
     //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";

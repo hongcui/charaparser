@@ -885,10 +885,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 
 		String database = "markedupdatasets";
-		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FOCV10\\target\\foc_v10_jing_posedsentences.txt";
-		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FOCV10\\target\\foc_v10_jing_parsedsentences.txt";
-		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FOCV10\\target\\transformed";
-		String prefix = "foc_v10_jing";
+		String prefix = ApplicationUtilities.getProperty("prefix");
+		String posedfile = ApplicationUtilities.getProperty("target")+prefix+"_posedsentences.txt";
+		String parsedfile = ApplicationUtilities.getProperty("target")+prefix+"_parsedsentences.txt";
+		String transformedir=ApplicationUtilities.getProperty("target")+ "/transformed";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
 		
 		/*String database = "markedupdatasets";
@@ -904,7 +904,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
 		}catch (Exception e){
-			sw = new StringWriter(); pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			sw = new StringWriter(); 
+			pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 }
