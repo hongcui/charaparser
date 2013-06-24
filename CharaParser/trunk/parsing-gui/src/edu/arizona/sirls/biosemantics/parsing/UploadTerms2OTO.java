@@ -15,6 +15,7 @@ public class UploadTerms2OTO{
 
 	private static String dumpfolder; 
 	private static String dataprefix;
+	private static int glosstype;
 
 	
 	//public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
@@ -25,9 +26,16 @@ public class UploadTerms2OTO{
     /**
      * 
      * @param dataprefix: must the the dataprefix set in the configuration tab of CharaParser
+     * @param glosstype: an integer from 1 to 5:
+     *  (1, 'Plant'),
+		(2, 'Hymenoptera'),
+		(3, 'Algea')
+		(4, 'Porifera')
+		(5, 'Fossil')
      */
-	public UploadTerms2OTO(String thedataprefix){
+	public UploadTerms2OTO(String thedataprefix, int glosstype){
 		dataprefix = thedataprefix;
+		UploadTerms2OTO.glosstype = glosstype;
 		if(standalone)
 			dumpfolder = "/Users/hongcui/Downloads/SampleDataSets/FNAv5Caryophyllaceae_Type2/target/"; //must have the trailing \\ !
 		else 
@@ -137,7 +145,8 @@ public class UploadTerms2OTO{
     			
     			
     			//insert dataset prefix
-    			commands[6] = "insert into datasetprefix (prefix) value ('"+datasetprefix+"');";
+    			commands[6] = "insert into datasetprefix (prefix, glossaryType) value ('" + datasetprefix + "', " + glosstype + ");";
+    			//commands[6] = "insert into datasetprefix (prefix) value ('"+datasetprefix+"');";
     			//table _comments
     			commands[7] = "create table "+datasetprefix+"_comments like OTO_Demo_comments;";
     			 
@@ -605,7 +614,7 @@ static int checkAck(InputStream in) throws IOException{
 
 	public static void main(String[] args) {	
 		String dataprefix = "test";
-		UploadTerms2OTO uto = new UploadTerms2OTO(dataprefix);
+		UploadTerms2OTO uto = new UploadTerms2OTO(dataprefix, 1);
 		uto.upload();
 		
 		/*dumpFiles(dataprefix);

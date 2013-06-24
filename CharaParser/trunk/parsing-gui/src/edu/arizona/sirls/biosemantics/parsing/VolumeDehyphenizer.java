@@ -58,7 +58,7 @@ public class VolumeDehyphenizer extends Thread {
         this.dataPrefix = dataPrefix;
         //this.descriptorTable = descriptorTable;
         this.mainForm = mainForm;
-        this.glossaryTableName = mainForm.glossaryPrefixCombo.getText();
+        this.glossaryTableName = MainForm.getGlossary(mainForm.glossaryPrefixCombo.getText());
         this.vmdb = new VolumeMarkupDbAccessor(dataPrefix, this.glossaryTableName);
         
         //this.tablename = dataPrefix+"_allwords";

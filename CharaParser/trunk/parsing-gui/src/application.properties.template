@@ -199,7 +199,7 @@ OTO.dowloadable.dir=/home/sirls/hongcui/WebFilesForTomcat/OTO/downloadFiles/
 
 #labels
 labelSelectProject=Select the folder for the project :
-datasetprefix=Choose data set prefix and select a glossary (the prefix should be in lower case, should not include "." or "-", and cannot end with "_"):
+datasetprefix=Choose dataset prefix and select the subject of the dataset (the prefix should be in lower case, should not include "." or "-", and cannot end with "_"):
 stepsComplete= All steps are completed.
 stepsTobeCompletedLbl=Steps to be completed :
 loadPrjLbl=Your last project is loaded. Project Folder:

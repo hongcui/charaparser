@@ -238,7 +238,15 @@ public class MainForm {
 	private static boolean charStatePopUp = true;
 	
 
-	String [] glossprefixes = null;
+	//static String [] glossprefixes = null;
+	//(1, 'Plant'),
+	//(2, 'Hymenoptera'),
+	//(3, 'Algea')
+	//(4, 'Porifera')
+	//(5, 'Fossil')
+	//load glossaries
+	static String [] glossprefixes = new String[]{"Plant", "Hymenoptera", "Algea", "Porifera", "Fossil"};//in this order
+
 	private Text projectDirectory;
 	
 	private CLabel StepsToBeCompletedLbl;
@@ -435,7 +443,7 @@ public class MainForm {
 
 					try {
 						int option_chosen = getType(type);
-						mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim(),option_chosen);
+						mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim(),getGlossary(glossaryPrefixCombo.getText().trim()),option_chosen);
 						
 					} catch (Exception e) {
 						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
@@ -710,8 +718,9 @@ public class MainForm {
 
 			}
 			
+
 			private void loadCharacterTab() {
-					charDb = new CharacterStateDBAccess(dataPrefixCombo.getText().replaceAll("-", "_").trim(), glossaryPrefixCombo.getText().trim());
+					charDb = new CharacterStateDBAccess(dataPrefixCombo.getText().replaceAll("-", "_").trim(), getGlossary(glossaryPrefixCombo.getText().trim()));
 					// set the decisions combo
 					categories = setCharacterTabDecisions();
 					if(categories.length>0){
@@ -792,7 +801,16 @@ public class MainForm {
 			prefixes [loopCount] = s;
 			loopCount++;
 		}
-		List <String> glossaryPrefixes = new ArrayList <String> (); 
+		
+		//(1, 'Plant'),
+		//(2, 'Hymenoptera'),
+		//(3, 'Algea')
+		//(4, 'Porifera')
+		//(5, 'Fossil')
+		//load glossaries
+		//glossprefixes = new String[]{"Plant", "Hymenoptera", "Algea", "Porifera", "Fossil"};//in this order
+		
+		/*List <String> glossaryPrefixes = new ArrayList <String> (); 
 		
 		mainDb.glossaryPrefixRetriever(glossaryPrefixes);
 		glossprefixes = new String [glossaryPrefixes.size()];
@@ -800,7 +818,7 @@ public class MainForm {
 		for (String s : glossaryPrefixes) {
 			glossprefixes [glossCount] = s;
 			glossCount++;
-		}
+		}*/
 		
 		CLabel lblSelectA = new CLabel(composite, SWT.NONE);
 		lblSelectA.setBounds(20, 32, 288, 21);
@@ -844,7 +862,7 @@ public class MainForm {
 				if(containIndexedParts.getSelection()) containindexedparts = true;
 				try {
 					int option_chosen =getType(type); 
-					mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim(),option_chosen);
+					mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim(),getGlossary(glossaryPrefixCombo.getText().trim()),option_chosen);
 					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
 					//mainDb.createNonEQTable();
 					//see if there is reviewed term set for downloading
@@ -874,7 +892,7 @@ public class MainForm {
 		combo.setItems(prefixes);
 														
 		CLabel label = new CLabel(grpCreateANew, SWT.NONE);
-		label.setBounds(23, 80, 344, 21);
+		label.setBounds(23, 80, 760, 21);
 		label.setText(ApplicationUtilities.getProperty("datasetprefix"));
 		combo.addModifyListener(new ModifyListener() {
 			public void modifyText(final ModifyEvent me) {
@@ -2614,7 +2632,7 @@ public class MainForm {
 				    	int count = mainDb.finalizeTermCategoryTable();
 						if(MainForm.upload2OTO){
 							if(count>0){
-								UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+								UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim(), getGlossaryType(glossaryPrefixCombo.getText().trim()));
 								boolean uploaded = ud.upload();
 								if(uploaded){
 								ApplicationUtilities.showPopUpWindow(
@@ -2645,7 +2663,7 @@ public class MainForm {
 				}else if(noOfTermGroups <= getNumberOfGroupsSaved() && !isTermsNotGrouped()){ //no terms left
 					int count = mainDb.finalizeTermCategoryTable();
 					if(count>0 && MainForm.upload2OTO){
-						UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+						UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim(), getGlossaryType(glossaryPrefixCombo.getText().trim()));
 						boolean uploaded = ud.upload();
 						if(uploaded){
 						ApplicationUtilities.showPopUpWindow(
@@ -2670,6 +2688,8 @@ public class MainForm {
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				}
 			}
+
+
 		});
 	//	}
 		
@@ -4007,9 +4027,9 @@ public class MainForm {
 		if(vt==null || !vt.isAlive()){
 			ProcessListener listener = new ProcessListener(transformationTable, transformationProgressBar, shell.getDisplay());
 			if(MainForm.startupstring.contains("Heading")){
-				vt = new VolumeTransformerFoC(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
+				vt = new VolumeTransformerFoC(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), getGlossary(this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim()), shell.getDisplay());
 			}else{
-				vt = new VolumeTransformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
+				vt = new VolumeTransformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), getGlossary(this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim()), shell.getDisplay());
 			}
 			vt.start();
 		}
@@ -4207,7 +4227,7 @@ public class MainForm {
 				//this.mainDb.finalizeTermCategoryTable(); //moved to the end of step 6
 				finalLog.setText("");
 				vf = new VolumeFinalizer(listener, finalLog, 
-						dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn,MainForm.glossaryPrefixCombo.getText().trim(), shell.getDisplay());
+						dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn,getGlossary(MainForm.glossaryPrefixCombo.getText().trim()), shell.getDisplay());
 				vf.start();
 				//vf.join();
 				System.out.println();
@@ -4287,7 +4307,7 @@ public class MainForm {
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				}
 				String dataPrefix = MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim();
-				String glosstable = MainForm.glossaryPrefixCombo.getText().trim();
+				String glosstable = getGlossary(MainForm.glossaryPrefixCombo.getText().trim());
 				StateCollectorTest sct = new StateCollectorTest(conn, dataPrefix,true,glosstable, shell.getDisplay(), contextStyledText); /*using learned semanticroles only*/
 				sct.collect();//markedsentence created in there.
 				sct.saveStates();
@@ -4759,8 +4779,8 @@ public class MainForm {
 									String URL = ApplicationUtilities.getProperty("database.url");
 									conn = DriverManager.getConnection(URL);
 								}								
-								String[] chinfo1 = edu.arizona.sirls.biosemantics.charactermarkup.Utilities.lookupCharacter(t1, conn, edu.arizona.sirls.biosemantics.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_"));
-								String[] chinfo2 = edu.arizona.sirls.biosemantics.charactermarkup.Utilities.lookupCharacter(t2, conn, edu.arizona.sirls.biosemantics.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_"));
+								String[] chinfo1 = edu.arizona.sirls.biosemantics.charactermarkup.Utilities.lookupCharacter(t1, conn, edu.arizona.sirls.biosemantics.charactermarkup.ChunkedSentence.characterhash, getGlossary(glossaryPrefixCombo.getText().trim()), dataPrefixCombo.getText().replaceAll("-", "_"));
+								String[] chinfo2 = edu.arizona.sirls.biosemantics.charactermarkup.Utilities.lookupCharacter(t2, conn, edu.arizona.sirls.biosemantics.charactermarkup.ChunkedSentence.characterhash, getGlossary(glossaryPrefixCombo.getText().trim()), dataPrefixCombo.getText().replaceAll("-", "_"));
 								ArrayList<ContextBean> contexts = charDb.getContext(tbean.getSourceFiles());
 								TableItem item = new TableItem(contextTable, SWT.NONE);
 								item.setText(new String[]{t1+":", chinfo1==null? "" : chinfo1[0]});
@@ -5013,8 +5033,8 @@ public class MainForm {
 									String URL = ApplicationUtilities.getProperty("database.url");
 									conn = DriverManager.getConnection(URL);
 								}								
-								String ch1 = (edu.arizona.sirls.biosemantics.charactermarkup.Utilities.lookupCharacter(t1, conn, edu.arizona.sirls.biosemantics.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_"))[0].trim());
-								String ch2 = (edu.arizona.sirls.biosemantics.charactermarkup.Utilities.lookupCharacter(t2, conn, edu.arizona.sirls.biosemantics.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_"))[0].trim());
+								String ch1 = (edu.arizona.sirls.biosemantics.charactermarkup.Utilities.lookupCharacter(t1, conn, edu.arizona.sirls.biosemantics.charactermarkup.ChunkedSentence.characterhash, getGlossary(glossaryPrefixCombo.getText().trim()), dataPrefixCombo.getText().replaceAll("-", "_"))[0].trim());
+								String ch2 = (edu.arizona.sirls.biosemantics.charactermarkup.Utilities.lookupCharacter(t2, conn, edu.arizona.sirls.biosemantics.charactermarkup.ChunkedSentence.characterhash, getGlossary(glossaryPrefixCombo.getText().trim()), dataPrefixCombo.getText().replaceAll("-", "_"))[0].trim());
 								ArrayList<ContextBean> contexts = charDb.getContext(tbean.getSourceFiles());
 								TableItem item = new TableItem(contextTable, SWT.NONE);
 								item.setText(new String[]{t1+":", ch1});
@@ -5136,7 +5156,7 @@ public class MainForm {
 				if (!bean.getTerm1().isTogglePosition()) {
 					String t1 = bean.getTerm1().getTermText().getText();
 					words = words.replaceFirst("\\|$", "");
-					if(!t1.matches("("+words+")") && !Utilities.inGlossary(t1, conn, this.glossaryPrefixCombo.getText(), this.dataPrefixCombo.getText())){
+					if(!t1.matches("("+words+")") && !Utilities.inGlossary(t1, conn, getGlossary(this.glossaryPrefixCombo.getText()), this.dataPrefixCombo.getText())){
 						words +=t1+"|";
 						TermsDataBean tbean = new TermsDataBean();
 						tbean.setFrequency(Integer.parseInt(bean.getFrequency().getText()));
@@ -5155,7 +5175,7 @@ public class MainForm {
 				if (!bean.getTerm2().isTogglePosition()) {
 					String t2 = bean.getTerm2().getTermText().getText();
 					words = words.replaceFirst("\\|$", "");
-					if(!t2.matches("("+words+")")&& !Utilities.inGlossary(t2, conn, this.glossaryPrefixCombo.getText(), this.dataPrefixCombo.getText())){
+					if(!t2.matches("("+words+")")&& !Utilities.inGlossary(t2, conn, getGlossary(this.glossaryPrefixCombo.getText()), this.dataPrefixCombo.getText())){
 						words +=t2+"|";
 						TermsDataBean tbean = new TermsDataBean();
 						tbean.setFrequency(Integer.parseInt(bean.getFrequency().getText()));
@@ -5316,7 +5336,7 @@ public class MainForm {
 				conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 			}
 			String prefix = dataPrefixCombo.getText().replaceAll("-", "_").trim();
-			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(prefix,glossaryPrefixCombo.getText().trim());
+			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(prefix,getGlossary(glossaryPrefixCombo.getText()).trim());
 			words = vmdb.structureTags4Curation(words);
 			for(String word: words){
 				if(word.length()==0) continue;
@@ -5360,7 +5380,7 @@ public class MainForm {
 				conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 			}
 			String prefix = dataPrefixCombo.getText().replaceAll("-", "_").trim();
-			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(prefix, glossaryPrefixCombo.getText().trim());
+			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(prefix, getGlossary(glossaryPrefixCombo.getText().trim()));
 			words = (ArrayList<String>)vmdb.descriptorTerms4Curation();
 			for(String word: words){
 				if(Utilities.mustBeVerb(word, conn, prefix) || Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
@@ -5387,7 +5407,7 @@ public class MainForm {
 		ArrayList <String> noneqwords = new ArrayList<String>();
 		try{
 			
-			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
+			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),getGlossary(glossaryPrefixCombo.getText().trim()));
 			if(inistructureterms==null || inistructureterms.size()==0){
 				inistructureterms = vmdb.structureTags4Curation(new ArrayList<String>());
 			}
@@ -5764,5 +5784,39 @@ public class MainForm {
 	
 	public void setRunPerl(boolean completed){
 		this.runperl = completed;
+	}
+	
+	/**
+	 * mapping from gloss type string to the gloss to be used
+	 */
+	public static String getGlossary(String glosstype) {
+		if(glosstype.compareToIgnoreCase("plant")==0){
+			return "fnaglossaryfixed";
+		}else if(glosstype.compareToIgnoreCase("hymenoptera")==0){
+			return "antglossaryfixed";
+		}else if(glosstype.compareToIgnoreCase("fossil")==0){
+			return "treatiseoglossaryfixed";
+		}else if(glosstype.compareToIgnoreCase("porifera")==0){
+			return "spongeglossaryfixed";
+		}else  if(glosstype.compareToIgnoreCase("algea")==0){
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+"algea glossary is not ready yet");
+		}
+		LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+glosstype+" glossary is not ready yet");
+		return null;
+	}
+	
+	/**
+	 * YourGlossaryType must be integer from 1 to 5 meaning: 
+	(1, 'Plant'),
+	(2, 'Hymenoptera'),
+	(3, 'Algea')
+	(4, 'Porifera')
+	(5, 'Fossil')
+	 * @param glosstype
+	 * @return
+	 */
+	public static int getGlossaryType(String glosstype) {
+		List<String> types = Arrays.asList(glossprefixes);
+		return types.indexOf(glosstype)+1;
 	}
 }
