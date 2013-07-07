@@ -2797,18 +2797,22 @@ public class VolumeTransformer extends Thread {
 					//find the lowest rank in accepted name
 					Element accepted = (Element) acceptPath.selectSingleNode(treatment);
 					List<Element> anames = namePath.selectNodes(accepted);
-					String rank = anames.get(anames.size()-1).getName().replaceFirst("_name", "");
-					//replace the rank for name
-					String oldname = names.get(0).getName();	
-					if(!oldname.contains(rank)){
-						names.get(0).setName(oldname.replaceFirst("^[^_]*", rank));
-						//replace the rank for authority
-						Element authority = (Element) authorPath.selectSingleNode(synonym);
-						String oldauthname = authority.getName();					
-						authority.setName(oldauthname.replaceFirst("^[^_]*", rank));
-						System.out.println("rank replaced from "+oldname +" to "+rank);
-					}
-				}				
+					if(anames.size()>0){//this could happen as in FoC V22, using 'bicolor' as nickname for some ' gao liang'
+						String rank = anames.get(anames.size()-1).getName().replaceFirst("_name", "");
+						//replace the rank for name
+						String oldname = names.get(0).getName();	
+						if(!oldname.contains(rank)){
+							names.get(0).setName(oldname.replaceFirst("^[^_]*", rank));
+							//replace the rank for authority
+							Element authority = (Element) authorPath.selectSingleNode(synonym);
+							if(authority!=null){
+								String oldauthname = authority.getName();					
+								authority.setName(oldauthname.replaceFirst("^[^_]*", rank));
+								System.out.println("rank replaced from "+oldname +" to "+rank);
+							}
+						}
+					}				
+				}
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());

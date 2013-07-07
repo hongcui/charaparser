@@ -302,6 +302,10 @@ public class VolumeVerifier extends Thread {
 					text = text.replaceAll("\\s[a-zA-Z].*", ""); //1. Amstersdfds 12.c Ames
 				}
 				if(text.matches("^\\d.*")){
+					if(text.length()>10){
+						if(text.indexOf(" ")>0) text = text.substring(0, text.indexOf(" ")).trim();
+						else text = text.replaceAll("[a-zA-Z×]+$", "");
+					}
 					ti.addNumber(text); //add one by one in sequence
 					System.out.println("add numbers :"+text+" for file "+i+".xml");
 				}else{
