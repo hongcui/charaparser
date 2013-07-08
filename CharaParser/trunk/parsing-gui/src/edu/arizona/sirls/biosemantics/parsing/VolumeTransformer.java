@@ -144,7 +144,7 @@ public class VolumeTransformer extends Thread {
 				conn = DriverManager.getConnection(URL);
 				stmt = conn.createStatement();
 				stmt.execute("drop table if exists "+taxontable);
-				stmt.execute("create table if not exists "+taxontable+" (taxonnumber varchar(10), name varchar(500), rank varchar(20), filenumber int)");
+				stmt.execute("create table if not exists "+taxontable+" (taxonnumber varchar(10), name varchar(500), rank varchar(50), filenumber int)");
 				stmt.execute("drop table if exists "+authortable);
 				stmt.execute("create table if not exists "+ authortable+" (authority varchar(500) NOT NULL)");
 				stmt.execute("drop table if exists "+publicationtable);
