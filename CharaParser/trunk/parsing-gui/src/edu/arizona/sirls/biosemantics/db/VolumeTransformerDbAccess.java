@@ -122,10 +122,10 @@ public class VolumeTransformerDbAccess {
 		try{
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery("select publication from " + 
-					publicationTableName + " where publication = '"+publication+"'");
+					publicationTableName + " where publication = \""+publication+"\"");
 			if(!rs.next()){
 				stmt.execute("insert into " + 
-					publicationTableName + "  values ('"+publication+"')");
+					publicationTableName + "  values (\""+publication+"\")");
 			}
 		} catch (SQLException sqlexe) {
 			//LOGGER.error("Couldn't update in VolumeTransformerDbAccess:add2AuthorTable", sqlexe);
