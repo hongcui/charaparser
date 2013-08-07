@@ -178,7 +178,7 @@ public class UploadTerms2OTO{
     			commands[22] = "create table "+datasetprefix+"_web_orders_terms like OTO_Demo_web_orders_terms;";
     			
     			//Insert terms into table _web_grouped_terms
-    			commands[23] = "insert into "+datasetprefix+"_web_grouped_terms(term, groupid) select distinct term, 1 as groupid from "+dataprefix+"_term_category;";
+    			commands[23] = "insert into "+datasetprefix+"_web_grouped_terms(term, groupid) select distinct term, 0 as groupid from "+dataprefix+"_term_category;";
     			
     			//Insert sentence
     			commands[24] = "insert into "+datasetprefix+"_sentence(sentid, source, sentence, originalsent, lead, status, tag, modifier, charsegment) " +
