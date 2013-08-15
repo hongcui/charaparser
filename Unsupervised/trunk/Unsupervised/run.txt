@@ -2,4 +2,4 @@ Run unsupervisedClauseMarkupBenchmarked:
 perl unsupervisedClauseMarkupBenchmarked.pl directory_holding_to_be_processed_descriptions databasename plain dataprefix glossary_table_name
 
 For example:
-perl unsupervisedClauseMarkupBenchmarked.pl C:\Users\updates\workspace-CharaParser\testdata1\FNAv5Caryophyllaceae_Type2\target\descriptions-dehyphened/ markedupdatasets plain testtype2 fnaglossaryfixed
+perl unsupervisedClauseMarkupBenchmarked.pl C:\Users\updates\CharaParserTest\FNAV19Type1\target\descriptions-dehyphened/ markedupdatasets plain debug4dongye fnaglossaryfixed
