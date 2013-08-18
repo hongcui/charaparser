@@ -160,6 +160,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				//if(src.compareTo("642.txt-6")!=0 /*&& src.compareTo("Rhapidophyllum.txt-6")!=0*/) continue;
 				//if(src.compareTo("1152.txt-6")!=0 /*&& src.compareTo("Rhapidophyllum.txt-6")!=0*/) continue;
 				//if(src.compareTo("106.txt-3")!=0 /*&& src.compareTo("Rhapidophyllum.txt-6")!=0*/) continue;
+				//if(src.compareTo("1227.txt-16")!=0) continue;
 				try{
 					str = tagger.POSTag(str, src);
 				}catch(Exception e){
@@ -898,8 +899,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String prefix = "sponges_1";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "spongeglossaryfixed", false);	
 		*/
-		//sp.POSTagging();
-		//sp.parsing();
+		sp.POSTagging();
+		sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);

@@ -45,6 +45,7 @@ public class POSTagger4StanfordParser {
 	private String tableprefix = null;
 	private String glosstable = null;
 	private String src;
+	private static String noadjorg ="low"; //list of position terms that can not be used as a ref to an organ/part
 	public static String comprepstring = "according-to|ahead-of|along-with|apart-from|as-for|aside-from|as-per|as-to|as-well-as|away-from|because-of|but-for|by-means-of|close-to|contrary-to|depending-on|due-to|except-for|except-in|forward-of|further-to|in-addition-to|in-between|in-case-of|in-face-of|in-favour-of|in-front-of|in-lieu-of|in-spite-of|instead-of|in-view-of|near-to|next-to|on-account-of|on-behalf-of|on-board|on-to|on-top-of|opposite-to|other-than|out-of|outside-of|owing-to|preparatory-to|prior-to|regardless-of|save-for|thanks-to|together-with|up-against|up-to|up-until|vis-a-vis|with-reference-to|with-regard-to";
 	private static Pattern compreppattern = Pattern.compile("\\{?(according-to|ahead-of|along-with|apart-from|as-for|aside-from|as-per|as-to-as-well-as|away-from|because-of|but-for|by-means-of|close-to|contrary-to|depending-on|due-to|except-for|forward-of|further-to|in-addition-to|in-between|in-case-of|in-face-of|in-favour-of|in-front-of|in-lieu-of|in-spite-of|instead-of|in-view-of|near-to|next-to|on-account-of|on-behalf-of|on-board|on-to|on-top-of|opposite-to|other-than|out-of|outside-of|owing-to|preparatory-to|prior-to|regardless-of|save-for|thanks-to|together-with|up-against|up-to|up-until|vis-a-vis|with-reference-to|with-regard-to)\\}?");
 	private static Pattern colorpattern = Pattern.compile("(.*?)((coloration|color)\\s+%\\s+(?:(?:coloration|color|@|%) )*(?:coloration|color))\\s((?![^,;()\\[\\]]*[#]).*)");
@@ -109,6 +110,8 @@ public class POSTagger4StanfordParser {
 			str = StanfordParser.normalizeSpacesRoundNumbers(str);
 			this.src = src;
 			
+			str = str.replaceAll("\\bca\\s*\\.\\s*", ""); //remove ca.
+			
 			/*str = str.replaceAll("\\b(?<=\\d+) \\. (?=\\d+)\\b", "."); //2 . 5 =>2.5
 			str = str.replaceAll("(?<=\\d)\\s+/\\s+(?=\\d)", "/"); // 1 / 2 => 1/2
 			str = str.replaceAll("(?<=\\d)\\s+[–-—]\\s+(?=\\d)", "-"); // 1 - 2 => 1-2*/
@@ -142,6 +145,7 @@ public class POSTagger4StanfordParser {
 	        	str = normalizeColorPatterns();
 	        	//lookupCharacters(str);
 	        }
+	        String temp="";
 	        //lookupCharacters(str, true); //treating -ly as -ly
 	        if(str.indexOf(" to ")>=0 ||str.indexOf(" or ")>=0){
 	        	if(this.printCharacterList){
@@ -682,7 +686,7 @@ public class POSTagger4StanfordParser {
 					this.charactertokensReversed.add(getToken(word.replaceAll("[{}]", ""))); //"densely" 
 				}else{
 					//deal with cases where a position is used as a structure: {outer} {lance-ovate} to {narrowly} {lanceolate} 
-					if(charainfo[0].compareTo("position")==0){//word = {outer}
+					if(charainfo[0].compareTo("position")==0 && !word.matches("\\{"+noadjorg+"\\}" )){//word = {outer}
 						String character = this.charactertokensReversed.get(this.charactertokensReversed.size()-1); //character of the phrase following word in the str.
 						if(character.matches("\\w+") && !hasModifiedStructure() ){//not #, %, `,@
 							//change {outer} to <outer>

@@ -603,7 +603,7 @@ end procedure
 				String chunk = "p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP, lPPIN)+"]";
 				collapseElement(PP, chunk, "r");
 			}
-		}else if(ptag.compareTo("ADJP") == 0 || ptag.compareTo("ADVP") == 0 ||ptag.compareTo("NAC") == 0 ||ptag.compareTo("RRC") == 0){
+		}else/* if(ptag.compareTo("ADJP") == 0 || ptag.compareTo("ADVP") == 0 ||ptag.compareTo("NAC") == 0 ||ptag.compareTo("RRC") == 0)*/{
 			/*
 			 * (ADJP (JJ decurrent)
             		(PP (IN as)
@@ -622,13 +622,13 @@ end procedure
 			//collapseElement(parent, chunk, "t");
 			String chunk = "p["+lPPIN.getAttributeValue("text")+"] o["+firstNP(PP, lPPIN)+"]";
 			collapseElement(PP, chunk, "r");
-		}else{
+		}/*else{
 			if(this.printPP){
 				System.out.println();
 				System.out.println(this.sentindex+": "+this.markedsent);
 				System.out.println("parent is "+ptag);
 			}
-		}
+		}*/
 		
 	}
 	
