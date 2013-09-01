@@ -1255,11 +1255,12 @@ public class ChunkedSentence {
 			//{proximal}, , , , , , , , , , , , , , , r[p[to] o[-LRB-/-LRB- i . e . , outside of or {abaxial} to -RRB-/-RRB- the (florets)]],
 			if(token.startsWith("r[p[to]")){ //include {proximal} in the chunk. This if-control was added because the change in SentenceChunker (i.e., treating 'to' as an preposition)
 				int j = i;
-				String chara ="";
-				do{
-					if(j > 0) chara = this.chunkedtokens.get(--j).trim();
-				}while(chara.length()==0);
-				
+				String chara =""; //chara before 'to'
+				if(j>0){
+					do{
+						if(j > 0) chara = this.chunkedtokens.get(--j).trim();
+					}while(chara.length()==0);
+				}
 				if(chara.startsWith("{") && chara.endsWith("}")){//found the character
 					this.chunkedtokens.set(j, "");
 					//w[{proximal} to the (florets)]
@@ -2636,6 +2637,9 @@ parallelism scope: q[other chunks]
 		}
 		if(token.startsWith("q[")){
 			return "ChunkScopeParallelism";
+		}
+		if(token.startsWith("a[")){
+			return "ChunkSimpleCharacterState";
 		}
 		return null;
 	}

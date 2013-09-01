@@ -31,6 +31,7 @@ CharaParser.version=prerelease
 #charaparser running mode
 charaparser.finalize=true
 charaparser.standalone=false
+initial.run=false
 
 #stanford parser file paths
 prefix=test_4

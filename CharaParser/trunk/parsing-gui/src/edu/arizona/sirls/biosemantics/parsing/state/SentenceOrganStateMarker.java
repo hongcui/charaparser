@@ -95,9 +95,10 @@ public class SentenceOrganStateMarker {
 			rs = stmt.executeQuery("select name from "+tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"));
 			while(rs.next()){
 				String tn = rs.getString("name").trim();
-				if(tn.length()>0){
+				if(tn.length()>0 && tn.matches(".*?\\w+.*")){//remove "?"
 					tn = tn.replaceFirst("\\(.*?\\)", "").trim(); //(a) glutinosa => glutinosa
-					tn = tn.substring(tn.indexOf(".")+1).trim(); //A.glutinosa =>glutinosa
+					tn = tn.substring(tn.indexOf(".")+1).trim(); //A. glutinosa =>glutinosa
+					tn = tn.replaceAll("[?+*\\.]+", "").trim();
 					taxonnames += tn+"|";
 				}
 			}
@@ -859,7 +860,7 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fna2_v7_jing", "fnaglossaryfixed", true, null, null);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "foc_v5_jing", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);

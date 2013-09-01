@@ -6,6 +6,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
+
 /* This bean represents a row in the Character tab terms area */
 
 public class CoOccurrenceBean {
@@ -32,7 +34,7 @@ public class CoOccurrenceBean {
 
 	public void setText(Text textbox){
 		this.text4unpaired = textbox;
-		//textbox.setText("feature");//For Jing Liu only
+		if(Boolean.valueOf(ApplicationUtilities.getProperty("initial.run"))) textbox.setText("feature");//For Jing Liu only
 	}
 	
 	public Text getText(){
