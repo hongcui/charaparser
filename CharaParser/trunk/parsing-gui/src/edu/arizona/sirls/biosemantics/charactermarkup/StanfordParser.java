@@ -161,6 +161,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				//if(src.compareTo("1152.txt-6")!=0 /*&& src.compareTo("Rhapidophyllum.txt-6")!=0*/) continue;
 				//if(src.compareTo("106.txt-3")!=0 /*&& src.compareTo("Rhapidophyllum.txt-6")!=0*/) continue;
 				//if(src.compareTo("1227.txt-16")!=0) continue;
+				//if(!src.startsWith("4. Exacum teres.txt-12")) continue;
 				try{
 					str = tagger.POSTag(str, src);
 				}catch(Exception e){
@@ -508,6 +509,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	public static String normalizeSpacesRoundNumbers(String sent) {
 		sent = sent.replaceAll("-+", "-");// 2--4 => 2-4
 		sent = sent.replaceAll("(- )+", "- ");// 2 - - 4 => 2 - 4
+		if(sent.contains("×")) sent = sent.replaceAll("(?<="+ChunkedSentence.units+")\\s*\\.\\s*(?=×)", " "); //4 cm.x 6cm => 4 cm x 6cm
 		sent = ratio2number(sent);//bhl
 		sent = sent.replaceAll("(?<=\\d)\\s*/\\s*(?=\\d)", "/");
 		sent = sent.replaceAll("(?<=\\d)\\s+(?=\\d)", "-"); //bhl: two numbers connected by a space
@@ -899,8 +901,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String prefix = "sponges_1";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "spongeglossaryfixed", false);	
 		*/
-		//sp.POSTagging();
-		//sp.parsing();
+		sp.POSTagging();
+		sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
