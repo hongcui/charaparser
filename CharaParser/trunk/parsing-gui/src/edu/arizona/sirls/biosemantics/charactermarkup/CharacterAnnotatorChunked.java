@@ -29,6 +29,7 @@ import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.*;
 
 import edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
+import edu.arizona.sirls.biosemantics.parsing.FloweringTimeParser4FNA;
 import edu.arizona.sirls.biosemantics.parsing.Registry;
 
 
@@ -951,7 +952,16 @@ public class CharacterAnnotatorChunked {
 				}else{
 					cs.unassignedmodifier = content;
 				}				
-			}else if(ck instanceof ChunkEOS || ck instanceof ChunkEOL){
+			}else if(ck instanceof ChunkFL){ //flowering time or fruting time
+				String content = ck.toString().replaceAll("(f\\[|\\])", "");
+				String chname = content.startsWith("fl")? "flowering_time" : "fruiting_time";
+				content = content.replaceAll("\\bfl\\s*\\.\\s*", "flowering ").replaceAll("\\bfr\\s*\\.\\s*", "fruiting ").replaceAll(" of following year", "");
+				Element structure = this.createStructureElements("(whole_organism)", cs).get(0);
+				FloweringTimeParser4FNA dp = new FloweringTimeParser4FNA(structure, content, chname); //flowering_time ---> phenology according to JSTOR
+				structure = dp.parse();
+				//this.statement.addContent(structure);				
+			}
+			else if(ck instanceof ChunkEOS || ck instanceof ChunkEOL){
 				if(cs.unassignedmodifier!=null && cs.unassignedmodifier.length()>0){
 					if(this.latestelements.size()>0){
 					Element lastelement = this.latestelements.get(this.latestelements.size()-1);

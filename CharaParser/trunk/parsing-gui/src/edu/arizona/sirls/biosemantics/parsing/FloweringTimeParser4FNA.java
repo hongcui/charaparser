@@ -47,7 +47,7 @@ public class FloweringTimeParser4FNA extends EnumerativeElementParser{
 	}
 	
 	public Element parse(){
-		text = text.toLowerCase().replaceFirst("flowering\\s+", "").replaceAll("–", "-");
+		text = text.toLowerCase().replaceFirst("(flowering|fruiting)\\s+", "").replaceAll("–", "-");
 		//System.out.println("original: "+text);
 		//clean up the text
 		Pattern p = Pattern.compile(value);

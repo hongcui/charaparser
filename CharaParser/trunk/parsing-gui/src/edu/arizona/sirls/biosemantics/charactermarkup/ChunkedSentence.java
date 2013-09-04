@@ -87,6 +87,7 @@ public class ChunkedSentence {
 	public static ArrayList<String> notadverbs = new ArrayList<String>();
 	public static ArrayList<String> notverbs = new ArrayList<String>();
 	public static ArrayList<String> notnouns = new ArrayList<String>();
+	public static boolean Fl = Boolean.valueOf(ApplicationUtilities.getProperty("source.fl"));
 	
 	protected Connection conn = null;
 	/*static protected String username = "root";
@@ -1755,6 +1756,24 @@ public class ChunkedSentence {
 			}
 		}
 		
+		if((token.matches("(\\w\\W+)?fl(\\W+)?") || token.matches("(\\w\\W+)?fr(\\W+)?")) && ChunkedSentence.Fl){
+			//form ChunkFL and/or ChunkFR
+			String chk = "";
+			int c = pointer;
+			do{
+				chk+= token.replaceAll("(\\w[\\[(]+|[)\\]]+|[{}])", "")+" ";
+				this.chunkedtokens.set(pointer, "");
+				if(pointer+1 < this.chunkedtokens.size()) token = this.chunkedtokens.get(++pointer);
+			}while (!token.matches("(\\w\\W+)?fl(\\W+)?") && !token.matches("(\\w\\W+)?fr(\\W+)?") &&
+					!token.matches("SG[,\\.]SG") &&  pointer+1 < this.chunkedtokens.size());
+			chk = "f["+chk.trim()+"]";
+			this.chunkedtokens.set(c, chk);
+			chunk = new ChunkFL(chk);
+			return chunk;
+		}
+		
+		
+		
 		//create a new ChunkedSentence object
 		if(token.startsWith("s[")){
 			ArrayList<String> tokens = new ArrayList<String>();
@@ -2455,6 +2474,9 @@ parallelism scope: q[other chunks]
 		String token = this.chunkedtokens.get(id);
 		if(token.matches("^\\w{2,}\\[.*")){
 			return "ChunkSL"; //state list
+		}
+		if(token.matches("^f\\[.*")){
+			return "ChunkFL"; //state list
 		}
 		/*if(token.startsWith("q[")){
 			return "ChunkQP";

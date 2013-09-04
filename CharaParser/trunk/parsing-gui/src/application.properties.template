@@ -1,12 +1,6 @@
 #Local database info
 
-#Fill in database.name, database.url, database.username, and database.password. See example above.
-database.name=
-database.username=
-database.password=
-#Replace DATABSE.NAME, DATABASE.USERNAME, DATABASE.PASSWORD with the values entered. See example above
-database.url=jdbc:mysql://localhost/DATABSE.NAME?user=DATABASE.USERNAME&password=DATABASE.PASSWORD&connectTimeout=0&socketTimeout=0&autoReconnect=true
-database.driverPath=com.mysql.jdbc.Driver
+
 
 
 #Example database info
@@ -16,17 +10,27 @@ database.driverPath=com.mysql.jdbc.Driver
 #database.password=termspassword
 #database.url=jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword&connectTimeout=0&socketTimeout=0&autoReconnect=true
 
+#Fill in database.name, database.url, database.username, and database.password. See example above.
+database.name=
+database.username=
+database.password=
+#Replace DATABSE.NAME, DATABASE.USERNAME, DATABASE.PASSWORD with the values entered. See example above
+database.url=jdbc:mysql://localhost/DATABSE.NAME?user=DATABASE.USERNAME&password=DATABASE.PASSWORD&connectTimeout=0&socketTimeout=0&autoReconnect=true
+database.driverPath=com.mysql.jdbc.Driver
 
 #OTO server access. 
 #If you don't use OTO functions, you can disregard the following two parameters
 #Otherwise, request credentials from CharaParser distributor and fill in server.password and server.username: 
 server.password=
 server.username=
+#properties of source documents
+#Fl. as flowering time, like 'fl . may \u2013 jun , fr . jul \u2013 aug .' at the end of description paragraph
+source.fl = false
 ########################## DO NOT EDIT THE FOLLOWING SECTIONS UNLESS YOU KNOW WHAT YOU ARE DOING ###############################
 server.name=biosemantics.arizona.edu
 
 #charaparser version
-CharaParser.version=prerelease
+CharaParser.version=0.1
 
 #charaparser running mode
 charaparser.finalize=true
@@ -39,7 +43,7 @@ target=C:/Users/updates/CharaParserTest/2012BiosemanticsWorkshopTest/FNAv8Ericac
 
 # Data individual to mark up
 
-taxa.list=TaxaList.txt
+taxon.list=TaxaList.txt
 taxon.indexer=TaxonIndexer.bin	
 instr.names=InstrNames.bin
 style.mapping=style-mapping.properties

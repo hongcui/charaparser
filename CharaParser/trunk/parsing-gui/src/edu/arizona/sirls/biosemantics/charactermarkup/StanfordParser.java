@@ -901,8 +901,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String prefix = "sponges_1";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "spongeglossaryfixed", false);	
 		*/
-		sp.POSTagging();
-		sp.parsing();
+		//sp.POSTagging();
+		//sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
