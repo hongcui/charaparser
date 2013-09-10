@@ -520,16 +520,16 @@ public class MainFormDbAccessor {
 		{
 			if (tab.equals(ApplicationUtilities.getProperty("tab.one.name"))) {
 				tab = "tab_general";
-			}
+			}else
 			if (tab.equals(ApplicationUtilities.getProperty("tab.two.name"))) {
 				tab = "tab_segm";
-			}
+			}else
 			if (tab.equals(ApplicationUtilities.getProperty("tab.three.name"))) {
 				tab = "tab_verf";
-			}
+			}else
 			if (tab.equals(ApplicationUtilities.getProperty("tab.four.name"))) {
 				tab = "tab_trans";
-			}
+			}else
 				/*tab.five.perl.name=Step 4.perl
 					tab.five.one.name=Step 4.1
 					tab.five.two.name=Step 4.2
@@ -540,22 +540,22 @@ public class MainFormDbAccessor {
 			//}
 			if (tab.equals(ApplicationUtilities.getProperty("tab.five.perl.name"))) {
 				tab = "tab_struct_perl";
-			}
+			}else
 			if (tab.equals(ApplicationUtilities.getProperty("tab.five.one.name"))) {
 				tab = "tab_struct_one";
-			}
+			}else
 			if (tab.equals(ApplicationUtilities.getProperty("tab.five.two.name"))) {
 				tab = "tab_struct_two";
-			}
+			}else
 			if (tab.equals(ApplicationUtilities.getProperty("tab.five.three.name"))) {
 				tab = "tab_struct_three";
-			}			
+			}else			
 			if (tab.equals(ApplicationUtilities.getProperty("tab.six.name"))) {
 				tab = "tab_unknown";
-			}
+			}else
 			if (tab.equals(ApplicationUtilities.getProperty("tab.seven.name"))) {
 				tab = "tab_finalm";
-			}
+			}else
 			if (tab.equals(ApplicationUtilities.getProperty("tab.character"))) {
 				tab = "tab_gloss";
 			}

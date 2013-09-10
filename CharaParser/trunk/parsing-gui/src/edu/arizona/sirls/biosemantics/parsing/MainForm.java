@@ -5,7 +5,7 @@ package edu.arizona.sirls.biosemantics.parsing;
 
 
 /**
- * @author prasad
+ * @author prasad, hong cui
  *
  */
 import java.io.BufferedReader;
@@ -285,6 +285,7 @@ public class MainForm {
 	private Text tab6desc;
 	private Text step6_desc;
 	private Text txtThisLastStep;
+	private Composite currentTermRoleMatrix;
 	private Composite termRoleMatrix4structures;
 	private ScrolledComposite scrolledComposite4structures;
 	private StyledText contextText4structures;
@@ -327,6 +328,10 @@ public class MainForm {
 	private boolean fourdottwosave = false;
 	private boolean fourdotthreesave = false;
 	
+	//snap shot of term categorization subtabs
+	private Hashtable<String, String> categorizedTermsOnStructureTab = new Hashtable<String, String>();
+	private Hashtable<String, String> categorizedTermsOnCharacterTab = new Hashtable<String, String>();
+	private Hashtable<String, String> categorizedTermsOnOthersTab = new Hashtable<String, String>();
 	/*variable to select a transformer for type1 doc*/
 	private static String startupstring = null;
 	//////////////////methods///////////////////////
@@ -1611,7 +1616,7 @@ public class MainForm {
 					if(tabName.compareTo(ApplicationUtilities.getProperty("tab.five.perl.title"))!=0) {
 						ApplicationUtilities.showPopUpWindow(								
 								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
-								ApplicationUtilities.getProperty("tab.five.perl.name"), 
+								ApplicationUtilities.getProperty("tab.five.perl.title"), 
 								ApplicationUtilities.getProperty("popup.header.error"),
 								SWT.ICON_ERROR);
 						markupNReviewTabFolder.setSelection(0);
@@ -1626,6 +1631,26 @@ public class MainForm {
 					mainDb.createNonEQTable();
 					mainDb.createTyposTable();
 				}
+				
+				//manage termRoleMatrix
+				if(currentTermRoleMatrix!=null){
+					//dispose current
+					Control[] children = currentTermRoleMatrix.getChildren();
+					for(Control child: children) child.dispose();
+					//load termRoleMatrix for the new selection
+					if(tabName.compareTo(ApplicationUtilities.getProperty("tab.five.one.name"))==0){
+						reLoadTermArea(termRoleMatrix4structures, scrolledComposite4structures, contextText4structures, "structures");
+					}else if(tabName.compareTo(ApplicationUtilities.getProperty("tab.five.two.name"))==0){
+						reLoadTermArea(termRoleMatrix4characters, scrolledComposite4characters, contextText4characters, "characters");
+					}else if(tabName.compareTo(ApplicationUtilities.getProperty("tab.five.three.name"))==0){
+						reLoadTermArea(termRoleMatrix4others, scrolledComposite4others, contextText4characters, "others");
+					}
+					
+				}
+				if(tabName.compareTo(ApplicationUtilities.getProperty("tab.five.one.name"))==0) currentTermRoleMatrix = termRoleMatrix4structures;
+				if(tabName.compareTo(ApplicationUtilities.getProperty("tab.five.two.name"))==0) currentTermRoleMatrix = termRoleMatrix4characters;
+				if(tabName.compareTo(ApplicationUtilities.getProperty("tab.five.three.name"))==0) currentTermRoleMatrix = termRoleMatrix4others;
+
 			}
 		});
 		
@@ -2473,6 +2498,8 @@ public class MainForm {
 			public void widgetSelected(final SelectionEvent e) {
 				//Clear context table as the sentences from the previous group needn't be shown for another group;
 				contextTable.removeAll();
+				//dispose handlers used for the current group
+				//dispose termsScrolledComposite or termGroups?
 				loadTerms();
 			}
 		});
@@ -3282,13 +3309,13 @@ public class MainForm {
 		String subtabTitle ="";
 		String subtabInstruction = "";
 		if(type.compareToIgnoreCase("others")==0){
-			subtabTitle = "4.3 Categorize Other Terms";
+			subtabTitle = ApplicationUtilities.getProperty("tab.five.three.name");
 			subtabInstruction = "step4Descp3";
 		}else if(type.compareToIgnoreCase("structures")==0){
-			subtabTitle = "4.1 Review Structure Terms";
+			subtabTitle = ApplicationUtilities.getProperty("tab.five.one.name");
 			subtabInstruction = "step4Descp1";
 		}else if(type.compareToIgnoreCase("characters")==0){
-			subtabTitle = "4.2 Review Descriptor Terms";
+			subtabTitle = ApplicationUtilities.getProperty("tab.five.two.name");
 			subtabInstruction = "step4Descp2";
 		}		
 		
@@ -4576,7 +4603,9 @@ public class MainForm {
 			sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/edu/arizona/sirls/biosemantics/parsing/down.jpg"));
 		} else {
 			/* Load it from memory! */
-			termsGroup = null;
+			//termsGroup = null; //dispose handlers!!!
+			Control[] children = termsGroup.getChildren();
+			for(Control child: children) child.dispose();
 			termsGroup = new Group(termsScrolledComposite, SWT.NONE);
 			termsGroup.setLayoutData(new RowData());
 			termsScrolledComposite.setContent(termsGroup);
@@ -4686,7 +4715,9 @@ public class MainForm {
 		ArrayList<CoOccurrenceBean> cooccurrences = new ArrayList<CoOccurrenceBean>();
 		String decision = "";
 
-		termsGroup = null;
+		//termsGroup = null; //dispose controls
+		Control[] children = termsGroup.getChildren();
+		for(Control child: children) child.dispose();
 		termsGroup = new Group(termsScrolledComposite, SWT.NONE);
 		termsGroup.setLayoutData(new RowData());
 		termsScrolledComposite.setContent(termsGroup);
@@ -5436,7 +5467,7 @@ public class MainForm {
 		return filteredwords;
 	}
 	
-	protected void loadTermArea(Composite termRoleMatrix, ScrolledComposite scrolledComposite, ArrayList <String> words, final StyledText contextText, final String type) {
+	protected void reLoadTermArea(Composite termRoleMatrix, ScrolledComposite scrolledComposite, final StyledText contextText, final String type){
 		int count = 0;
 		try {
 			if(termRoleMatrix.isDisposed()){
@@ -5447,23 +5478,30 @@ public class MainForm {
 			}
 			final int y = 10; //height of a row
 			int m = 1; //vertical margin
-			termRoleMatrix.setSize(744, words.size()*y);
-			scrolledComposite.setContent(termRoleMatrix);
-			termRoleMatrix.setVisible(true);
+			Hashtable <String, String> words = null;
 			Hashtable<String, String> categorizedterms = null;
 			if(type.compareToIgnoreCase("structures") ==0){
+				words = categorizedtermsS;
 				categorizedterms = categorizedtermsS; //the global variable categorizedtermsS is populated when the local variable thiscategorizedterms is populated below
 			}
 			if(type.compareToIgnoreCase("characters") ==0){
+				words = categorizedtermsC;
 				categorizedterms = categorizedtermsC;
 			}
 			if(type.compareToIgnoreCase("others") ==0){
+				words = categorizedtermsO;
 				categorizedterms = categorizedtermsO;
 			}
+			termRoleMatrix.setSize(744, words.size()*y);
+			scrolledComposite.setContent(termRoleMatrix);
+			termRoleMatrix.setVisible(true);
 			final Hashtable<String, String> thiscategorizedterms = categorizedterms;
 			if (words != null) {
 				ArrayList<Control> tabList = new ArrayList<Control>();
-				for (String word : words){
+				Enumeration<String> en = words.keys();
+				while(en.hasMoreElements()){
+					String word = en.nextElement();
+					String cat = words.get(word);
 					thiscategorizedterms.put(word, type); //populate term list 
 					count++;					
 					final Composite termRoleGroup = new Composite(termRoleMatrix, SWT.NONE);
@@ -5594,6 +5632,234 @@ public class MainForm {
 					
 					final Button button_1 = new Button(termRoleGroup, SWT.RADIO);
 					button_1.setBounds(325, (count-1)*y+m, 90, y-2*m);			
+					if(cat.compareToIgnoreCase("structures")==0) button_1.setSelection(true);
+					if(count%2 == 0) button_1.setBackground(grey);
+					tabList.add(button_1);
+					button_1.addListener(SWT.Selection, new Listener() {
+					      public void handleEvent(Event e) {
+					    	  Control[] controls = button_1.getParent().getChildren();
+					    	  if(controls[1] instanceof Label){
+					    		 String term = ((Label)controls[1]).getText().trim();
+					    		//String term = ((Text)controls[1]).getText().trim();
+						    	 thiscategorizedterms.put(term, "structures");
+					    	  }
+					      }						
+					});
+					
+					final Button button_2 = new Button(termRoleGroup, SWT.RADIO);
+					button_2.setBounds(425, (count-1)*y+m, 90, y-2*m);
+					//button_2.setSelection(true);//This can't be done. It will waste all the learning perl completed: For use cases where the person who runs charaparser needs another person to review the terms. Here mark all terms as "descriptor" by default so they will all be loaded to OTO for review
+					if(cat.compareToIgnoreCase("characters")==0) button_2.setSelection(true);
+					if(count%2 == 0) button_2.setBackground(grey);
+					tabList.add(button_2);
+					button_2.addListener(SWT.Selection, new Listener() {
+					      public void handleEvent(Event e) {
+					    	  Control[] controls = button_2.getParent().getChildren();
+					    	  if(controls[1] instanceof Label){
+					    		 String term = ((Label)controls[1]).getText().trim();
+					    		 // String term = ((Text)controls[1]).getText().trim();
+						    	 thiscategorizedterms.put(term, "characters");
+					    	  }
+					      }						
+					});
+					
+					final Button button_3 = new Button(termRoleGroup, SWT.RADIO);
+					button_3.setBounds(525, (count-1)*y+m, 90, y-2*m);
+					if(cat.compareToIgnoreCase("others")==0) button_3.setSelection(true);
+					if(count%2 == 0) button_3.setBackground(grey);
+					tabList.add(button_3);
+					button_3.addListener(SWT.Selection, new Listener() {
+					      public void handleEvent(Event e) {
+					    	  Control[] controls = button_3.getParent().getChildren();
+					    	  if(controls[1] instanceof Label){
+					    		 String term = ((Label)controls[1]).getText().trim();
+					    		 //String term = ((Text)controls[1]).getText().trim();
+						    	 thiscategorizedterms.put(term, "others");
+					    	  }
+					      }						
+					});
+					
+					Label invisible = new Label(termRoleGroup, SWT.NONE);
+					invisible.setBounds(720, (count-1)*y+m, 90, y-2*m);
+					invisible.setText("invisible");
+					invisible.setVisible(false);
+					
+					clabel.pack();
+					tlabel.pack();
+					//ttext.pack();
+					button_1.pack();
+					button_2.pack();
+					button_3.pack();
+					termRoleGroup.pack();
+					termRoleGroup.redraw();
+				}
+				termRoleMatrix.pack();
+				//termRoleMatrix.setTabList(tabList.toArray(new Control[]{}));
+			}			
+		} catch (Exception exe){
+			LOGGER.error("unable to load subtab in Markup : MainForm", exe);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}
+	}
+	
+	protected void loadTermArea(Composite termRoleMatrix, ScrolledComposite scrolledComposite, ArrayList <String> words, final StyledText contextText, final String type) {
+		int count = 0;
+		try {
+			if(termRoleMatrix.isDisposed()){
+				ApplicationUtilities.showPopUpWindow(
+						"Term categorization has been saved and the process can not be redone.", 
+						ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
+				return;
+			}
+			final int y = 10; //height of a row
+			int m = 1; //vertical margin
+			termRoleMatrix.setSize(744, words.size()*y);
+			scrolledComposite.setContent(termRoleMatrix);
+			termRoleMatrix.setVisible(true);
+			Hashtable<String, String> categorizedterms = null;
+			if(type.compareToIgnoreCase("structures") ==0){
+				categorizedterms = categorizedtermsS; //the global variable categorizedtermsS is populated when the local variable thiscategorizedterms is populated below
+			}
+			if(type.compareToIgnoreCase("characters") ==0){
+				categorizedterms = categorizedtermsC;
+			}
+			if(type.compareToIgnoreCase("others") ==0){
+				categorizedterms = categorizedtermsO;
+			}
+			final Hashtable<String, String> thiscategorizedterms = categorizedterms;
+			if (words != null) {
+				ArrayList<Control> tabList = new ArrayList<Control>();
+				for (String word : words){
+					thiscategorizedterms.put(word, type); //populate term list 
+					count++;					
+					final Composite termRoleGroup = new Composite(termRoleMatrix, SWT.NONE);
+					termRoleGroup.setLayoutData(new RowLayout(SWT.HORIZONTAL));	
+					if(count % 2 == 0){
+						termRoleGroup.setBackground(grey);
+					}
+					termRoleGroup.setBounds(0, (count-1)*y, 744, y);
+					//show context info				
+					termRoleGroup.addMouseListener(new MouseListener(){
+						@Override
+						public void mouseDoubleClick(MouseEvent e) {}
+						@Override
+						public void mouseDown(MouseEvent e) {
+							Control[] controls = termRoleGroup.getChildren();
+							if(controls[1] instanceof Label){
+								String term = ((Label)controls[1]).getText().trim();
+				  				try {
+				  					contextText.setText("");
+				  					contextText.setTopMargin(2);
+									mainDb.getContextData(term, contextText);
+								} catch (ParsingException e1) {
+									e1.printStackTrace();
+								} catch (SQLException e1) {
+									e1.printStackTrace();
+								}	
+							}
+						}
+						@Override
+						public void mouseUp(MouseEvent e) {}
+					});
+					
+					Label clabel = new Label(termRoleGroup, SWT.NONE);
+					clabel.setText(" "+count);
+					if(count%2 == 0) clabel.setBackground(grey);
+					clabel.setBounds(15, (count-1)*y+m, 93, y-2*m);
+					
+					
+					//replace label with text, so the reviewer may correct the typo in the terms
+					/*Text ttext = new Text(termRoleGroup, SWT.NONE);
+					ttext.setText(word);
+					if(count%2 == 0) ttext.setBackground(grey);
+					ttext.setBounds(125, (count-1)*y+m, 150, y-2*m);*/
+					
+					final Label tlabel = new Label(termRoleGroup, SWT.NONE);
+					tlabel.setText(word);
+					if(count%2 == 0) tlabel.setBackground(grey);
+					tlabel.setBounds(125, (count-1)*y+m, 150, y-2*m);
+					
+
+					tlabel.addMouseListener(new MouseListener(){
+
+						@Override
+						public void mouseDoubleClick(MouseEvent arg0) {
+							
+							final Shell typodialog = new Shell(shell, SWT.DIALOG_TRIM|SWT.APPLICATION_MODAL);
+							typodialog.setText("Correct Typo");
+							Label label = new Label(typodialog, SWT.NULL);
+							final String theword = tlabel.getText();
+						    label.setText("Change "+theword);
+						    label.setBounds(10, 10, 150, 23);
+						    
+						    label = new Label(typodialog, SWT.NULL);
+						    label.setText("To " );
+						    label.setBounds(10, 35, 20, 23);
+						    
+						    final Text text = new Text(typodialog, SWT.BORDER);
+						    text.setBounds(30, 35, 100, 23);
+						    
+						    Button change = new Button(typodialog, SWT.PUSH);
+						    change.setBounds(10, 70, 50, 23 );
+						    change.setText("Correct");
+						    change.addSelectionListener(new SelectionAdapter() {
+								public void widgetSelected(final SelectionEvent e) {
+									String term = text.getText();
+									//rewrite the label
+									tlabel.setText(term);
+									//update term hashes with the correct spelling, keep the existing categorization
+									if(type.compareToIgnoreCase("structures") ==0){
+										categorizedtermsS.put(term, categorizedtermsS.get(theword));
+										categorizedtermsS.remove(theword);
+									}
+									if(type.compareToIgnoreCase("characters") ==0){
+										categorizedtermsC.put(term, categorizedtermsC.get(theword));
+										categorizedtermsC.remove(theword);
+									}
+									if(type.compareToIgnoreCase("others") ==0){
+										categorizedtermsO.put(term, categorizedtermsO.get(theword));
+										categorizedtermsO.remove(theword);
+									}
+									
+									//updata sentence table first because context box uses it and needs also be refreshed 
+									mainDb.correctTypoInTableWordMatch("sentence", "originalsent",  theword, term, "sentid");
+									//save corrections
+									mainDb.insertTypo(theword, term); //to db table, can be read in in a scenario of stop and resume
+									//if (term, theword) is in typos, remove the record, don't add
+									if(typos.get(term)!=null && typos.get(term).compareToIgnoreCase(theword)==0) typos.remove(term);
+									else typos.put(theword, term); //in-memoy, save the typos/corrections and make corrections in source text and tables at the beginning of step 5.
+									typodialog.dispose();
+								}
+							});
+						    
+						    Button cancel = new Button(typodialog, SWT.PUSH);
+						    cancel.setBounds(70, 70, 50, 23 );
+						    cancel.setText("Cancel");
+						    cancel.addSelectionListener(new SelectionAdapter() {
+								public void widgetSelected(final SelectionEvent e) {
+									typodialog.dispose();
+								}
+							});
+							typodialog.pack();
+							typodialog.open();
+						}
+
+						@Override
+						public void mouseDown(MouseEvent arg0) {
+							// TODO Auto-generated method stub
+							
+						}
+
+						@Override
+						public void mouseUp(MouseEvent arg0) {
+							// TODO Auto-generated method stub
+							
+						}
+						
+					});
+					
+					final Button button_1 = new Button(termRoleGroup, SWT.RADIO);
+					button_1.setBounds(325, (count-1)*y+m, 90, y-2*m);			
 					if(type.compareToIgnoreCase("structures")==0) button_1.setSelection(true);
 					if(count%2 == 0) button_1.setBackground(grey);
 					tabList.add(button_1);
@@ -5659,7 +5925,7 @@ public class MainForm {
 				//termRoleMatrix.setTabList(tabList.toArray(new Control[]{}));
 			}			
 		} catch (Exception exe){
-			LOGGER.error("unable to load findMoreStructure subtab in Markup : MainForm", exe);
+			LOGGER.error("unable to load subtab in Markup : MainForm", exe);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}

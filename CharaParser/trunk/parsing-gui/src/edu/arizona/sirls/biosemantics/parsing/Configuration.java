@@ -134,20 +134,20 @@ public class Configuration {
 		label_1.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
 				ApplicationUtilities.getProperty("image.type2")));
 		label_1.setBounds(106, 167, 611, 127);
-		label_1.setToolTipText("Word Document with Display Styles");
+		label_1.setToolTipText("Word Document with Content-Specific Styles");
 		
 		System.out.println(ApplicationUtilities.getProperty("image.type1"));
 		Label label_2 = new Label(group_1, SWT.BORDER | SWT.WRAP);
 		label_2.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
 				ApplicationUtilities.getProperty("image.type1")));
 		label_2.setBounds(106, 30, 611, 121);
-		label_2.setToolTipText("Word Document with Semantic-Based Styles");
+		label_2.setToolTipText("XML Document produced by CharaParser");
 		
 		Label label_3 = new Label(group_1, SWT.BORDER | SWT.WRAP);
 		label_3.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
 				ApplicationUtilities.getProperty("image.type3")));
 		label_3.setBounds(106, 308, 611, 127);
-		label_3.setToolTipText("OCRed Text");
+		label_3.setToolTipText("Text from an OCR Process");
 		
 		Button btnType = new Button(group_1, SWT.RADIO);
 		//btnType.setBounds(10, 307, 90, 16);
@@ -173,7 +173,7 @@ public class Configuration {
 		//label_3.setBounds(106, 308, 611, 127);
 		label_4.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
 				ApplicationUtilities.getProperty("image.type4")));
-		label_4.setToolTipText("XML Documents with Text Morphological Descriptions");
+		label_4.setToolTipText("NeXML or TaxonX Documents with Text Morphological Descriptions");
 		shell.open();
 		shell.layout();
 		while (!shell.isDisposed()) {

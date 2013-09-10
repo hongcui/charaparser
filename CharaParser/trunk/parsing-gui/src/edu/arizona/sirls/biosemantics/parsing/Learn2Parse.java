@@ -5,7 +5,7 @@ package edu.arizona.sirls.biosemantics.parsing;
 
 
 /**
- * @author Hong Updates
+ * @author Hong Cui
  *
  */
 public interface Learn2Parse {

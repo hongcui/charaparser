@@ -431,7 +431,7 @@ public class VolumeFinalizer extends Thread {
 		File source = null;
 		if(!standalone)  source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));	
 		if(standalone)  source = new File(standalonefolder+"/target/transformed"); 
-		int total = source.listFiles().length;
+
 		try {
 			SAXBuilder builder = new SAXBuilder();
 			System.out.println("finalizing "+fileindex);
@@ -537,13 +537,13 @@ public class VolumeFinalizer extends Thread {
 	public static void copyFilesWithoutDescriptions2FinalFolder() {
 		File source = null;
 		File target = null;
-		File description = null;
+		//File description = null;
 		if(!standalone)  source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));
 		if(standalone)  source = new File(standalonefolder+"/target/transformed"); 
 		if(!standalone)  target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("FINAL"));
 		if(standalone)  target = new File(standalonefolder+"/target/final");
-		if(!standalone)  description = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("DESCRIPTIONS"));
-		if(standalone)  description = new File(standalonefolder+"/target/descriptions");
+		//if(!standalone)  description = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("DESCRIPTIONS"));
+		//if(standalone)  description = new File(standalonefolder+"/target/descriptions");
 		//find in description files have a size of zero
 		ArrayList<String> files2copy = new ArrayList<String>();
 		File[] des = source.listFiles();
