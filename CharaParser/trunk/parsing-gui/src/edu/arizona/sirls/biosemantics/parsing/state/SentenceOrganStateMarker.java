@@ -99,6 +99,7 @@ public class SentenceOrganStateMarker {
 					tn = tn.replaceFirst("\\(.*?\\)", "").trim(); //(a) glutinosa => glutinosa
 					tn = tn.substring(tn.indexOf(".")+1).trim(); //A. glutinosa =>glutinosa
 					tn = tn.replaceAll("[?+*\\.]+", "").trim();
+					tn = tn.replaceAll("[()\\[\\]{}]", ""); //remove all brackets
 					taxonnames += tn+"|";
 				}
 			}

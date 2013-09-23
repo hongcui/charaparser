@@ -13,8 +13,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.channels.FileChannel;
 import java.sql.DriverManager;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.jdom.Attribute;
+import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -69,6 +72,7 @@ public class Type2Transformer extends Thread {
 	/**
 	 * just take the content of <description>s out and save them in the target folder 
 	 */
+	@SuppressWarnings({ "unchecked", "resource" })
 	public void transform(){
 		try{
 			/*Runtime r = Runtime.getRuntime();
@@ -99,11 +103,31 @@ public class Type2Transformer extends Thread {
 				Document doc = builder.build(f);
 				Element root = doc.getRootElement();
 				
+				/* assuming single description
 				Element descrp = (Element)XPath.selectSingleNode(root, "/treatment/description");
 				if(descrp != null) {
 					String text = descrp.getTextNormalize();
-					writeDescription2Descriptions(text,f.getName().replaceAll("xml$", "txt") ); //record the position for each paragraph.
+					writeDescription2Descriptions(text,f.getName().replaceAll("xml$", "txt") ); //record the position for each paragraph. 10.txt-0
+				}*/
+				
+				//allow multiple description elements
+				List<Element> descrps = XPath.selectNodes(root, "/treatment/description");
+				if(descrps != null) {
+					int count = 0;
+					for(Element descrp: descrps){
+						//index descrp element, pids can be removed at the finalization step if needed
+						String pid = f.getName().replaceAll("xml$", "txt")+"p"+count;
+						Attribute index = new Attribute(ApplicationUtilities.getProperty("transformer.index"), pid);
+						descrp.setAttribute(index);
+						String text = descrp.getTextNormalize();
+						//file names for description text must not contain "-".
+						//record the position for each paragraph. 10.txtp0.txt-0
+						writeDescription2Descriptions(text,pid+".txt" ); 
+						count++;
+					}
 				}
+				root.detach();
+				ParsingUtil.outputXML(root, new File(tgt, f.getName()), new Comment("added pid attribute in description elements"));
 				listener.progress((i+1)*100/total);
 				listener.info((i)+"", f.getName()); 
 			}

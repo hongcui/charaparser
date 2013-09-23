@@ -245,7 +245,7 @@ public class MainForm {
 	//(4, 'Porifera')
 	//(5, 'Fossil')
 	//load glossaries
-	static String [] glossprefixes = new String[]{"Plant", "Hymenoptera", "Algea", "Porifera", "Fossil"};//in this order
+	static String [] glossprefixes = new String[]{"Plant", "Hymenoptera", "Algea", "Porifera", "Fossil", "Nematodes"};//in this order
 
 	private Text projectDirectory;
 	
@@ -6064,6 +6064,8 @@ public class MainForm {
 			return "treatiseoglossaryfixed";
 		}else if(glosstype.compareToIgnoreCase("porifera")==0){
 			return "spongeglossaryfixed";
+		}else if(glosstype.compareToIgnoreCase("nematodes")==0){
+			return "nematodesglossaryfixed";
 		}else  if(glosstype.compareToIgnoreCase("algea")==0){
 			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+"algea glossary is not ready yet");
 		}

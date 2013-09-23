@@ -96,6 +96,7 @@ LOG.FILE.LOCATION=\\log4j.properties
 
 #place holders
 GenusName.PlaceHolder=last_genus_name
+transformer.index=pid
 
 #Pop Up Information
 popup.header.error=Error!

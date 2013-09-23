@@ -431,6 +431,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 					i = 0;
 				}
 			}//end while
+			stdInput.close();
 			if(finalize){ //output the last sentence
 				placeDescription(description, pdescID, baseroot);
 				VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");		
@@ -728,9 +729,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				  "http://biosemantics.googlecode.com/svn/trunk/characterStatements/ characterAnnotationSchema.xsd");
 		builder.build(description);*/
 		
-		if(dID.indexOf(".txtp")>=0){
-			String pid = dID.replaceFirst("\\.txt$", "");
-			VolumeFinalizer.replaceWithAnnotated(description, baseroot, ".//description[@pid=\""+pid+"\"]");			
+		if(dID.indexOf(".txtp")>=0){//1.txtp436_1.txt
+			String pid = dID.replaceFirst("\\.txt$", "");//1.txtp436_1
+			VolumeFinalizer.replaceWithAnnotated(description, baseroot, ".//description[@"+ApplicationUtilities.getProperty("transformer.index")+"=\""+pid+"\"]");			
 		}else{
 			VolumeFinalizer.replaceWithAnnotated(description, baseroot, ".//description");
 		}
