@@ -15,6 +15,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -23,6 +24,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
+import edu.arizona.sirls.biosemantics.charactermarkup.Utilities;
 import edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
 import edu.arizona.sirls.biosemantics.parsing.ParsingException;
 import edu.arizona.sirls.biosemantics.parsing.state.SentenceOrganStateMarker;
@@ -45,6 +47,7 @@ public abstract class OntologyClassFetcher {
 	protected ArrayList<String> selectedClassCategories = new ArrayList<String>();
 	protected ArrayList<String> selectedClassIds = new ArrayList<String>();
 	protected ArrayList<String> terms = new ArrayList<String>();
+	protected Hashtable<String, String> newphrases = new Hashtable<String, String>(); //plural => singular
 	/**
 	 * table: must have at least three fields: ontoid, term, category, underscored. 
 	 */
@@ -118,6 +121,35 @@ public abstract class OntologyClassFetcher {
 				}
 			}
 			
+			//after original labels are inserted, add plurals (getting plural needs singular info)
+			for(int i = 0; i < this.selectedClassIds.size(); i++){
+				String label = this.selectedClassLabels.get(i).trim();
+				//remove () from label if () is not in the middle of the term. If it is, ignore the term. 
+				if(!label.matches(".*?\\).+")){
+					if(label.indexOf("(")>0){
+						label = label.substring(0, label.indexOf("(")).trim();
+					}
+					if(label.length()>0){
+						String pl = getPl(label);
+						if(pl!=null){
+							stmt.setString(1, this.selectedClassIds.get(i)+"_pl");
+							stmt.setString(2, pl);
+							stmt.setString(3, this.selectedClassCategories.get(i));
+							stmt.setString(4, pl.replaceAll("\\s+", "_")); //underscored: anal fin => anal_fin
+							stmt.execute();
+							if(this.selectedClassIds.get(i).contains(condition))
+								terms.add(pl);
+						}
+					}
+				}
+			}
+				
+			//serialize the plural-singular mapping
+			File file = new File(ApplicationUtilities.getProperty("ontophrases.p2s.bin"));
+			ObjectOutputStream out = new ObjectOutputStream(
+					new FileOutputStream(file));
+			out.writeObject(newphrases);
+			out.close();
 		}catch (Exception e){
 			e.printStackTrace();
 		}finally{
@@ -131,6 +163,31 @@ public abstract class OntologyClassFetcher {
 			}
 		}
 	}
+	
+	/**
+	 * endochondral element => endochondral elem
+	 * @param phrase: one-word or multiple-word phrase, typically in singular form
+	 * @return pl form
+	 */
+	private String getPl(String phrase) {
+		String pl = null;
+		String modifier = "";
+		if(phrase.indexOf(" ")>0){
+			modifier = phrase.substring(0, phrase.lastIndexOf(" ")).trim();
+			phrase = phrase.substring(phrase.lastIndexOf(" ")).trim();
+		}
+		//phrase now = last noun in the original phrase
+		String pnoun = phrase;
+		if(!phrase.matches("\\d+") && !Utilities.isPlural(phrase, this.conn)) pnoun = Utilities.plural(phrase);
+		if(pnoun!=null && pnoun.compareTo(phrase)!=0){
+			pl = (modifier+" "+pnoun).trim();
+			this.newphrases.put(modifier+" "+pnoun, phrase); //plural=>singluar
+			return pl;
+		}
+		return pl;
+	}
+	
+
 	
 	public void serializeTermArrayList(String filepath){
 		try {

@@ -34,15 +34,17 @@ public class VolumeMarkup {
 	protected String markupMode = "plain"; //TODO: make this configurable
 
 	private String glossarytable;
+	private String ontostructuretable;
 	public static Process p = null;
 	protected static final Logger LOGGER = Logger.getLogger(VolumeMarkup.class);
 	
-	public VolumeMarkup(ProcessListener listener, Display display, Text perlLog, String dataPrefix, String glossarytable) {
+	public VolumeMarkup(ProcessListener listener, Display display, Text perlLog, String dataPrefix, String glossarytable, String ontostructuretable) {
 		this.listener = listener;
         this.display = display;
         this.perlLog = perlLog;
         this.dataPrefix = dataPrefix;
         this.glossarytable = glossarytable;
+        this.ontostructuretable = ontostructuretable;
 	}
 	
 	public void showPerlMessage(final String message) {
@@ -67,10 +69,10 @@ public class VolumeMarkup {
 		
 		
 		String comstring = "perl " + ApplicationUtilities.getProperty("UNSUPERVISED")+" " +workdir
-		+ todofoldername + "/ "+ databasenameprefix+" "+this.markupMode +" "+dataPrefix.trim() + " "+glossarytable;
+		+ todofoldername + "/ "+ databasenameprefix+" "+this.markupMode +" "+dataPrefix.trim() + " "+glossarytable+" "+ontostructuretable;
 		
 		String[] com =  new String[]{"perl",  ApplicationUtilities.getProperty("UNSUPERVISED"), workdir
-		+ todofoldername + "/", databasenameprefix, this.markupMode, dataPrefix.trim() , glossarytable};
+		+ todofoldername + "/", databasenameprefix, this.markupMode, dataPrefix.trim() , glossarytable, ontostructuretable};
 		//this command will not output marked-up descriptions to the file system. it only holds the results in mySQL database
 		System.out.println("Run command: " + comstring);
 		showPerlMessage("Run command: " + comstring + "\n");

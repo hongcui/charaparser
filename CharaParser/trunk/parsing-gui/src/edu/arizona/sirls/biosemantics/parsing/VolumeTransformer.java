@@ -24,6 +24,9 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+
+
 //import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
@@ -47,6 +50,7 @@ import edu.arizona.sirls.biosemantics.db.VolumeTransformerDbAccess;
 @SuppressWarnings({ "unchecked", "unused","static-access" })
 public class VolumeTransformer extends Thread {
 
+	protected PhraseMarker pm;
 	private static String organnames ="2n|achene|anther|apex|awn|ax|bark|beak|blade|bract|bracteole|branch|branchlet|broad|calyx|capsule|cap_sule|caropohore|carpophore|caudex|cluster|corolla|corona|crown|cup_|cusp|cyme|cymule|embryo|endosperm|fascicle|filament|flower|fruit|head|herb|homophyllous|hypanthium|hypanth_ium|indument|inflore|inflorescence|inflores_cence|inflo_rescence|internode|involucre|invo_lucre|in_florescence|in_ternode|leaf|limb|lobe|margin|midvein|nectary|node|ocrea|ocreola|ovary|ovule|pair|papilla|pedicel|pedicle|peduncle|perennial|perianth|petal|petiole|plant|prickle|rhizome|rhi_zome|root|rootstock|rosette|scape|seed|sepal|shoot|spikelet|spur|stamen|stem|stigma|stipule|sti_pule|structure|style|subshrub|taproot|taprooted|tap_root|tendril|tepal|testa|tooth|tree|tube|tubercle|tubercule|tuft|twig|utricle|vein|vine|wing|x";
 	private static String organnamep ="achenes|anthers|awns|axes|blades|bracteoles|bracts|branches|buds|bumps|calyces|capsules|clusters|crescents|crowns|cusps|cymes|cymules|ends|escences|fascicles|filaments|flowers|fruits|heads|herbs|hoods|inflores|inflorescences|internodes|involucres|leaves|lengths|limbs|lobes|margins|midribs|midveins|nectaries|nodes|ocreae|ocreolae|ovules|pairs|papillae|pedicels|pedicles|peduncles|perennials|perianths|petals|petioles|pistils|plants|prickles|pules|rescences|rhizomes|rhi_zomes|roots|rows|scapes|seeds|sepals|shoots|spikelets|stamens|staminodes|stems|stigmas|stipules|sti_pules|structures|styles|subshrubs|taproots|tap_roots|teeth|tendrils|tepals|trees|tubercles|tubercules|tubes|tufts|twigs|utricles|veins|vines|wings";
 	private static String usstates ="Ala\\.|Alabama|Alaska|Ariz\\.|Arizona|Ark\\.|Arkansas|Calif\\.|California|Colo\\.|Colorado|Conn\\.|Connecticut|Del\\.|Delaware|D\\.C\\.|District of Columbia|Fla\\.|Florida|Ga\\.|Georgia|Idaho|Ill\\.|Illinois|Ind\\.|Indiana|Iowa|Kans\\.|Kansas|Ky\\.|Kentucky|La\\.|Louisiana|Maine|Maryland|Md\\.|Massachusetts|Mass\\.|Michigan|Mich\\.|Minnesota|Minn\\.|Mississippi|Miss\\.|Missouri|Mo\\.|Montana|Mont\\.|Nebraska|Nebr\\.|Nevada|Nev\\.|New Hampshire|N\\.H\\.|New Jersey|N\\.J\\.|New Mexico|N\\.Mex\\.|New York|N\\.Y\\.|North Carolina|N\\.C\\.|North Dakota|N\\.Dak\\.|Ohio|Oklahoma|Okla\\.|Oregon|Oreg\\.|Pennsylvania|Pa\\.|Rhode Island|R\\.I\\.|South Carolina|S\\.C\\.|South Dakota|S\\.Dak\\.|Tennessee|Tenn\\.|Texas|Tex\\.|Utah|Vermont|Vt\\.|Virginia|Va\\.|Washington|Wash\\.|West Virginia|W\\.Va\\.|Wisconsin|Wis\\.|Wyoming|Wyo\\.";	
@@ -77,6 +81,23 @@ public class VolumeTransformer extends Thread {
 	private Hashtable<String, String> unparsed = new Hashtable<String, String>(); //support display of unparsed segments
 	private ArrayList<String> nonames = new ArrayList<String>(); //support rearrange of parsed files when unparsed is added
 	private ArrayList<String> parsed = new ArrayList<String>(); //support rearrange of parsed files when unparsed is added
+	
+	//for taxon hierarchy calculation
+	private static ArrayList<String> taxonranks = new ArrayList<String>(); // from high to low
+	private static ArrayList<String> taxonnames = new ArrayList<String>(); // names corresponding to ranks
+	private static ArrayList<String> ranksinorder = new ArrayList<String>(); //from high to low
+	static{
+		ranksinorder.add("family");
+		ranksinorder.add("subfamily");
+		ranksinorder.add("tribe");
+		ranksinorder.add("subtribe");
+		ranksinorder.add("genus");
+		ranksinorder.add("subgenus");
+		ranksinorder.add("section");
+		ranksinorder.add("species");
+		ranksinorder.add("subspecies");
+		ranksinorder.add("variety");
+	}
 
 	private boolean debug = false;
 	private boolean debugref = false;
@@ -109,6 +130,7 @@ public class VolumeTransformer extends Thread {
 
 
 	public VolumeTransformer(ProcessListener listener, String dataPrefix, String glosstable, Display display) throws ParsingException {
+		this.pm = new PhraseMarker();
 		this.listener = listener;
 		this.dataPrefix = dataPrefix;
 		this.display = display;
@@ -761,7 +783,7 @@ public class VolumeTransformer extends Thread {
 				}
 				if(debug) System.out.println("authority:"+nameinfo[1]);
 			}
-			parseName(name, namerank, taxonid);
+			parseName(name, namerank, taxonid);			
 			text = text.replaceFirst("^\\s*.{"+name.length()+"}","").trim();
 		}
 		//authority
@@ -825,6 +847,10 @@ public class VolumeTransformer extends Thread {
 		}
 
 		treatment.addContent(taxonid);
+		//record taxon hierarchy
+		Element taxonhierarchy = taxonHierarchy(taxonid);
+		treatment.addContent(taxonhierarchy);
+		
 		//Adding the etymology
 		if(etymology.compareTo("")!= 0){
 			addElement("etymology", etymology, treatment);
@@ -934,6 +960,124 @@ public class VolumeTransformer extends Thread {
 		return text;
 	}*/
 
+	/**
+	 * records higher taxa of this taxon
+	 * @param taxonid : accepted taxon id
+	 * 
+	 * <TaxonIdentification Status="ACCEPTED">
+    	<genus_name>Cycas</genus_name>
+    	<species_name>multipinnata</species_name>
+    	<species_authority>C. J. Chen &amp; S. Y. Yang</species_authority>
+    	<place_of_publication>
+      		<publication_title>Acta Phy totax. Sin.</publication_title>
+      		<place_in_publication>32. 239. 1994</place_in_publication>
+    	</place_of_publication>
+  	   </TaxonIdentification>
+  
+	 * @return an element holding info on taxon hierarchy (Family A; Genus B; ...) 
+	 */
+
+	private Element taxonHierarchy(Element taxonid) {
+		String th = "";
+		List<Element> children = taxonid.getChildren();
+		for(Element child: children){
+			String name = child.getName();
+			if(name.endsWith("_name")){
+				String rank = name.substring(0, name.indexOf("_"));
+				String tname = child.getTextTrim();
+				th = getHigherTaxonNames(rank, tname);
+				System.out.println("ranks are:");
+				for(String r: taxonranks)
+				   System.out.println(r);
+				th += rank +" "+ tname+";";
+			}
+		}	
+		Element e = new Element("TaxonHierarchy");
+		e.setText(th);
+		return e;
+	}
+
+	
+	/**
+	 * if this rank is lower than the last rank, return all saved ranks then save this rank, 
+	 * if this rank is higher than or equal to the last rank, 
+	 * 		remove ranks lower than this rank 
+	 *      update the rank equal to this rank with this name
+	 *      return ranks higher than this rank
+	 * @param rank
+	 * @return
+	 */
+	private String getHigherTaxonNames(String rank, String name) {
+		if(taxonranks.size()==0){
+			taxonranks.add(rank);
+			taxonnames.add(name);
+			return "";
+		}
+		
+		String lastrank = taxonranks.get(taxonranks.size()-1);
+		int compare = ranksinorder.indexOf(lastrank) - ranksinorder.indexOf(rank); //compare to the last rank
+		if(compare<0){ //rank is lower
+			taxonranks.add(rank);
+			taxonnames.add(name);
+			return getRankNameInfo(taxonranks.size()-2); 
+			
+		}else if(compare>0){//rank is higher
+			int pos = taxonranks.indexOf(rank);
+			if(pos < 0){
+				LOGGER.info("need to add a new rank: "+rank);
+				int r = ranksinorder.indexOf(rank); //find its order
+				do{
+					pos = taxonranks.indexOf(ranksinorder.get(r--)); //find the next higher order that is in taxonranks
+				}while (pos < 0);
+				pos++;
+			}
+			//remove ranks lower than this rank 
+			if(pos < taxonranks.size()-1){
+				for(int i = pos+1; i < taxonranks.size(); ){
+					taxonranks.remove(i);
+					taxonnames.remove(i);
+				}
+			}
+			//update the rank equal to this rank with this name
+			taxonranks.set(pos, rank);
+			taxonnames.set(pos, name);
+			//return ranks higher than this rank
+			return getRankNameInfo(pos-1); 
+		}else{//same ranks
+			int pos = taxonranks.indexOf(rank);
+			//update the rank equal to this rank with this name
+			taxonranks.set(pos, rank);
+			taxonnames.set(pos, name);
+			//return ranks higher than this rank
+			return getRankNameInfo(pos-1); 
+		}		
+	}
+	
+	/**
+	 * string together rank and name info for ranks up to uptoindex, separate ranks by ';'
+	 * @param uptoindex
+	 * @return
+	 */
+	private String getRankNameInfo(int uptoindex) {
+		String str = "";
+		for(int i=0; i <=uptoindex; i++){
+			str += taxonranks.get(i) +" "+ taxonnames.get(i)+";";
+		}
+		return str;
+	}
+
+
+	/**
+	 * 
+	 * @param rank1
+	 * @param rank2
+	 * @return 0 when rank1 = rank2; >0 when rank1 is higher; <0 when rank1 is lower
+	 */
+	private int compareRank(String rank1, String rank2) {
+
+		return ranksinorder.indexOf(rank2) - ranksinorder.indexOf(rank1);
+	}
+
 
 	/**
 	 * family, genus, and species names seem to have seperate style, 
@@ -1033,7 +1177,7 @@ public class VolumeTransformer extends Thread {
 	}
 
 
-	private void extractPublicationPlace(Element treatment, String pp) {
+	private void extractPublicationPlace(Element taxonid, String pp) {
 		pp = pp.replaceFirst("^\\s*,", "").trim();
 		String pub="";
 		String pip="";
@@ -1049,7 +1193,7 @@ public class VolumeTransformer extends Thread {
 			Element placeOfPub=new Element("place_of_publication");
 			addElement("publication_title",pub,placeOfPub);
 			addElement("place_in_publication",pip,placeOfPub);
-			treatment.addContent(placeOfPub);
+			taxonid.addContent(placeOfPub);
 			if(debug) System.out.println("publication_title:"+pub);
 			if(debug) System.out.println("place_in_publication:"+pip);
 
@@ -1078,6 +1222,7 @@ public class VolumeTransformer extends Thread {
 			File file = new File(Registry.TargetDirectory,
 					ApplicationUtilities.getProperty(elementname) + "/" + count + ".txt");
 			BufferedWriter out = new BufferedWriter(new FileWriter(file));
+			if(elementname.contains("DESCRIPTIONS")) text = pm.markPhrases(text); //phrases are connected via "_" and become words.
 			out.write(text);
 			out.close(); // don't forget to close the output stream!!!
 		} catch (IOException e) {

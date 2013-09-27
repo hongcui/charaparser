@@ -27,6 +27,7 @@ import edu.arizona.sirls.biosemantics.charactermarkup.ChunkedSentence;
 import edu.arizona.sirls.biosemantics.charactermarkup.StanfordParser;
 import edu.arizona.sirls.biosemantics.charactermarkup.Utilities;
 import edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
+import edu.arizona.sirls.biosemantics.parsing.MainForm;
 
 /**
  * @author hongcui
@@ -472,7 +473,7 @@ public class SentenceOrganStateMarker {
 						tag = getParentTag(source);//tag may be null, remove before return
 					}
 					organ = organ.replaceFirst("\\s*of\\s*$", "").replaceAll("\\W", "");
-					if(Utilities.toSingular(organ).compareTo(tag)==0 || 
+					if(Utilities.toSingular(organ, MainForm.conn).compareTo(tag)==0 || 
 						(organ.matches("(apex|apices)") && tag.compareTo("base")==0)){
 						String b = source.substring(0, source.indexOf("-")+1);
 						String nsource = b +(Integer.parseInt(source.substring(source.indexOf("-")+1))-1);
@@ -579,7 +580,7 @@ public class SentenceOrganStateMarker {
 		
 		sent = sent.replaceAll("(?<=\\w)\\s+(?=[,\\.;:])", "");
 
-		sent = sent.replaceAll("_", "-");
+		//sent = sent.replaceAll("_", "-"); //keep _ so phrases are treated as one word
 		
 		Pattern tagsp = Pattern.compile("(.*?)\\b("+parts+")\\b(.*)", Pattern.CASE_INSENSITIVE);
 		String taggedsent = "";

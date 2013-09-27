@@ -1,8 +1,5 @@
 #Local database info
 
-
-
-
 #Example database info
 #database.name=markedupdatasets
 #database.driverPath=com.mysql.jdbc.Driver
@@ -26,6 +23,19 @@ server.username=
 #properties of source documents
 #Fl. as flowering time, like 'fl . may \u2013 jun , fr . jul \u2013 aug .' at the end of description paragraph
 source.fl = false
+
+#ontology use
+#location of serialized anatomy ontology phrases
+ontophrases.bin=
+#location of serialized anatomy ontology phrases + their plural form
+ontophrases.update.bin=
+#location of serialized plural-singular mapping
+ontophrases.p2s.bin=
+#names of all tables holding anatomy ontology terms should end  with this suffix
+ontophrases.table.suffix=_onto_structures
+
+#unknown structure placeholder
+unknown.structure.name=whole_organism
 ########################## DO NOT EDIT THE FOLLOWING SECTIONS UNLESS YOU KNOW WHAT YOU ARE DOING ###############################
 server.name=biosemantics.arizona.edu
 

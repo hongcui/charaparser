@@ -34,6 +34,7 @@ import edu.arizona.sirls.biosemantics.db.*;
  */
 @SuppressWarnings({ "unchecked", "unused" })
 public abstract class Type4Transformer extends Thread {
+	protected PhraseMarker pm = new PhraseMarker();
 	private File source =new File(Registry.SourceDirectory); //a folder of xml documents to be annotated
 	File target = new File(Registry.TargetDirectory);
 
@@ -184,9 +185,9 @@ public abstract class Type4Transformer extends Thread {
 
 	protected void writeDescription2Descriptions(String textNormalize, String fn) {
 		try {
-			File file = new File(target+"/descriptions", fn+ ".txt");
-			
+			File file = new File(target+"/descriptions", fn+ ".txt");			
 			BufferedWriter out = new BufferedWriter(new FileWriter(file));
+			textNormalize = pm.markPhrases(textNormalize); //phrases are connected via "_" and become words.
 			out.write(textNormalize);
 			out.close(); // don't forget to close the output stream!!!
 		} catch (IOException e) {

@@ -11,7 +11,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Connection;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,6 +18,8 @@ import java.util.Hashtable;
 import java.util.UUID;
 
 import edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
+import edu.arizona.sirls.biosemantics.parsing.MainForm;
+import edu.arizona.sirls.biosemantics.parsing.PhraseMarker;
 import edu.arizona.sirls.biosemantics.parsing.state.StateCollector;
 import edu.arizona.sirls.biosemantics.parsing.state.WordNetWrapper;
 
@@ -36,6 +37,9 @@ public class Utilities {
 	
 	public static Hashtable<String, String> singulars = new Hashtable<String, String>();
 	public static Hashtable<String, String> plurals = new Hashtable<String, String>();
+	public static Hashtable<String, String> inGO = new Hashtable<String, String>();
+	public static Hashtable<String, String> isPL = new Hashtable<String, String>();
+	public static Hashtable<String, String> isOrgan = new Hashtable<String, String>();
 	public static ArrayList<String> sureVerbs = new ArrayList<String>();
 	public static ArrayList<String> sureAdvs = new ArrayList<String>();
 	public static ArrayList<String> partOfPrepPhrase = new ArrayList<String>();
@@ -45,6 +49,8 @@ public class Utilities {
 	private static final Logger LOGGER = Logger.getLogger(Utilities.class);
 	public static boolean debug = false;
 	public static boolean debugPOS = false;
+	public static ArrayList<String> glossarytables;
+	public static ArrayList<String> ontostructuretables;
 	//special cases
 	/**
 	 * word must be a verb if
@@ -146,6 +152,7 @@ public class Utilities {
 	}
 	
 	private static boolean isOrgan(String term, Connection conn, String tablePrefix) {
+		if(isOrgan.get(term)!=null) return Boolean.valueOf(isOrgan.get(term));
 		Statement stmt = null;
 		ResultSet rs = null;
 		try{
@@ -153,6 +160,7 @@ public class Utilities {
 			String wordrolesable = tablePrefix+ "_"+ApplicationUtilities.getProperty("WORDROLESTABLE");		
 			rs = stmt.executeQuery("select word from "+wordrolesable+" where semanticrole in ('os', 'op') and word='"+term+"'");		
 			if(rs.next()){
+				isOrgan.put(term, "true");
 				if(debugPOS) System.out.println(term+" is an organ");
 				return true;
 			}
@@ -169,6 +177,7 @@ public class Utilities {
 						+sw.toString());
 			}
 		}
+		isOrgan.put(term, "false");
 		return false;
 	}
 
@@ -187,18 +196,210 @@ public class Utilities {
 	
 	
 	
-	public static boolean isPlural(String t) {
+	public static boolean isPlural(String t, Connection conn) {
+		if(isPL.get(t)!=null) return Boolean.valueOf(isPL.get(t));
 		t = t.replaceAll("\\W", "");
-		if(t.matches("\\b(series|species|fruit)\\b")){
+		if(t.matches("\\b(series|species)\\b")){
+			isPL.put(t, "true");
 			return true;
 		}
-		if(t.compareTo(toSingular(t))!=0){
+		if(t.compareTo(toSingular(t, conn))!=0){
+			isPL.put(t, "true");
 			return true;
 		}
+		isPL.put(t, "false");
 		return false;
 	}
 
-	public static String toSingular(String word){
+	public static String toSingular(String word, Connection conn){
+		String s = null;
+		word = word.toLowerCase().replaceAll("[(){}]", "").trim(); //bone/tendon
+
+		s = singulars.get(word);
+		if(s!=null) return s;
+
+		if(word.matches("\\w+_[ivx-]+")){
+			singulars.put(word, word);
+			plurals.put(word, word);
+			return word;
+		}
+
+		if(word.matches("[ivx-]+")){
+			singulars.put(word, word);
+			plurals.put(word, word);
+			return word;
+		}
+
+		//adverbs
+		if(word.matches("[a-z]{3,}ly")){
+			singulars.put(word, word);
+			plurals.put(word, word);
+			return word;
+		}
+
+		String wordcopy = word;
+		wordcopy = checkWN4Singular(wordcopy);
+		if(wordcopy != null && wordcopy.length()==0){
+			return word;
+		}else if(wordcopy!=null){
+			singulars.put(word, wordcopy);
+			if(wordcopy.compareTo(word)!=0) plurals.put(wordcopy, word); //special cases where sing = pl should be saved in Dictionary
+			if(debug) System.out.println("["+word+"]'s singular is "+wordcopy);
+			return wordcopy;
+		}else{//word not in wn
+
+			Pattern p1 = Pattern.compile("(.*?[^aeiou])ies$");
+			Pattern p2 = Pattern.compile("(.*?)i$");
+			Pattern p3 = Pattern.compile("(.*?)ia$");
+			Pattern p4 = Pattern.compile("(.*?(x|ch|sh|ss))es$");
+			Pattern p5 = Pattern.compile("(.*?)ves$");
+			Pattern p6 = Pattern.compile("(.*?)ices$");
+			Pattern p7 = Pattern.compile("(.*?a)e$");
+			Pattern p75 = Pattern.compile("(.*?)us$");
+			Pattern p8 = Pattern.compile("(.*?)s$");
+			Pattern p9 = Pattern.compile("(.*?)a$");
+			Pattern p10 = Pattern.compile("(.*?ma)ta$"); //stigmata => stigma (20 cases)
+			Pattern p11 = Pattern.compile("(.*?)des$"); //crepides => crepis (4 cases)
+			Pattern p12 = Pattern.compile("(.*?)es$"); // (14 cases)
+
+			Matcher m1 = p1.matcher(word);
+			Matcher m2 = p2.matcher(word);
+			Matcher m3 = p3.matcher(word);
+			Matcher m4 = p4.matcher(word);
+			Matcher m5 = p5.matcher(word);
+			Matcher m6 = p6.matcher(word);
+			Matcher m7 = p7.matcher(word);
+			Matcher m75 = p75.matcher(word);
+			Matcher m8 = p8.matcher(word);
+			Matcher m9 = p9.matcher(word);
+			Matcher m10 = p10.matcher(word);
+			Matcher m11 = p10.matcher(word);
+			Matcher m12 = p10.matcher(word);
+
+			if(m1.matches()){
+				s = m1.group(1)+"y";
+			}else if(m2.matches()){
+				s = m2.group(1)+"us";
+			}else if(m3.matches()){
+				s = m3.group(1)+"ium";
+			}else if(m4.matches()){
+				s = m4.group(1);
+			}else if(m5.matches()){
+				s = m5.group(1)+"f";
+			}else if(m6.matches()){
+				s = m6.group(1)+"ex";
+				if(!inGlossaryOntology(s, conn)) s = m6.group(1)+"ix";
+				if(!inGlossaryOntology(s, conn)) s = null;
+			}else if(m7.matches()){
+				s = m7.group(1);
+			}else if(m75.matches()){
+				s = word;
+			}else if(m8.matches()){
+				s = m8.group(1);
+			}else if(m9.matches()){
+				s = m9.group(1)+"um";
+				if(!inGlossaryOntology(s, conn)) s = m9.group(1)+"on";
+				if(!inGlossaryOntology(s, conn)) s = null;
+			}else if(m10.matches()){
+				s = m10.group(1);
+			}else if(m11.matches()){
+				s = m11.group(1)+"s";
+				if(!inGlossaryOntology(s, conn)) s = null;
+			}
+
+			if(s==null & m12.matches()){
+				s = m12.group(1)+"is";
+				if(!inGlossaryOntology(s, conn)) s = null;
+			}
+
+			if(s != null){
+				if(debug) System.out.println("["+word+"]'s singular is "+s);
+				singulars.put(word, s);
+				if(word.compareTo(s)!=0) plurals.put(s, word);
+				return s;
+			}
+		}
+		if(debug) System.out.println("["+word+"]'s singular is "+word);
+		return word;
+	}
+
+	private static boolean inGlossaryOntology(String s, Connection conn) {
+		int l = s.length();
+		if(inGO.get(s)!=null) return Boolean.valueOf(inGO.get(s));
+		String database=ApplicationUtilities.getProperty("database.name");
+		String username=ApplicationUtilities.getProperty("database.username");
+		String password=ApplicationUtilities.getProperty("database.password");
+		String ontotablesuffix = ApplicationUtilities.getProperty("ontophrases.table.suffix");
+		
+		Statement stmt = null;
+		ResultSet rs = null;
+		ResultSet rs1 = null;
+		try{
+			stmt = conn.createStatement();
+			if(glossarytables==null){
+				glossarytables = new ArrayList<String>();
+				rs1 = stmt.executeQuery("SELECT table_name FROM information_schema.tables where table_schema ='"+ApplicationUtilities.getProperty("database.name")+"' and table_name like '%"+ontotablesuffix+"'");
+				while(rs1.next()){
+					glossarytables.add(rs1.getString("table_name"));
+				}
+			}
+		
+			if(ontostructuretables == null){
+				ontostructuretables = new ArrayList<String>();
+				rs1 = stmt.executeQuery("SELECT table_name FROM information_schema.tables where table_schema ='"+ApplicationUtilities.getProperty("database.name")+"' and table_name like '%glossaryfixed'");
+				while(rs1.next()){
+					ontostructuretables.add(rs1.getString("table_name"));
+				}
+			}
+		
+			for(String table: ontostructuretables){
+				rs = stmt.executeQuery("select term from "+table+" where right(term, "+l+")= '"+s+"'"); //ends with s
+				if(rs.next()){
+					inGO.put(s, "true");
+					return true;
+				}
+			}
+			
+			for(String table: glossarytables){
+				rs = stmt.executeQuery("select term from "+table+" where term = '"+s+"'");
+				if(rs.next()){
+					inGO.put(s, "true");
+					return true;
+				}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator"), e);
+		}finally{
+			if(rs1!=null){
+				try{
+					rs1.close();
+				}catch(Exception e){
+					LOGGER.error("", e);
+				}
+			}
+			if(rs!=null){
+				try{
+					rs.close();
+				}catch(Exception e){
+					LOGGER.error("", e);
+				}
+			}
+			
+			if(stmt!=null){
+				try{
+					stmt.close();
+				}catch(Exception e){
+					LOGGER.error("", e);
+				}
+			}
+			
+		}
+		inGO.put(s, "false");
+		return false;
+	}
+
+	/*public static String toSingular(String word){
 		String s = "";
 		word = word.toLowerCase().replaceAll("\\W", "");
 		//check cache
@@ -312,7 +513,7 @@ public class Utilities {
 		if(debug) System.out.println("["+word+"]'s singular is "+word);
 		return word;
 	}
-	
+	*/
 	///////////////////////////////////////////////////////////////////////
 
 	public static String checkWN(String[] strings){
@@ -628,7 +829,8 @@ public class Utilities {
 				//}
 			}
 			//check _term_category table, terms in the table may have number suffix such as linear_1, linear_2, 
-			String q = "select term, category, hasSyn from "+prefix+"_term_category where term rlike '^"+w+"(_[0-9])?$' and category !='structure' order by category";
+			String q = "select term, category, hasSyn from "+prefix+"_term_category where term rlike '^"+w+"(_[0-9])?$' order by category";
+			//String q = "select term, category, hasSyn from "+prefix+"_term_category where term rlike '^"+w+"(_[0-9])?$' and category !='structure' order by category";
 			if(debug) System.out.println(q);
 			rs = stmt.executeQuery(q);
 			while(rs.next()){
@@ -1053,7 +1255,7 @@ public class Utilities {
 			e.printStackTrace();
 		}
 		
-		Utilities.lookupCharacter("1-veined", conn, new Hashtable<String, String[]>(), "fnaglossaryfixed", "fnav4");
+		System.out.println(Utilities.lookupCharacter("sessile", conn, new Hashtable<String, String[]>(), "fnaglossaryfixed", "type1_test"));
 		//System.out.println(Utilities.isNoun(",", new ArrayList<String>()));
 		//System.out.println(Utilities.plural("disc"));
 		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));

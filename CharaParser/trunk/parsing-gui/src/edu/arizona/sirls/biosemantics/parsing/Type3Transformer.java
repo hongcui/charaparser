@@ -37,6 +37,7 @@ import edu.arizona.sirls.biosemantics.db.*;
  */
 @SuppressWarnings("unchecked")
 public class Type3Transformer extends Thread {
+	private PhraseMarker pm = new PhraseMarker();
 	private ArrayList<String> seeds = new ArrayList<String>();
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
 	//private File source = new File("Z:\\WorkFeb2008\\WordNov2009\\Description_Extraction\\extractionSource\\Plain_text");
@@ -247,6 +248,7 @@ public class Type3Transformer extends Thread {
 		try{
 			BufferedWriter out = new BufferedWriter(
 					new FileWriter(new File(desfolder, fname)));
+			text = pm.markPhrases(text); //phrases are connected via "_" and become words.
 			out.write(text);
 			out.flush();
 			out.close();

@@ -5,7 +5,9 @@
 package edu.arizona.sirls.biosemantics.charactermarkup;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
@@ -30,6 +32,7 @@ import org.jdom.xpath.*;
 
 import edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
 import edu.arizona.sirls.biosemantics.parsing.FloweringTimeParser4FNA;
+import edu.arizona.sirls.biosemantics.parsing.MainForm;
 import edu.arizona.sirls.biosemantics.parsing.Registry;
 
 
@@ -71,14 +74,18 @@ public class CharacterAnnotatorChunked {
 	private String sentsrc;
 	private boolean nosubject;
 	private boolean printProvenance = false;
+	private boolean debugextraattributes =false;
 	private static XPath unknownsubject;
 	private static XPath negatedstructure;
 	private static XPath path1;
 	//private static XPath path2;
 	//private static XPath path3;
+	private ArrayList<String> phrases = new ArrayList<String> (); //can be empty
+	private Hashtable<String, String> p2sphrases = new Hashtable<String, String> (); //can be empty
+	
 	static{
 		try{
-			unknownsubject = XPath.newInstance(".//*[@name='unknown_subject']");
+			unknownsubject = XPath.newInstance(".//*[@name='"+ApplicationUtilities.getProperty("unknown.structure.name")+"']");
 			negatedstructure = XPath.newInstance(".//structure[@negation='true']");
 		    path1 = XPath.newInstance(".//character[@value='none']");
 		    //path2 = XPath.newInstance(".//character[@name='presence'][@value='no']");
@@ -98,6 +105,27 @@ public class CharacterAnnotatorChunked {
 		this.evaluation = evaluation;
 		this.nosubject = false;
 		if(this.evaluation) this.partofinference = false; //partofinterference causes huge number of "relations"
+		
+		//prematched structure names:
+		File file = new File(ApplicationUtilities.getProperty("ontophrases.update.bin"));
+		File p2sfile = new File(ApplicationUtilities.getProperty("ontophrases.p2s.bin"));
+		if(file!=null && p2sfile!=null){
+			ObjectInputStream in;
+			try {
+				in = new ObjectInputStream(new FileInputStream(
+						file));
+				// Deserialize the object
+				phrases = (ArrayList<String>) in.readObject(); 
+				in.close();
+				in = new ObjectInputStream(new FileInputStream(
+						p2sfile));
+				// Deserialize the object
+				p2sphrases = (Hashtable<String, String>) in.readObject(); 
+				in.close();
+			} catch (Exception e) {
+				LOGGER.error("", e);
+			}
+		}
 
 	}
 	/**
@@ -247,6 +275,8 @@ public class CharacterAnnotatorChunked {
 				String id = unknown.getAttributeValue("id");
 				List<Element> relations = XPath.selectNodes(this.statement, ".//relation[@from='"+id+"']|.//relation[@to='"+id+"']");
 				if(relations.size()==0) unknown.detach();
+			}else{ //add name_original
+				unknown.setAttribute("name_original", ""); //name_original = "" as it was not in the original text
 			}
 		}
 		//nomarlization count
@@ -385,6 +415,7 @@ public class CharacterAnnotatorChunked {
 						structure = wo;
 					}
 					structure.setAttribute("name", "whole_organism");
+					structure.setAttribute("name_original", "");
 					Element ch = new Element("character");
 					ch.setAttribute("name", "life_style");
 					ch.setAttribute("value", name);
@@ -658,7 +689,7 @@ public class CharacterAnnotatorChunked {
 				//ArrayList<Element> parents = this.attachToLast? lastStructures() : subjects;
 				
 				if(this.latestelements.size() == 0 && !content.startsWith("character[")){//other Chunk types may also need this place holder
-					this.establishSubject("(unknown_subject)", cs); //put in a place holder only when content is not like "diameter (of xxx 5 -10 um)"
+					this.establishSubject("("+ApplicationUtilities.getProperty("unknown.structure.name")+")", cs); //put in a place holder only when content is not like "diameter (of xxx 5 -10 um)"
 				}
 				ArrayList<Element> parents = lastStructures();
 				//if latestelements is empty, then subjects is empty too, indicating a problem
@@ -724,7 +755,7 @@ public class CharacterAnnotatorChunked {
 				ArrayList<Element> parents = lastStructures();
 				if(parents.size()==0){
 					if(this.latestelements.size() == 0){//other Chunk types may also need this place holder
-						this.establishSubject("(unknown_subject)", cs); //put in a place holder only when content is not like "diameter (of xxx 5 -10 um)"
+						this.establishSubject("("+ApplicationUtilities.getProperty("unknown.structure.name")+")", cs); //put in a place holder only when content is not like "diameter (of xxx 5 -10 um)"
 						parents = this.subjects;
 					}
 				}
@@ -932,6 +963,7 @@ public class CharacterAnnotatorChunked {
 				//Element structure = new Element("chromosome");
 				Element structure = new Element("structure");
 				this.addAttribute(structure, "name", "chromosome");
+				this.addAttribute(structure, "name_original", ""); //what value should it be?
 				this.addAttribute(structure, "id", "o"+this.structid);
 				this.structid++;
 				ArrayList<Element> list = new ArrayList<Element>();
@@ -2162,16 +2194,16 @@ public class CharacterAnnotatorChunked {
 		//e.g there {position} r[p[in] o[the (middle)]] r[p[of] o[the {elongated} (valve)]]
 		if(this.latestelements.size()==0 && this.unassignedcharacter!=null)
 		{
-			this.establishSubject("(unknown_subject)", cs); 
+			this.establishSubject("("+ApplicationUtilities.getProperty("unknown.structure.name")+")", cs); 
 		}	
 		Element lastelement = this.latestelements.get(this.latestelements.size()-1); 
 		if(lastelement.getName().compareTo("structure") == 0){//latest element is a structure
-			/*if(lastelement.getAttributeValue("name").equals("unknown_subject")){ //this is case is dealt with in other ways.
+			/*if(lastelement.getAttributeValue("name").equals(""+ApplicationUtilities.getProperty("unknown.structure.name")+"")){ //this is case is dealt with in other ways.
 				//case of "width of interocular area ..."
 				this.latestelements.remove(this.latestelements.size()-1);				
 				if(this.subjects.size()>=1){
 					Element lasttemp =this.subjects.get(this.subjects.size()-1);
-					if(lasttemp.getAttribute("name")!=null && lasttemp.getAttributeValue("name").equals("unknown_subject")){
+					if(lasttemp.getAttribute("name")!=null && lasttemp.getAttributeValue("name").equals(""+ApplicationUtilities.getProperty("unknown.structure.name")+"")){
 						this.subjects.remove(this.subjects.size()-1);
 					}
 				}			
@@ -2424,7 +2456,7 @@ public class CharacterAnnotatorChunked {
 					String firstorgans = twoparts[1].substring(0, twoparts[1].indexOf(") plus")); //(teeth
 					String lastorganincluded = firstorgans.substring(firstorgans.lastIndexOf("(")+1);
 					for(int i = structures.size()-1; i>=0;  i--){
-						if(!structures.get(i).getAttributeValue("name").equals(Utilities.toSingular(lastorganincluded))){
+						if(!structures.get(i).getAttributeValue("name_original").equals(lastorganincluded)){
 							structures.remove(i);
 						}
 					}
@@ -2596,16 +2628,18 @@ public class CharacterAnnotatorChunked {
 			
 			for (int i = 0; i<organsbeforeOf.size(); i++){
 				String b = organsbeforeOf.get(i).getAttributeValue("name");
+				String pb = organsbeforeOf.get(i).getAttributeValue("name_original");
+				if(pb.length()==0) pb = b;
 				if(b.matches("("+ChunkedSentence.clusters+")")){
 					result = "consist_of";
 					break;
 				}
 				for(int j = 0; j<organsafterOf.size(); j++){
 					String a = organsafterOf.get(j).getAttributeValue("name");
+					String pa = organsafterOf.get(j).getAttributeValue("name_original");
+					if(pa.length()==0) pa = a;
 					//String pattern = a+"[ ]+of[ ]+[0-9]+.*"+b+"[,\\.]"; //consists-of
 					if(a.length()>0 && b.length()>0){
-						String pb = Utilities.plural(b);
-						String pa = Utilities.plural(a);
 						String pattern = "("+b+"|"+pb+")"+"[ ]+of[ ]+[0-9]+.*"+"("+a+"|"+pa+")"+"[ ]?(,|;|\\.|and|or|plus)"; //consists-of
 						String query = "select * from "+this.tableprefix+"_sentence where sentence rlike '"+pattern+"'";
 						rs  = stmt.executeQuery(query);
@@ -2761,8 +2795,37 @@ public class CharacterAnnotatorChunked {
 			String strid = "o"+this.structid;
 			this.structid++;
 			e.setAttribute("id", strid);
-			//e.setAttribute("name", o.trim()); //must have.
-			e.setAttribute("name", o.contains("taxonname-")? o.replaceAll("-taxonname-", ". ").replaceAll("taxonname-", "") : Utilities.toSingular(o.trim())); //must have. //corolla lobes
+			//set 'name' and 'original_name' attrs
+			// e.setAttribute("name", o.trim()); //must have.
+			o = o.trim();
+			if(o.contains("taxonname-")){ //taxonname as structure name
+				String n = o.replaceAll("-taxonname-", ". ").replaceAll("taxonname-", "");
+				e.setAttribute("name", n); //use the original
+				e.setAttribute("name_original", n); 	
+			}
+			else if(o.indexOf("_")>0) {
+				//make sure "_" is used only before the indexes, not btw words of a phrase
+				if(o.matches("(.*?_[\\divx]+)|(.*?_[\\divx]+-[\\divx]+)")){
+					//handle abc_i-iii, abc_2_to_5, abc_3_and_5, abc_3,4-5... 
+					e.setAttribute("type","multi");
+					e.setAttribute("name", adjustUnderscore(o));//make sure "_" is used only before the indexes, not btw words of a phrase
+					e.setAttribute("name_original", o.replaceAll("_", " "));
+				}else{
+					if(isPrematched(o)){
+						e.setAttribute("name", getSingularPhrase(o.replaceAll("_", " ")).trim()); //prematched phrases from ontology: multi_word phrase connected by "_"
+						e.setAttribute("name_original", o.replaceAll("_", " ").trim());
+					}
+					else{
+						e.setAttribute("name", o); //hyphenated phrases in original text such as pubis_ischium
+						e.setAttribute("name_original", o);
+					}
+				}
+			}else{
+				e.setAttribute("name_original", o); //add structure name as the original text
+				e.setAttribute("name", Utilities.toSingular(o, MainForm.conn));
+			}
+
+			//e.setAttribute("name", o.contains("taxonname-")? o.replaceAll("-taxonname-", ". ").replaceAll("taxonname-", "") : Utilities.toSingular(o.trim())); //must have. //corolla lobes
 			//if(this.inbrackets){e.setAttribute("in_bracket", "true");}
 			addScopeConstraints(cs, e);
 			this.statement.addContent(e);
@@ -2877,6 +2940,54 @@ public class CharacterAnnotatorChunked {
 			processCharacterText(organ, list, null, cs);// 7-12-02 add cs //characters created here are final and all the structures will have, therefore they shall stay local and not visible from outside
 		}
 		return results;
+	}
+	/**
+	 * 
+	 * @param phrase: endochondral elements
+	 * @return endochondral element
+	 */
+	private String getSingularPhrase(String phrase) {
+		String s = p2sphrases.get(phrase);
+		if(s!=null) return s;
+		return phrase;
+	}
+
+	/**
+	 * 
+	 * @param o: endochondral_elements
+	 * @return
+	 */
+	private boolean isPrematched(String o) {
+		Statement stmt =null;
+		ResultSet rs =null;
+		try {
+			// collect life_style terms
+			/*stmt = conn.createStatement();
+			rs = stmt.executeQuery("select distinct term from " + this.glosstable + " where term ='"+o+"'");
+			if (rs.next()) {
+				return true;
+			}*/
+			if(phrases.contains(o.replaceAll("_", " "))) return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		return false;
+	}
+	/**
+	 * thoracic_vertebra_8
+	 * @param o a phrase with underscores connecting each token, for example 'thoracic_vertebra_8 and_9', 'thoracic_vertebra_i-iii'
+	 * @return a phrase with underscores connecting the word part and the index, for example 'thoracic vertebra_8', 'thoracic vertebra_i-iii'
+	 */
+	private String adjustUnderscore(String o) {		
+		return o.replaceAll("_(?![\\divx]+)", " ").trim();
 	}
 
 
@@ -3153,7 +3264,7 @@ public class CharacterAnnotatorChunked {
 			//what if parents is empty?
 			if(parents.size()==0){
 				if(this.sentsrc.endsWith("-0")){
-					this.establishSubject("(unknown_subject)", cs);
+					this.establishSubject("("+ApplicationUtilities.getProperty("unknown.structure.name")+")", cs);
 					parents = this.subjects;
 				}
 			}
@@ -3313,7 +3424,7 @@ public class CharacterAnnotatorChunked {
 		w = w.replaceAll("\\W", "");
 		String[] chinfo = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, this.glosstable, tableprefix);
 		if(chinfo!=null && chinfo[0].matches(".*?_?(position|insertion|structure_type)_?.*") && w.compareTo("low")!=0) return "type";
-		String singlew = Utilities.toSingular(w);
+		String singlew = Utilities.toSingular(w, MainForm.conn);
 		Statement stmt = null;
 		ResultSet rs = null;
 		try{

@@ -46,6 +46,7 @@ public class VolumeDehyphenizer extends Thread {
     private MainForm mainForm;
     private VolumeMarkupDbAccessor vmdb;
     private String glossaryTableName;
+    private String ontostructuretable;
     
     public VolumeDehyphenizer(ProcessListener listener, String workdir, 
     		String todofoldername, String database, 
@@ -60,6 +61,8 @@ public class VolumeDehyphenizer extends Thread {
         this.mainForm = mainForm;
         this.glossaryTableName = MainForm.getGlossary(mainForm.glossaryPrefixCombo.getText());
         this.vmdb = new VolumeMarkupDbAccessor(dataPrefix, this.glossaryTableName);
+        this.ontostructuretable =MainForm.getOntoStructureTable(mainForm.glossaryPrefixCombo.getText());
+       
         
         //this.tablename = dataPrefix+"_allwords";
         
@@ -95,7 +98,7 @@ public class VolumeDehyphenizer extends Thread {
     	//showPerlMessage("Preparing files...");
        	boolean done = dhf.dehyphen();//dhf waits for all unmatched brackets are fixed.
     	if(done){
-    		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, dataPrefix, this.glossaryTableName);
+    		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, dataPrefix, this.glossaryTableName, this.ontostructuretable );
     		resetPerlMessage(); //clean up perlLog box
     		vm.markup();
     		listener.setProgressBarVisible(false);

@@ -72,6 +72,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+
 import com.swtdesigner.SWTResourceManager;
 
 import edu.arizona.sirls.biosemantics.beans.CharacterGroupBean;
@@ -6073,6 +6074,26 @@ public class MainForm {
 		return null;
 	}
 	
+	/**
+	 * mapping from gloss type string to the gloss to be used
+	 */
+	public static String getOntoStructureTable(String glosstype) {
+		if(glosstype.compareToIgnoreCase("plant")==0){
+			return "po"+ApplicationUtilities.getProperty("ontophrases.table.suffix");
+		}else if(glosstype.compareToIgnoreCase("hymenoptera")==0){
+			return null;
+		}else if(glosstype.compareToIgnoreCase("fossil")==0){
+			return null;
+		}else if(glosstype.compareToIgnoreCase("porifera")==0){
+			return null;
+		}else if(glosstype.compareToIgnoreCase("nematodes")==0){
+			return null;
+		}else  if(glosstype.compareToIgnoreCase("algea")==0){
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+"algea glossary is not ready yet");
+		}
+		LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+glosstype+" glossary is not ready yet");
+		return null;
+	}
 	/**
 	 * YourGlossaryType must be integer from 1 to 5 meaning: 
 	(1, 'Plant'),

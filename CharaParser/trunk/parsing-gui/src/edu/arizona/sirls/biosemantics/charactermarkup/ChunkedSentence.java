@@ -23,6 +23,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 
 import edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
+import edu.arizona.sirls.biosemantics.parsing.MainForm;
 import edu.arizona.sirls.biosemantics.parsing.state.SentenceOrganStateMarker;
 
 
@@ -1452,7 +1453,7 @@ public class ChunkedSentence {
 					
 					if(!foundorgan && Utilities.isNoun(t, nouns, notnouns)){ //t may have []<>{}
 						startn = true; //won't affect the value of foundorgan, after foundorgan is true, "plus" problem
-						if(Utilities.isPlural(t)){
+						if(Utilities.isPlural(t, MainForm.conn)){
 							foundorgan = true;
 							np = np.trim();
 							if(np.lastIndexOf(" ")>0){
@@ -2817,7 +2818,7 @@ parallelism scope: q[other chunks]
 							String[] stokens = subject.split("\\s+");
 							subject = "";
 							for(int i = 0; i < stokens.length; i++){
-								String singular = Utilities.toSingular(stokens[i]);
+								String singular = Utilities.toSingular(stokens[i], MainForm.conn);
 								if(singular.matches("("+organs+")")){
 									stokens[i] = singular;
 								}
@@ -2831,7 +2832,7 @@ parallelism scope: q[other chunks]
 						
 					}else{
 						for(int i = 0; i<tokens.length; i++){
-							if(Utilities.toSingular(tokens[i]).compareTo(senttag.replaceAll("_", ""))==0){
+							if(Utilities.toSingular(tokens[i], MainForm.conn).compareTo(senttag.replaceAll("_", ""))==0){
 								
 								//subject += tokens[i]+" ";
 								subject = subject.replaceAll("\\s+-\\s+", "-");
