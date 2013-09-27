@@ -107,7 +107,7 @@ public class CharacterAnnotatorChunked {
 		if(this.evaluation) this.partofinference = false; //partofinterference causes huge number of "relations"
 		
 		//prematched structure names:
-		File file = new File(ApplicationUtilities.getProperty("ontophrases.update.bin"));
+		File file = new File(ApplicationUtilities.getProperty("ontophrases.bin"));
 		File p2sfile = new File(ApplicationUtilities.getProperty("ontophrases.p2s.bin"));
 		if(file!=null && p2sfile!=null){
 			ObjectInputStream in;
