@@ -613,9 +613,16 @@ static int checkAck(InputStream in) throws IOException{
 	}
 
 	public static void main(String[] args) {	
-		String dataprefix = "test";
-		UploadTerms2OTO uto = new UploadTerms2OTO(dataprefix, 1);
+		String dataprefix = "test_01_oct";
+		int glosstype = 2;
+		/* (1, 'Plant'),
+			(2, 'Hymenoptera'),
+			(3, 'Algea')
+			(4, 'Porifera')
+			(5, 'Fossil')*/
+		UploadTerms2OTO uto = new UploadTerms2OTO(dataprefix, glosstype);
 		uto.upload();
+		System.out.println("done!");
 		
 		/*dumpFiles(dataprefix);
 		createTextFile(dataprefix);

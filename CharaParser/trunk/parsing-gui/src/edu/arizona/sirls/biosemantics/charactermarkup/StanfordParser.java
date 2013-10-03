@@ -657,12 +657,15 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String small = "\\b(?:one|two|three|four|five|six|seven|eight|nine)";
 		String big = "(?:half|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)s?\\b";
 		//ratio
-		Pattern ptn = Pattern.compile("(.*?)("+small+"\\s*-?_?\\s*"+big+")(.*)");
+		Pattern ptn = Pattern.compile("(.*?)("+small+"\\s*-?(_)?\\s*"+big+")(.*)");
 		Matcher m = ptn.matcher(sent);
 		while(m.matches()){
 			String ratio = m.group(2);
+			if(m.group(3)==null || m.group(3).length()==0){ //add '_' in btw small and big
+				ratio = ratio.replaceFirst("(?<="+small+")", "_");
+			}
 			ratio = toRatio(ratio.replaceAll("_", "-"));
-			sent = m.group(1)+ratio+m.group(3);
+			sent = m.group(1)+ratio+m.group(4);
 			m = ptn.matcher(sent);
 		}
 		//number

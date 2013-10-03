@@ -4603,10 +4603,10 @@ public class MainForm {
 			restoreUnsavedEdges();
 			sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/edu/arizona/sirls/biosemantics/parsing/down.jpg"));
 		} else {
-			/* Load it from memory! */
-			//termsGroup = null; //dispose handlers!!!
-			Control[] children = termsGroup.getChildren();
-			for(Control child: children) child.dispose();
+			/* Load a reviewd group from memory! */
+			termsGroup = null; //should dispose handlers for termsGroup and removedTermsGroup, figure out how to do this later --when user revisit a previous group.
+			//Control[] children = termsGroup.getChildren();
+			//for(Control child: children) child.dispose();
 			termsGroup = new Group(termsScrolledComposite, SWT.NONE);
 			termsGroup.setLayoutData(new RowData());
 			termsScrolledComposite.setContent(termsGroup);
@@ -4716,9 +4716,9 @@ public class MainForm {
 		ArrayList<CoOccurrenceBean> cooccurrences = new ArrayList<CoOccurrenceBean>();
 		String decision = "";
 
-		//termsGroup = null; //dispose controls
-		Control[] children = termsGroup.getChildren();
-		for(Control child: children) child.dispose();
+		termsGroup = null; //dispose controls
+		//Control[] children = termsGroup.getChildren();
+		//for(Control child: children) child.dispose();
 		termsGroup = new Group(termsScrolledComposite, SWT.NONE);
 		termsGroup.setLayoutData(new RowData());
 		termsScrolledComposite.setContent(termsGroup);

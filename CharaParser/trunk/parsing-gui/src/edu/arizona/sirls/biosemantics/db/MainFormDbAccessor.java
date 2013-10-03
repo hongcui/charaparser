@@ -994,7 +994,8 @@ public class MainFormDbAccessor {
 					}
 					sources.add(src);					
 				}
-				typosources.put(typo, sources);
+				if(sources!=null)
+					typosources.put(typo, sources);
 			}catch(Exception e){
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}finally{
@@ -1087,13 +1088,19 @@ public class MainFormDbAccessor {
 	public void correctTypoInTableExactMatch(String table, String column, String typo, String correction) {
 		try{
 			if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
-			String	where = column+"='"+typo+"'";
-			String 	set = column+"='"+correction+"'";
-			PreparedStatement stmt = conn.prepareStatement("update "+this.prefix+"_"+table+" set "+set+" where "+where);
-			stmt.executeUpdate();
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select "+column+" from "+this.prefix+"_"+table+" where "+column+"='"+correction+"'");
+			if(rs.next()){ //correction row exists, delete the typo row
+				stmt.execute("delete from "+this.prefix+"_"+table+" where "+column+"='"+typo+"'");
+			}else{
+				String	where = column+"='"+typo+"'";
+				String 	set = column+"='"+correction+"'";
+				PreparedStatement stmt1 = conn.prepareStatement("update "+this.prefix+"_"+table+" set "+set+" where "+where);
+				stmt1.executeUpdate();
+			}
 		}catch(Exception e){
-			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}		
 	}
 

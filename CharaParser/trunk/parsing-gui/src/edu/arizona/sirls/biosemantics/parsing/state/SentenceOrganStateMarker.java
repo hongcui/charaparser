@@ -99,7 +99,7 @@ public class SentenceOrganStateMarker {
 				if(tn.length()>0 && tn.matches(".*?\\w+.*")){//remove "?"
 					tn = tn.replaceFirst("\\(.*?\\)", "").trim(); //(a) glutinosa => glutinosa
 					tn = tn.substring(tn.indexOf(".")+1).trim(); //A. glutinosa =>glutinosa
-					tn = tn.replaceAll("[?+*\\.]+", "").trim();
+					tn = tn.replaceAll("[?+*\\.,]", "").trim();
 					tn = tn.replaceAll("[()\\[\\]{}]", ""); //remove all brackets
 					taxonnames += tn+"|";
 				}
@@ -230,6 +230,8 @@ public class SentenceOrganStateMarker {
 	 * between 1.0 and 2.0 => 10-20
 	 * from 1/3 to 1/2 
 	 * 10 to 20
+	 * 
+	 * "reduced to 2" should not be included.
 	 * @param text
 	 * @return
 	 */
@@ -246,8 +248,7 @@ public class SentenceOrganStateMarker {
 		text = text.replaceAll("\\bdiameter\\s+of\\b\\s*(?=\\d)", "diameter ");
 		if(text.contains(" to ") || text.contains(" up to ")){
 			text = text.replaceAll("(?<=\\d\\s?("+ChunkedSentence.units+")?) to (?=\\d)", " - ");// three to four???
-			//deal with: to-range such as "to 3 cm", "to 24 × 5 mm", "to 2 . 7 × 1 . 7 – 2 mm", "3 – 20 ( – 25 )" 
-			text = text.replaceAll(" (up )?to (?=[\\d\\. ]{1,6} )", " 0 - "); // <trees> to 3 cm => <trees> 0 - 3 cm: works for case 1,  3, (case 4 should not match)
+			text = to_Range(text);				
 			text = text.replaceAll(" (?<=0 - [\\d\\. ]{1,6} [a-z ]?)× (?=[\\d\\. ]{1,6} [a-z])", " × 0 - "); //deal with case 2
 			text = text.replaceAll(" 0 - (?=[\\d\\.\\ ]{1,8} [-–])", " ");// 0 - 1 . 3  - 2 . 0 => 1 . 3 - 2 . 0
 		}
@@ -258,6 +259,27 @@ public class SentenceOrganStateMarker {
 		
 		return text.replaceAll("\\s+", " ").trim();
 	}
+	
+	/**
+	 * deal with: to-range such as "to 3 cm", "to 24 × 5 mm", "to 2 . 7 × 1 . 7 – 2 mm", "3 – 20 ( – 25 )" 
+	 * text = text.replaceAll(" (up )?to (?=[\\d\\. ]{1,6} )", " 0 - "); // <trees> to 3 cm => <trees> 0 - 3 cm: works for case 1,  3, (case 4 should not match)
+	 * "verb-ed to" pattern is excluded
+	 * @param text
+	 * @return
+	 */
+	private String to_Range(String text) {
+		Pattern torangeptn = Pattern.compile("(.*?)\\b(\\S+)? to (?=[\\d\\. ]{1,6} )(.*)");
+		Matcher m = torangeptn.matcher(text);
+		while(m.matches()){
+			if(m.group(2).compareTo("up")==0 || ! Utilities.isVerb(m.group(2), ChunkedSentence.verbs, ChunkedSentence.notverbs)){
+				text = m.group(1)+m.group(2)+" - "+m.group(3)+m.group(4);
+			}else{
+				text = m.group(1)+m.group(2)+" TO "+m.group(3)+m.group(4);
+			}
+		}
+		return text.replaceAll("TO", "to");
+	}
+
 	private String markTaxonNames(String text) {
 		//markup taxon names
 		//formatting taxon names m . chamissoi => m-name-chamissoi

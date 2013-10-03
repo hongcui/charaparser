@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
 
 
 
+
+
 //import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
@@ -130,7 +132,8 @@ public class VolumeTransformer extends Thread {
 
 
 	public VolumeTransformer(ProcessListener listener, String dataPrefix, String glosstable, Display display) throws ParsingException {
-		this.pm = new PhraseMarker();
+		if(ApplicationUtilities.getProperty("ontophrases.bin")!=null && 
+				ApplicationUtilities.getProperty("ontophrases.bin").length()>0) this.pm = new PhraseMarker();
 		this.listener = listener;
 		this.dataPrefix = dataPrefix;
 		this.display = display;
@@ -1222,7 +1225,7 @@ public class VolumeTransformer extends Thread {
 			File file = new File(Registry.TargetDirectory,
 					ApplicationUtilities.getProperty(elementname) + "/" + count + ".txt");
 			BufferedWriter out = new BufferedWriter(new FileWriter(file));
-			if(elementname.contains("DESCRIPTIONS")) text = pm.markPhrases(text); //phrases are connected via "_" and become words.
+			if(elementname.contains("DESCRIPTIONS") && pm!=null) text = pm.markPhrases(text); //phrases are connected via "_" and become words.
 			out.write(text);
 			out.close(); // don't forget to close the output stream!!!
 		} catch (IOException e) {
