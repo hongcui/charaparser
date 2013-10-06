@@ -55,7 +55,8 @@ public class Type4Document {
 		final Combo combo = new Combo(group, SWT.NONE);
 		combo.setBounds(114, 11, 109, 10);
 		combo.setText("TaxonX");
-		combo.add("Phenoscape");
+		//combo.add("Phenoscape"); //need update this with the phenoscape version
+		combo.add("GoldenGATE-Noschema");
 		
 		Button button = new Button(group, SWT.NONE);
 		button.setBounds(408, 360, 75, 25);

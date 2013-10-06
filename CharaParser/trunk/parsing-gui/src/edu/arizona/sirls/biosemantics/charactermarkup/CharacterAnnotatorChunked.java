@@ -106,10 +106,11 @@ public class CharacterAnnotatorChunked {
 		this.nosubject = false;
 		if(this.evaluation) this.partofinference = false; //partofinterference causes huge number of "relations"
 		
-		//prematched structure names:
-		File file = new File(ApplicationUtilities.getProperty("ontophrases.bin"));
-		File p2sfile = new File(ApplicationUtilities.getProperty("ontophrases.p2s.bin"));
-		if(file!=null && p2sfile!=null){
+		if(ApplicationUtilities.getProperty("ontophrases.bin")!=null && ApplicationUtilities.getProperty("ontophrases.p2s.bin")!=null){
+			//prematched structure names:
+			File file = new File(ApplicationUtilities.getProperty("ontophrases.bin"));
+			File p2sfile = new File(ApplicationUtilities.getProperty("ontophrases.p2s.bin"));
+		
 			ObjectInputStream in;
 			try {
 				in = new ObjectInputStream(new FileInputStream(
@@ -214,13 +215,13 @@ public class CharacterAnnotatorChunked {
 					}
 				}
 			}else{ //ck is a character state
-				if(!sentsrc.endsWith("-0") && !ck.toString().contains("character[")){
+				if(!sentsrc.endsWith("-0") /*&& !ck.toString().contains("character[")*/){
 					reestablishSubject();	//reuse the previous subject only when this sentence is not the first one in the treatment
 					cs.setInSegment(true);
 					cs.setRightAfterSubject(true);
-				}else if (ck.toString().contains("character[")){
-					reset(); //when sentence start with character (e.g. Diameter ...), clear up latestelement and subject caches. 
-				}
+				}/*else if (ck.toString().contains("character[")){
+					reset(); //when sentence start with character (e.g. Diameter ...), clear up latestelement and subject caches. update: ?? could be fruit..., diameter
+				}*///TODO: real cases exist for both, how could we decide?
 				cs.resetPointer(); //make sure ck is annotated
 			}
 		}

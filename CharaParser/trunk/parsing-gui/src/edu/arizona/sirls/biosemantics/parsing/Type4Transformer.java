@@ -34,7 +34,7 @@ import edu.arizona.sirls.biosemantics.db.*;
  */
 @SuppressWarnings({ "unchecked", "unused" })
 public abstract class Type4Transformer extends Thread {
-	protected PhraseMarker pm = new PhraseMarker();
+	protected PhraseMarker pm;
 	private File source =new File(Registry.SourceDirectory); //a folder of xml documents to be annotated
 	File target = new File(Registry.TargetDirectory);
 
@@ -51,6 +51,8 @@ public abstract class Type4Transformer extends Thread {
 	 */
 	
 	public Type4Transformer(ProcessListener listener, String dataprefix) {
+		if(ApplicationUtilities.getProperty("ontophrases.bin")!=null && 
+				ApplicationUtilities.getProperty("ontophrases.bin").length()>0) this.pm = new PhraseMarker();
 		this.listener = listener;
 		this.dataprefix = dataprefix;
 		/* Remove this hardcoding later*/
@@ -100,7 +102,7 @@ public abstract class Type4Transformer extends Thread {
 
 	protected abstract void transformXML(File[] files);
 	
-	protected Element formatDescription(Element treatment, String descriptionXPath, String paraXPath, int fn, int count) {
+	protected Element formatDescription(Element treatment, String descriptionXPath, String paraXPath, String fn, int count) {
 		try{
 			//Element description = (Element)XPath.selectSingleNode(treatment, descriptionXPath);
 			List<Element> descriptions = XPath.selectNodes(treatment, descriptionXPath);
@@ -136,15 +138,14 @@ public abstract class Type4Transformer extends Thread {
 		return null;
 	}
 
-	protected void getDescriptionFrom(Element root, int fn,  int count) {
-
+	protected void getDescriptionFrom(String descriptionpath, Element root, String fn,  int count) {
 		try{
-		List<Element> divs = XPath.selectNodes(root, "/tax:taxonx/tax:taxonxBody/tax:treatment/tax:div");
+		List<Element> divs = XPath.selectNodes(root, descriptionpath);
 		Iterator<Element> it = divs.iterator();
 		int i = 0;
 		while(it.hasNext()){
 			Element div = it.next();
-			if(div.getAttributeValue("type").compareToIgnoreCase("description")==0){
+			//if(div.getAttributeValue("type").compareToIgnoreCase("description")==0){
 				//List<Element> ps = div.getChildren("p", div.getNamespace());
 				List<Element> ps = div.getChildren("description");
 				Iterator<Element> t = ps.iterator();
@@ -177,7 +178,7 @@ public abstract class Type4Transformer extends Thread {
 					i++;
 				}
 			}
-		}
+		//}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
@@ -187,7 +188,7 @@ public abstract class Type4Transformer extends Thread {
 		try {
 			File file = new File(target+"/descriptions", fn+ ".txt");			
 			BufferedWriter out = new BufferedWriter(new FileWriter(file));
-			textNormalize = pm.markPhrases(textNormalize); //phrases are connected via "_" and become words.
+			if(pm!=null) textNormalize = pm.markPhrases(textNormalize); //phrases are connected via "_" and become words.
 			out.write(textNormalize);
 			out.close(); // don't forget to close the output stream!!!
 		} catch (IOException e) {
@@ -198,9 +199,12 @@ public abstract class Type4Transformer extends Thread {
 		
 	}
 
-	protected void writeTreatment2Transformed(Element root, int fn, int count) {
+	protected void writeTreatment2Transformed(Element root, String fn, int count) {
 		// TODO Auto-generated method stub
+		if(count>=0)
 		ParsingUtil.outputXML(root, new File(target+"/transformed", fn+"_"+count+".xml"), null);
+		else
+			ParsingUtil.outputXML(root, new File(target+"/transformed", fn), null);
 	}
 
 	/**

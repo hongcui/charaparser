@@ -87,7 +87,7 @@ public class VolumeTransformer extends Thread {
 	//for taxon hierarchy calculation
 	private static ArrayList<String> taxonranks = new ArrayList<String>(); // from high to low
 	private static ArrayList<String> taxonnames = new ArrayList<String>(); // names corresponding to ranks
-	private static ArrayList<String> ranksinorder = new ArrayList<String>(); //from high to low
+	public static ArrayList<String> ranksinorder = new ArrayList<String>(); //from high to low
 	static{
 		ranksinorder.add("family");
 		ranksinorder.add("subfamily");

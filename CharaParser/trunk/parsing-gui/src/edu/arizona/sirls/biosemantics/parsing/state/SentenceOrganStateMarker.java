@@ -268,14 +268,15 @@ public class SentenceOrganStateMarker {
 	 * @return
 	 */
 	private String to_Range(String text) {
-		Pattern torangeptn = Pattern.compile("(.*?)\\b(\\S+)? to (?=[\\d\\. ]{1,6} )(.*)");
+		Pattern torangeptn = Pattern.compile("(.*?)\\b(\\S+)? to ([\\d\\. ]{1,6} )(.*)");
 		Matcher m = torangeptn.matcher(text);
 		while(m.matches()){
 			if(m.group(2).compareTo("up")==0 || ! Utilities.isVerb(m.group(2), ChunkedSentence.verbs, ChunkedSentence.notverbs)){
-				text = m.group(1)+m.group(2)+" - "+m.group(3)+m.group(4);
+				text = m.group(1)+m.group(2).replaceFirst("\\bup\\b", "")+" 0 - "+m.group(3)+m.group(4);
 			}else{
 				text = m.group(1)+m.group(2)+" TO "+m.group(3)+m.group(4);
 			}
+			m = torangeptn.matcher(text);
 		}
 		return text.replaceAll("TO", "to");
 	}

@@ -51,11 +51,11 @@ public class Type4Transformer4TaxonX extends Type4Transformer {
 				}
 				//now doc is a template to create other treatment files
 				//root.detach();
-				formatDescription((Element)XPath.selectSingleNode(root,"/tax:taxonx/tax:taxonxBody/tax:treatment"),".//tax:div[@type='description']", "./tax:p", fn, 0);
+				formatDescription((Element)XPath.selectSingleNode(root,"/tax:taxonx/tax:taxonxBody/tax:treatment"),".//tax:div[@type='description']", "./tax:p", fn+"", 0);
 				root.detach();
-				writeTreatment2Transformed(root, fn, 0);
+				writeTreatment2Transformed(root, fn+"", 0);
 				listener.info((number++)+"", fn+"_0.xml"); // list the file on GUI here
-		        getDescriptionFrom(root,fn, 0);
+		        getDescriptionFrom("/tax:taxonx/tax:taxonxBody/tax:treatment/tax:div[@type='description']",root,fn+"", 0);
 				//replace treatement in doc with a new treatment in saved
 				Iterator<Element> it = saved.iterator();
 				int count = 1;
@@ -66,14 +66,14 @@ public class Type4Transformer4TaxonX extends Type4Transformer {
 						root,"/tax:taxonx/tax:taxonxBody/tax:treatment");	
 					//in treatment/div[@type="description"], replace <tax:p> tag with <description pid="1.txtp436_1.txt">
 					int index = body.indexOf(treatment);
-					e = formatDescription(e, ".//tax:div[@type='description']", ".//tax:p",fn, count);
+					e = formatDescription(e, ".//tax:div[@type='description']", ".//tax:p",fn+"", count);
 					body.setContent(index, e);
 					//write each treatment as a file in the target/transfromed folder
 					//write description text in the target/description folder
 					root.detach();
-					writeTreatment2Transformed(root, fn, count);
+					writeTreatment2Transformed(root, fn+"", count);
 					listener.info((number++)+"", fn+"_"+count+".xml"); // list the file on GUI here
-					getDescriptionFrom(root, fn, count);
+					getDescriptionFrom("/tax:taxonx/tax:taxonxBody/tax:treatment/tax:div[@type='description']", root, fn+"", count);
 					count++;
 				}				
 				String transformeddir = Registry.TargetDirectory+"\\transformed\\";
@@ -86,7 +86,7 @@ public class Type4Transformer4TaxonX extends Type4Transformer {
 				catch(Exception e){
 					e.printStackTrace();
 				}
-				TaxonNameCollector tnc = new TaxonNameCollector4TaxonX(MainForm.conn, transformeddir, this.dataprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), this.dataprefix);
+				TaxonNameCollector4TaxonX tnc = new TaxonNameCollector4TaxonX(MainForm.conn, transformeddir, this.dataprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), this.dataprefix);
 				tnc.collect4TaxonX();
 
 			}

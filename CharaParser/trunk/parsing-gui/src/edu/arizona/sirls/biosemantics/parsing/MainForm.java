@@ -5,7 +5,7 @@ package edu.arizona.sirls.biosemantics.parsing;
 
 
 /**
- * @author prasad, hong cui
+ * @author hong cui, prasad
  *
  */
 import java.io.BufferedReader;
@@ -103,7 +103,7 @@ public class MainForm {
 	private Hashtable<String, String> categorizedtermsO = new Hashtable<String, String>();
 	private ArrayList<String> inistructureterms = new ArrayList<String>();
 	private ArrayList<String> inicharacterterms = new ArrayList<String>();	
-	private String type4xml;
+	public static String type4xml;
 	private Combo combo_1_1_1;
 	private ProgressBar markupProgressBar;
 	private Table findStructureTable;
@@ -3165,9 +3165,9 @@ public class MainForm {
 		
 		boolean downloadable = false;
 		ArrayList<String> result = UploadTerms2OTO.execute(
-				"ls "+ApplicationUtilities.getProperty("OTO.dowloadable.dir")+ 
+				"ls "+ApplicationUtilities.getProperty("OTO.downloadable.dir")+ 
 				" | grep "+dataprefix+"_.*_groupterms.*sql$");
-		if(result.size()> 1) downloadable = true;
+		if(result.size()> 1) downloadable = true; //the last element in result is the return status
 		//final boolean ddble = downloadable;
 		if(!downloadable){
 			text = new Label(MainForm.grpTermSets, SWT.NONE);
@@ -3378,7 +3378,7 @@ public class MainForm {
 		scrolledComposite.setLayout(new RowLayout(SWT.VERTICAL));
 
 		
-		/*context area: event handler in loadOthersArea */
+		/*context area: event handler in loadTermArea */
 		contextText.setEditable(false);
 		contextText.setDoubleClickEnabled(false);
 		contextText.setBounds(10, 310, 744, 120);
@@ -4092,10 +4092,10 @@ public class MainForm {
 			ProcessListener listener = 
 				new ProcessListener(transformationTable, transformationProgressBar, 
 						shell.getDisplay());
-			if(this.type4xml.compareToIgnoreCase("taxonx") ==0){
+			if(MainForm.type4xml.compareToIgnoreCase("taxonx") ==0){
 				transformer4 = new Type4Transformer4TaxonX(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
-			}else if(this.type4xml.compareToIgnoreCase("phenoscape") ==0){
-				transformer4 = new Type4Transformer4Phenoscape(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
+			}else if(MainForm.type4xml.compareToIgnoreCase("goldengate-noschema") ==0){
+				transformer4 = new Type4Transformer4GoldenGATEnoSchema(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
 			}
 			transformer4.start();
 		}
@@ -5468,6 +5468,13 @@ public class MainForm {
 		return filteredwords;
 	}
 	
+	/**
+	 * when user clicks a hiden tab in term review step.
+	 * @param termRoleMatrix
+	 * @param scrolledComposite
+	 * @param contextText
+	 * @param type
+	 */
 	protected void reLoadTermArea(Composite termRoleMatrix, ScrolledComposite scrolledComposite, final StyledText contextText, final String type){
 		int count = 0;
 		try {

@@ -61,7 +61,7 @@ public class POSTagger4StanfordParser {
 	private static Pattern hyphenedtoorpattern = Pattern.compile("(.*?)((\\d-,\\s*)+ (to|or) \\d-\\{)(.*)");
 	private static Pattern bulletpattern  = Pattern.compile("^(and )?([(\\[]\\s*\\d+\\s*[)\\]]|\\d+.)\\s+(.*)"); //( 1 ), [ 2 ], 12.
 	private static Pattern distributePrepPattern = Pattern.compile("(^.*~list~)(.*?~with~)(.*?~or~)(.*)");
-	private static Pattern areapattern = Pattern.compile("(.*?)([\\d\\.()+-]+ ?\\{?[cmd]?m?\\}?×\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?×?(\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?)?)(.*)");
+	private static Pattern areapattern = Pattern.compile("(.*?)([\\d\\.()+-]+ ?\\{?[cmd]?m?\\}?[x×]\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?[x×]?(\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?)?)(.*)");
 	//private static Pattern charalistpattern-old = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+([@,;\\.] )+\\s*)(([_a-z-]+ )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//
 	private static Pattern charalistpattern = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+[& ]*([`@,;\\.] )+\\s*)(([_a-z-]+ |[0-9a-z–\\[\\]\\+-]+ly )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[`@,;\\.%\\[\\]\\(\\)&#a-z].*)");//
 	//\\4 should match a single character (i.e. a single word, to avoid results like {shape~list~outer~lanceolate~to~lance-ovate~(~often~herbaceous~punct~glandular-hirtellous~punct~equaling~or~surpassing~inner~punct~<apices>~acute~to~long-attenuate~)~punct~inner~lanceolate~to~lance-linear}. UPdate: the issue is solved by converting those position terms to structure in lookupcharacters, not by changing the patterns.  
@@ -208,7 +208,7 @@ public class POSTagger4StanfordParser {
 					}
 				}
 				
-				if(str.indexOf("×")>0){
+				if(str.indexOf("×")>0 || str.matches(".*?\\d\\s*x\\s*\\d.*")){
 					containsArea = true;
 					String[] area = normalizeArea(str);
 					str = area[0]; //with complete info
@@ -653,8 +653,8 @@ public class POSTagger4StanfordParser {
 				}
 			}
 		}
-		result[0] = text;//{oblanceolate} , 15-70×30-150+cm , {flat}  
-		result[1] = text2;//{oblanceolate} , 15-70×30-150+ , {flat} 
+		result[0] = text.replace("x", "×");//{oblanceolate} , 15-70×30-150+cm , {flat}  
+		result[1] = text2.replace("x", "×");//{oblanceolate} , 15-70×30-150+ , {flat} 
 		return result;
 }
 	

@@ -17,19 +17,19 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
-public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
-	private String volume;
-	private File transformeddir;
-	private String outputtablename;
-	private Connection conn;
-	private PreparedStatement insert;
-	private TreeSet<String> names = new TreeSet<String>();
-	 private static final Logger LOGGER = Logger.getLogger(TaxonNameCollector4TaxonX.class);  
+public class TaxonNameCollector4TaxonX /*extends TaxonNameCollector*/ {
+	protected String volume;
+	protected File transformeddir;
+	protected String outputtablename;
+	protected Connection conn;
+	protected PreparedStatement insert;
+	protected TreeSet<String> names = new TreeSet<String>();
+	 protected static final Logger LOGGER = Logger.getLogger(TaxonNameCollector4TaxonX.class);  
 
 
 	public TaxonNameCollector4TaxonX(Connection conn, String transformeddir,
 			String outputtablename, String volume) throws Exception {
-		super(conn, transformeddir, outputtablename, volume);
+		//super(conn, transformeddir, outputtablename, volume);
 		// TODO Auto-generated constructor stub
 		this.transformeddir = new File(transformeddir);
 		this.outputtablename = outputtablename;
@@ -56,10 +56,10 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 		}
 	}
 	
-	private void saveNames() {
+	protected void saveNames() {
 		try{
 			for(String name: names){
-				name = name.replaceAll("\\.", "");
+				name = name.replaceAll("\\.", ""); //don't save 'A.'  etc.
 				if(name.length()>2){
 					insert.setString(1, name);	
 					insert.setString(2, this.volume);
@@ -103,7 +103,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 	 * @param names
 	 * @param nametype
 	 */
-	private void addNames(List<Element> names) {
+	protected void addNames(List<Element> names) {
 		try{
 			for(Element name: names){
 				String namerank = name.getName();
@@ -158,7 +158,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 			String transformeddir = "C:\\Users\\mohankrishna89\\Desktop\\remarkup\\Plazi_8538_pyr_mad_tx1\\target\\transformed";
 			String outputtablename = "plazi_8538_taxonnames";
 			String volume = "plazi_8538";
-			TaxonNameCollector tnc = new TaxonNameCollector4TaxonX(conn, transformeddir, outputtablename, volume);
+			TaxonNameCollector4TaxonX tnc = new TaxonNameCollector4TaxonX(conn, transformeddir, outputtablename, volume);
 			tnc.collect4TaxonX();
 			}catch(Exception e){
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());

@@ -15,13 +15,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
-
 import org.jdom.Comment;
-
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -36,8 +33,11 @@ import org.jdom.xpath.XPath;
 //import taxonomy.TaxonHierarchy;
 //import taxonomy.TaxonRank;
 
+
+
 import edu.arizona.sirls.biosemantics.charactermarkup.SentenceChunker4StanfordParser;
 import edu.arizona.sirls.biosemantics.charactermarkup.StanfordParser;
+import edu.arizona.sirls.biosemantics.input.TaxonX4MatrixGenerator;
 import edu.arizona.sirls.biosemantics.parsing.state.SentenceOrganStateMarker;
 
 /**
@@ -363,6 +363,12 @@ public class VolumeFinalizer extends Thread {
 		if(!standalone) this.showOutputMessage("System is annotating sentences...");
 		sp.extracting();
 		//if(!standalone) listener.progress(100);
+		if(!standalone && MainForm.type.compareTo("type4")==0 && MainForm.type4xml.compareToIgnoreCase("taxonx") ==0){ //transform taxonx output to the format usable for matrix generation 
+			String input = Registry.TargetDirectory+"/final/";
+			String output = Registry.TargetDirectory+"/final4matrix/";	
+			String spfile = Registry.TargetDirectory+"/singluar-plural.txt";	
+			TaxonX4MatrixGenerator t4m = new TaxonX4MatrixGenerator(input, output, spfile);
+		}
 	}
 	
 	

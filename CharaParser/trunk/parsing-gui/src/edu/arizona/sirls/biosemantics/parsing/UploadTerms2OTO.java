@@ -16,6 +16,7 @@ public class UploadTerms2OTO{
 	private static String dumpfolder; 
 	private static String dataprefix;
 	private static int glosstype;
+	private static int userid = 2;
 
 	
 	//public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
@@ -123,7 +124,7 @@ public class UploadTerms2OTO{
     			FileWriter fstream = new FileWriter(dumpfolder+dataprefix+"_"+filename+".txt");
     			BufferedWriter out = new BufferedWriter(fstream);
     			//store all the commands into a text file
-    			String[] commands=new String[28];
+    			String[] commands=new String[29];
     			//import data: _sentence, _term_category
     			
     			/*commands[0] = "drop database if exists tempdatabase;";
@@ -186,11 +187,19 @@ public class UploadTerms2OTO{
     			
     			//Generate original decisions: some terms already have category information in source table _term_category 
     			commands[25] = "insert into "+datasetprefix+"_user_terms_decisions(term, decision, userid, decisiondate, groupid) " +
-    					"select distinct term, category, 32 as userid, sysdate(), 1 as groupid from "+dataprefix+"_term_category where category in " +
-    							"(select category from treatise_categories);";
+    					"select distinct term, category, " + Integer.toString(userid) + 
+    					" as userid, sysdate(), 0 as groupid from "+dataprefix+"_term_category where category in " +
+    							"(select category from categories);";
+    			
+    			//generate matching record in _confirmed_category
+    			commands[26] = "insert into " + datasetprefix + "_confirmed_category (term, category, userid, termIndex, termWithIndex) " 
+    					+ "select distinct term, category, " + Integer.toString(userid) + 
+    					" as userid, 0 as termIndex, term as termWithIndex from "+dataprefix+"_term_category where category in " +
+						"(select category from categories);";
+    			
     			//update a column with empty string. This is because the default value is null. we need empty string 
-    			commands[26] = "update "+datasetprefix+"_user_terms_decisions set relatedTerms = \"\";";
-    			commands[27] = "";
+    			commands[27] = "update "+datasetprefix+"_user_terms_decisions set relatedTerms = \"\";";
+    			commands[28] = "";
     			
     			
     			//write the commands into the text file.
@@ -613,7 +622,7 @@ static int checkAck(InputStream in) throws IOException{
 	}
 
 	public static void main(String[] args) {	
-		String dataprefix = "test_01_oct";
+		String dataprefix = "test_02_oct";
 		int glosstype = 2;
 		/* (1, 'Plant'),
 			(2, 'Hymenoptera'),

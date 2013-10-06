@@ -72,7 +72,7 @@ public class VolumeMarkup {
 		+ todofoldername + "/ "+ databasenameprefix+" "+this.markupMode +" "+dataPrefix.trim() + " "+glossarytable+" "+ontostructuretable;
 		
 		String[] com =  new String[]{"perl",  ApplicationUtilities.getProperty("UNSUPERVISED"), workdir
-		+ todofoldername + "/", databasenameprefix, this.markupMode, dataPrefix.trim() , glossarytable, ontostructuretable};
+		+ todofoldername + "/", databasenameprefix, this.markupMode, dataPrefix.trim() , glossarytable, ontostructuretable==null? "" : ontostructuretable};
 		//this command will not output marked-up descriptions to the file system. it only holds the results in mySQL database
 		System.out.println("Run command: " + comstring);
 		showPerlMessage("Run command: " + comstring + "\n");
@@ -80,7 +80,7 @@ public class VolumeMarkup {
 			 runCommand(com);
 		} catch (Exception e) {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-			showPerlMessage("VolumeMarkup : markup Failed to run the unsupervised.pl" + e.getMessage() + "\n");
+			showPerlMessage("VolumeMarkup : markup Failed to run the unsupervised.pl: " + e.getMessage() + "\n");
 			throw new ParsingException("Failed to run the unsupervised.pl.", e);
 		}
 		

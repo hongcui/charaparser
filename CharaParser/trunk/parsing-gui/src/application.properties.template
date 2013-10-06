@@ -216,7 +216,7 @@ FallingRain=http://www.fallingrain.com/world/a/
 #location for Stanford Jar file
 stanford.parser.jar=lib\\stanford-parser.jar
 englishPCFG=lib\\englishPCFG.ser.gz
-OTO.dowloadable.dir=/home/sirls/hongcui/WebFilesForTomcat/OTO/downloadFiles/
+OTO.downloadable.dir=/home/sirls/hongcui/WebFilesForTomcat/OTO/downloadFiles/
 
 #labels
 labelSelectProject=Select the folder for the project :
