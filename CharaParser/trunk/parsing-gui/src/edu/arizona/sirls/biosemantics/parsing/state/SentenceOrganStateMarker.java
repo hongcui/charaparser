@@ -135,7 +135,7 @@ public class SentenceOrganStateMarker {
 					String sent = rs.getString("sentence").trim();
 					if(sent.length()!=0){
 					String source = rs.getString("source");
-					//if(!source.equals("2.txt-3")) continue;
+					//if(!source.equals("1_37.txtp1.txt-3")) continue;
 					String osent = rs.getString("originalsent");
 					sent = sent.replaceAll("</?[BNOM]>", "");
 					sent = sent.replaceAll("\\bshades of\\b", "shades_of");
@@ -682,7 +682,7 @@ public class SentenceOrganStateMarker {
 						+sw.toString());
 			}
 		}
-		return statestring.replaceAll("_", "|").replaceAll("\\b(and|or|to)\\b", "").replaceAll("\\\\d\\+", "").trim().replaceFirst("^\\|", "").replaceFirst("\\|$", "").replaceAll("\\|+", "|");
+		return statestring.replaceAll("\\b(and|or|to)\\b", "").replaceAll("\\\\d\\+", "").trim().replaceFirst("^\\|", "").replaceFirst("\\|$", "").replaceAll("\\|+", "|");
 	}
 	
 	protected String collectOrganNames(){
@@ -885,7 +885,7 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "foc_v5_jing", "fnaglossaryfixed", true, null, null);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pib_6757", "antglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);

@@ -27,8 +27,6 @@ source.fl = false
 #ontology use
 #location of serialized anatomy ontology phrases
 ontophrases.bin=
-#location of serialized plural-singular mapping
-ontophrases.p2s.bin=
 #names of all tables holding anatomy ontology terms should end  with this suffix
 ontophrases.table.suffix=_onto_structures
 

@@ -174,7 +174,9 @@ public abstract class Type4Transformer extends Thread {
 					}
 					
 					//writeDescription2Descriptions(sb.toString(), fn+"_"+count+"_"+i); //record the position for each paragraph.
-					writeDescription2Descriptions(sb.toString().trim(), fn+"_"+count+".txtp"+i); //record the position for each paragraph.
+					String text = sb.toString().trim();
+					text = text.replaceAll("(?<=(^|\\b|\\W))[--](?=[A-Z])", ""); //seen in some ant description: "Worker.-Small ants, ...": remove the "-"
+					writeDescription2Descriptions(text, fn+"_"+count+".txtp"+i); //record the position for each paragraph.
 					i++;
 				}
 			}

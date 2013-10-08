@@ -56,7 +56,7 @@ public class ChunkedSentence {
 	private String tableprefix = null;
 	private Hashtable<String, String> thantype = new Hashtable<String, String>();
 	public static final String locationpp="near|from";
-	public static final String units= "cm|mm|dm|m|meters|meter|microns|micron|unes|µm|um";
+	public static final String units= "cm|mm|dm|m|meters|meter|microns|micron|unes|µm|um|centimeters|centimeter|millimeters|millimeter";
 	public static final String percentage="%|percent";
 	public static final String degree="°|degrees|degree";
 	public static final String times = "times|folds|lengths|widths";
@@ -404,6 +404,7 @@ public class ChunkedSentence {
 					if(t.equals("-RRB-/-RRB-")) left--;
 				}
 				text = text.trim(); //containing text from j+1 to i-1, now i is -RRB-/-RRB- or EOL
+				if(Utilities.isProvenanceChunk(new Chunk(text))) aftercomma = false;
 				//test for case 2: taxon constraint
 				//Matcher m = this.taxonnamepattern2.matcher(text);
 				//System.out.println(this.taxonnamepattern2.toString());
@@ -2085,12 +2086,30 @@ public class ChunkedSentence {
 				}else{
 					String[] charainfo = Utilities.lookupCharacter(token, conn, characterhash, glosstable, tableprefix);
 					if(!founds && charainfo!=null){
+						if(charainfo[0].compareTo("measure")==0){
+							founds = true;
+							pointer=i+1;
+							chunk = getNextNumerics();
+							if(chunk!=null){
+								if(scs.length()>0){
+									scs = scs.replaceFirst("^\\]", "").trim()+"] "+chunk.toString();
+								}else{
+									scs = chunk.toString();
+								}
+								ChunkMeasure chunkM = new ChunkMeasure(token+"_measure["+scs+"]");
+								return chunkM;
+							}else{
+								pointer++;
+								return chunk; //return null, skip this token: parsing failure
+							}
+						}else{
 						scs = (scs.trim().length()>0? scs.trim()+"] ": "")+charainfo[0]+"["+token+ (charainfo[1].length()>0? "_"+charainfo[1]+"_" : "")+" ";
 						founds = true;
 						if(i+1==this.chunkedtokens.size()){ //reach the end of chunkedtokens
 							scs = scs.replaceFirst("^\\]\\s+", "").trim()+"]";
 							this.pointer = i+1;
 							return new ChunkSimpleCharacterState("a["+scs.trim()+"]");
+						}
 						}
 					}else if(founds && charainfo!=null && scs.matches(".*?"+charainfo[0]+"\\[.*")){ //coloration coloration: dark blue
 						scs += token+" ";
@@ -2723,6 +2742,9 @@ parallelism scope: q[other chunks]
 		return this.subjecttext;
 	}
 
+	/**
+	 * no longer used
+	 */
 	private void findSubject(){
 		String senttag = null;
 		String sentmod = null;

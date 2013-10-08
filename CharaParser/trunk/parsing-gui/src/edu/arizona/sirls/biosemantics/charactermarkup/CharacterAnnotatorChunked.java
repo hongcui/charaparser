@@ -748,6 +748,12 @@ public class CharacterAnnotatorChunked {
 				//TODO: check the use of [ and ( in extreme values
 				//ArrayList<Element> parents = lastStructures();
 				String text = ck.toString().replaceAll("–", "-");
+				String character = null;
+				if(ck instanceof ChunkCount) character = "count";
+				if(ck instanceof ChunkMeasure){
+					character = text.substring(0, text.indexOf("[")).replaceAll("[_-]", " ");
+					text = text.substring(text.indexOf("[")+1, text.lastIndexOf("]"));
+				}				
 				boolean resetfrom = false;
 				if(text.matches(".*\\bto \\d.*")){ //m[mostly] to 6 m ==> m[mostly] 0-6 m
 					text = text.replaceFirst("to\\s+", "0-");
@@ -776,8 +782,7 @@ public class CharacterAnnotatorChunked {
 				modifier2 = rest.replaceFirst(".*?(\\d|\\[|\\+|\\-|\\]|\\)|\\(|%|\\s|"+ChunkedSentence.units+"|"+ChunkedSentence.clusters+")+\\s?(?=[a-z]|$)", "");//4-5[+]
 				String content = rest.replace(modifier2, "").replaceAll("(\\{|\\})", "").trim();
 				modifier2 = modifier2.replaceAll("(\\w+\\[|\\]|\\{|\\})", "").trim();
-				String character = null;
-				if(ck instanceof ChunkCount) character = "count";
+
 				if(this.unassignedcharacter != null){
 					character = this.unassignedcharacter;
 					this.unassignedcharacter = null;
@@ -1043,7 +1048,7 @@ public class CharacterAnnotatorChunked {
 		//newcs.setInSegment(true);
 		//annotateByChunk(newcs, true); //no need to updateLatestElements
 		//this.inbrackets =false;
-		if(isProvenanceChunk(ck)){
+		if(Utilities.isProvenanceChunk(ck)){
 			if(this.latestelements.size()>0){
 				Element lastelement = this.latestelements.get(this.latestelements.size()-1);
 				this.addAttribute(lastelement, "provenance", ck.toString().replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+", " ").trim());
@@ -1092,23 +1097,7 @@ public class CharacterAnnotatorChunked {
 		}
 	}
 	
-	/**
-	 * 
-	 * @param ck
-	 * @return true if a bracketed chunk is a reference/citation, refers to figs or tables, otherwise false
-	 */
-	private boolean isProvenanceChunk(Chunk ck) {
-		String content = ck.toString();
-		boolean is =false;
-		if(content.matches(".*?\\b(fig\\s*\\.?\\s*|table|tab\\s*\\.\\s*)\\b?\\s*\\d.*")) is = true;
-		if(content.matches(".*?\\b(figs|tables)\\s*[,\\.]?\\s*\\d+.{0,2}\\s*(\\.|,|\\band\\b|-)\\s*\\d+.*")) is = true;
-		//2002 , p . 19 .
-		if(content.matches("[a-z]+\\s*(et al\\s*.|and [a-z]+)\\s*\\d\\d\\d\\d.*")) is = true;
-		
-		if(this.printProvenance ) System.out.println(is+" "+content);
-		
-		return is;
-	}
+	
 	//find the character/relation that is associated with structure 
 	private List<Element> charrel(Element structure) throws Exception {
 		// TODO Auto-generated method stub
@@ -2351,7 +2340,7 @@ public class CharacterAnnotatorChunked {
 				l = l < object.lastIndexOf('[')? object.lastIndexOf('[') : l; //safer for o[r[p[in] o[(polanisia)]]]
 				String last = object.substring(l+1).replaceAll("\\W+$", "");
 				if(object.indexOf('{')>=0 || !isCharacter(last)){// if there are other modifiers/characters, then must make "last" a structure
-					String temp = last.replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}");//escape
+					String temp = last.replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");//escape
 					object = object.replaceFirst(temp+"(?=\\]+$)", "("+last+")");
 				}								
 			}

@@ -6086,7 +6086,8 @@ public class MainForm {
 	 */
 	public static String getOntoStructureTable(String glosstype) {
 		if(glosstype.compareToIgnoreCase("plant")==0){
-			return "po"+ApplicationUtilities.getProperty("ontophrases.table.suffix");
+			String suffix = ApplicationUtilities.getProperty("ontophrases.table.suffix");
+			return suffix!=null? "po"+suffix : null;
 		}else if(glosstype.compareToIgnoreCase("hymenoptera")==0){
 			return null;
 		}else if(glosstype.compareToIgnoreCase("fossil")==0){

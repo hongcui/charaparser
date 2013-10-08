@@ -29,7 +29,7 @@ public class DiagnosisMarkerTaxonX {
 	static boolean printStructure(Element child)
 	{
 		
-		if(child.getName().equals("name")==true)
+		if(child.getName().equals("name"))
 		{
 			return true;
 		} else if(child.getChildren().size()>0)
@@ -37,7 +37,7 @@ public class DiagnosisMarkerTaxonX {
 			List<Element> children = child.getChildren();
 			for(Element node:children)
 			{
-				if(printStructure(node)==true)
+				if(printStructure(node))
 				{
 					return true;
 				}
@@ -50,11 +50,9 @@ public class DiagnosisMarkerTaxonX {
 	
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws JDOMException, TransformerException, IOException {
-
 		
-		XPath pathDescription = XPath.newInstance(".//tax:div[@type='description']");
-		
-		File unclean = new File("C:/Users/Murali/Desktop/RA1/RA-Fall 2013/Ants/unclean/");
+		XPath pathDescription = XPath.newInstance(".//x:div[@type='description']");
+		File unclean = new File("C:/Users/updates/CharaParserTest/proibioPilot/uncleaned/");
 		for(File input:unclean.listFiles())
 		{
 		SAXBuilder builder = new SAXBuilder();
@@ -62,6 +60,7 @@ public class DiagnosisMarkerTaxonX {
 		xml = builder.build(input);
 		Element root = xml.getRootElement();
 		count=0;
+		pathDescription.addNamespace("x", root.getNamespaceURI());
 		
 		List<Element> descriptions = (List<Element>)pathDescription.selectNodes(root);
 		System.out.println("Input file name "+input.getName());
@@ -74,7 +73,7 @@ public class DiagnosisMarkerTaxonX {
 			
 			for(Element child:children)
 			{
-				if(printStructure(child)==true)
+				if(printStructure(child))
 				{
 					count++;
 					des.setAttribute("type", "description_diagnosis");
@@ -83,12 +82,12 @@ public class DiagnosisMarkerTaxonX {
 			}
 		}
 		
-		System.out.println("Total description node changed"+count);
+		System.out.println("Total description node changed "+count+" for "+input.getName());
 
 		
 		XMLOutputter output = new XMLOutputter();
 		output.setFormat(Format.getRawFormat());
-		output.output(xml.getDocument(), new FileWriter(new File("C:/Users/Murali/Desktop/RA1/RA-Fall 2013/Ants/cleaned/"+input.getName().replaceAll("(\\.xml)", "_")+"modified.xml")));
+		output.output(xml.getDocument(), new FileWriter(new File("C:/Users/updates/CharaParserTest/proibioPilot/cleaned/"+input.getName().replaceAll("(\\.xml)", "_")+"modified.xml")));
 		System.out.println(xml);
 	}
 	}

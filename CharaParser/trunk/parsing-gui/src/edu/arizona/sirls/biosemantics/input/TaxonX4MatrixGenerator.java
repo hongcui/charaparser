@@ -50,7 +50,7 @@ public class TaxonX4MatrixGenerator {
 			familyname.addNamespace("x", "http://digir.net/schema/conceptual/darwin/2003/1.0");
 			genusname = XPath.newInstance(".//x:Genus");
 			genusname.addNamespace("x", "http://digir.net/schema/conceptual/darwin/2003/1.0");
-			speciesname = XPath.newInstance(".//x:specificEpithet");
+			speciesname = XPath.newInstance(".//x:specificEpithet|.//x:Species");
 			speciesname.addNamespace("x", "http://digir.net/schema/conceptual/darwin/2003/1.0");
 			nameid = XPath.newInstance(".//tax:name/tax:xid");
 			structure = XPath.newInstance(".//structure");
@@ -82,11 +82,11 @@ public class TaxonX4MatrixGenerator {
 			//output transformed files
 			int i = 0;
 			for(Element transformed: transformeds){
-				if(pseudo != null){
+				/*if(pseudo != null){
 					Element pseudoe = new Element(pseudo+"_name");
 					pseudoe.setText("pseudo");
 					transformed.getChild("TaxonIdentification").addContent(0, pseudoe);
-				}
+				}*/
 				ParsingUtil.outputXML(transformed, new File(outputdir, taxonxs[i].getName()), new Comment("converted FILE "+taxonxs[i].getName()+"to TaxonX format"));			
 				i++;
 			}
@@ -203,9 +203,9 @@ public class TaxonX4MatrixGenerator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String input = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\21401\\target\\final";
-		String output = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\21401\\target\\final4matrix";	
-		String spfile = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\21401\\target\\singluar-plural.txt";	
+		String input = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\20597\\target\\final";
+		String output = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\20597\\target\\final4matrix";	
+		String spfile = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\20597\\target\\singluar-plural.txt";	
 		TaxonX4MatrixGenerator t4m = new TaxonX4MatrixGenerator(input, output, spfile);
 
 	}

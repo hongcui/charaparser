@@ -1,4 +1,4 @@
- /* $Id: Utilities.java 1571 2013-05-15 05:46:51Z hong1.cui@gmail.com $ */
+/* $Id: Utilities.java 1571 2013-05-15 05:46:51Z hong1.cui@gmail.com $ */
 /**
  * 
  */
@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
 @SuppressWarnings({ "unused" })
 public class Utilities {
 	public static String or = "_or_";
-	
+
 	public static Hashtable<String, String> singulars = new Hashtable<String, String>();
 	public static Hashtable<String, String> plurals = new Hashtable<String, String>();
 	public static Hashtable<String, String> inGO = new Hashtable<String, String>();
@@ -92,7 +92,7 @@ public class Utilities {
 					notSureVerbs.add(word);
 					return false;
 				}
-				
+
 				q = "select * from "+prefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+" " +
 						"where sentence rlike '(^| )"+word+" +[-a-z_]+ly$'";
 				rs = stmt.executeQuery(q);
@@ -100,7 +100,7 @@ public class Utilities {
 					notSureVerbs.add(word);
 					return false;
 				}
-				
+
 				q = "select sentence from "+prefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+" " +
 						"where sentence rlike '(^| )"+word+" (a|an|the) '";
 				rs = stmt.executeQuery(q);
@@ -109,7 +109,7 @@ public class Utilities {
 					if(debugPOS) System.out.println(word+" is sureVerb");
 					return true;
 				}
-				
+
 				if(word.endsWith("ed") || word.endsWith("ing")){
 					q = "select sentence from "+prefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+" " +
 							"where sentence rlike '(^| )"+word+" '";
@@ -150,7 +150,7 @@ public class Utilities {
 		notSureVerbs.add(word);
 		return false;
 	}
-	
+
 	private static boolean isOrgan(String term, Connection conn, String tablePrefix) {
 		if(isOrgan.get(term)!=null) return Boolean.valueOf(isOrgan.get(term));
 		Statement stmt = null;
@@ -193,9 +193,9 @@ public class Utilities {
 		notSureAdvs.add(word);
 		return false;
 	}
-	
-	
-	
+
+
+
 	public static boolean isPlural(String t, Connection conn) {
 		if(isPL.get(t)!=null) return Boolean.valueOf(isPL.get(t));
 		t = t.replaceAll("\\W", "");
@@ -330,11 +330,15 @@ public class Utilities {
 		String username=ApplicationUtilities.getProperty("database.username");
 		String password=ApplicationUtilities.getProperty("database.password");
 		String ontotablesuffix = ApplicationUtilities.getProperty("ontophrases.table.suffix");
-		
 		Statement stmt = null;
 		ResultSet rs = null;
 		ResultSet rs1 = null;
 		try{
+			if(conn == null){
+				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+				conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+			}
+
 			stmt = conn.createStatement();
 			if(glossarytables==null){
 				glossarytables = new ArrayList<String>();
@@ -343,7 +347,7 @@ public class Utilities {
 					glossarytables.add(rs1.getString("table_name"));
 				}
 			}
-		
+
 			if(ontostructuretables == null){
 				ontostructuretables = new ArrayList<String>();
 				rs1 = stmt.executeQuery("SELECT table_name FROM information_schema.tables where table_schema ='"+ApplicationUtilities.getProperty("database.name")+"' and table_name like '%glossaryfixed'");
@@ -351,7 +355,7 @@ public class Utilities {
 					ontostructuretables.add(rs1.getString("table_name"));
 				}
 			}
-		
+
 			for(String table: ontostructuretables){
 				rs = stmt.executeQuery("select term from "+table+" where right(term, "+l+")= '"+s+"'"); //ends with s
 				if(rs.next()){
@@ -359,7 +363,7 @@ public class Utilities {
 					return true;
 				}
 			}
-			
+
 			for(String table: glossarytables){
 				rs = stmt.executeQuery("select term from "+table+" where term = '"+s+"'");
 				if(rs.next()){
@@ -385,7 +389,7 @@ public class Utilities {
 					LOGGER.error("", e);
 				}
 			}
-			
+
 			if(stmt!=null){
 				try{
 					stmt.close();
@@ -393,7 +397,7 @@ public class Utilities {
 					LOGGER.error("", e);
 				}
 			}
-			
+
 		}
 		inGO.put(s, "false");
 		return false;
@@ -420,7 +424,7 @@ public class Utilities {
 		singulars.put("species", "species");
 		singulars.put("teeth", "tooth");
 		singulars.put("valves", "valve");
-		
+
 		plurals.put("axis", "axes");
 		plurals.put("base", "bases");		
 		plurals.put("groove", "grooves");
@@ -440,14 +444,14 @@ public class Utilities {
 
 		s = singulars.get(word);
 		if(s!=null) return s;
-		
+
 		//adverbs
 		if(word.matches("[a-z]{3,}ly")){
 			singulars.put(word, word);
 			plurals.put(word, word);
 			return word;
 		}
-		
+
 		String wordcopy = word;
 		wordcopy = checkWN4Singular(wordcopy);
 		if(wordcopy != null && wordcopy.length()==0){
@@ -458,7 +462,7 @@ public class Utilities {
 			if(debug) System.out.println("["+word+"]'s singular is "+wordcopy);
 			return wordcopy;
 		}else{//word not in wn
-		
+
 			Pattern p1 = Pattern.compile("(.*?[^aeiou])ies$");
 			Pattern p2 = Pattern.compile("(.*?)i$");
 			Pattern p3 = Pattern.compile("(.*?)ia$");
@@ -469,7 +473,7 @@ public class Utilities {
 			Pattern p75 = Pattern.compile("(.*?)us$");
 			Pattern p8 = Pattern.compile("(.*?)s$");
 			//Pattern p9 = Pattern.compile("(.*?[^aeiou])a$");
-			
+
 			Matcher m1 = p1.matcher(word);
 			Matcher m2 = p2.matcher(word);
 			Matcher m3 = p3.matcher(word);
@@ -480,7 +484,7 @@ public class Utilities {
 			Matcher m75 = p75.matcher(word);
 			Matcher m8 = p8.matcher(word);
 			//Matcher m9 = p9.matcher(word);
-			
+
 			if(m1.matches()){
 			  s = m1.group(1)+"y";
 			}else if(m2.matches()){
@@ -502,7 +506,7 @@ public class Utilities {
 			}//else if(m9.matches()){
 			//  s = m9.group(1)+"um";
 			//}
-		  
+
 		  if(s != null){
 			if(debug) System.out.println("["+word+"]'s singular is "+s);
 			singulars.put(word, s);
@@ -513,53 +517,53 @@ public class Utilities {
 		if(debug) System.out.println("["+word+"]'s singular is "+word);
 		return word;
 	}
-	*/
+	 */
 	///////////////////////////////////////////////////////////////////////
 
 	public static String checkWN(String[] strings){
 		try{
-	 	  		Runtime r = Runtime.getRuntime();	
-		  		Process proc = r.exec(strings);
-			    ArrayList<String> errors = new ArrayList<String>();
-		  	    ArrayList<String> outputs = new ArrayList<String>();
-		  
-	            // any error message?
-	            //StreamGobbler errorGobbler = new 
-	                //StreamGobblerWordNet(proc.getErrorStream(), "ERROR", errors, outputs);            
-	            
-	            // any output?
-	            StreamGobbler outputGobbler = new 
-	                StreamGobblerWordNet(proc.getInputStream(), "OUTPUT", errors, outputs);
-	                
-	            // kick them off
-	            //errorGobbler.start();
-	            outputGobbler.start();
-	                                    
-	            // any error???
-	            int exitVal = proc.waitFor();
-	            //System.out.println("ExitValue: " + exitVal);
+			Runtime r = Runtime.getRuntime();	
+			Process proc = r.exec(strings);
+			ArrayList<String> errors = new ArrayList<String>();
+			ArrayList<String> outputs = new ArrayList<String>();
 
-	            StringBuffer sb = new StringBuffer();
-	            for(int i = 0; i<outputs.size(); i++){
-	            	//sb.append(errors.get(i)+" ");
-	            	sb.append(outputs.get(i)+" ");
-	            }
-	            return sb.toString();
-				
-		  	}catch(Exception e){
-		  		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-		  	}
-		  	return "";
+			// any error message?
+			//StreamGobbler errorGobbler = new 
+			//StreamGobblerWordNet(proc.getErrorStream(), "ERROR", errors, outputs);            
+
+			// any output?
+			StreamGobbler outputGobbler = new 
+					StreamGobblerWordNet(proc.getInputStream(), "OUTPUT", errors, outputs);
+
+			// kick them off
+			//errorGobbler.start();
+			outputGobbler.start();
+
+			// any error???
+			int exitVal = proc.waitFor();
+			//System.out.println("ExitValue: " + exitVal);
+
+			StringBuffer sb = new StringBuffer();
+			for(int i = 0; i<outputs.size(); i++){
+				//sb.append(errors.get(i)+" ");
+				sb.append(outputs.get(i)+" ");
+			}
+			return sb.toString();
+
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}
+		return "";
 	}
 	////////////////////////////////////////////////////////////////////////
-		
+
 	/**
 	 * return null : word not in WN
 	 * return ""   : word is not a noun or is singular
 	 * return aword: word is a pl and singular form is returned
 	 */
 	public static String checkWN4Singular(String word){
-		
+
 		String result = checkWN(new String[]{"wn", word, "-over"});
 		if (result.length()==0){//word not in WN
 			return null;
@@ -569,9 +573,9 @@ public class Utilities {
 		Pattern p = Pattern.compile("(.*?)Overview of noun (\\w+) (.*)");
 		Matcher m = p.matcher(result);
 		while(m.matches()){
-			 t += m.group(2)+" ";
-			 result = m.group(3);
-			 m = p.matcher(result);
+			t += m.group(2)+" ";
+			result = m.group(3);
+			m = p.matcher(result);
 		}
 		if (t.length() ==0){//word is not a noun
 			return "";
@@ -584,7 +588,7 @@ public class Utilities {
 		}
 		return "";//original is a singular
 	}
-	 
+
 
 	public static boolean isNoun(String word, ArrayList<String> nouns, ArrayList<String> notnouns){
 		word = word.trim();
@@ -601,7 +605,7 @@ public class Utilities {
 		if(nouns.contains(word)){
 			return true;
 		}
-		
+
 		if(notnouns.contains(word)){
 			return false;
 		}
@@ -617,7 +621,7 @@ public class Utilities {
 		return false;
 
 	}
-	
+
 	public static boolean isVerb(String word, ArrayList<String> verbs, ArrayList<String> notverbs) {
 		word = word.replaceAll("[<>{}\\]\\[]", "").trim();
 		if(!word.matches(".*?[a-z]+.*")){
@@ -649,7 +653,7 @@ public class Utilities {
 		return false;
 
 	}
-	
+
 	public static boolean isAdv(String word, ArrayList<String> adverbs, ArrayList<String> notadverbs) {
 		word = word.replaceAll("[<>{}\\]\\[()\\d+-]", "").trim();
 		if(word.matches("(not|at-?least|throughout|much)")){
@@ -686,7 +690,7 @@ public class Utilities {
 		if(notadverbs.contains(word)){
 			return false;
 		}
-		
+
 
 		WordNetWrapper wnw = new WordNetWrapper(word);
 		String pos = wnw.mostlikelyPOS();
@@ -704,7 +708,7 @@ public class Utilities {
 		notadverbs.add(word);
 		return false;
 	}
-	
+
 	/**
 	 * 5-{merous}
 	 * changed from return a string to an array of two strings nov 14, 2012
@@ -745,7 +749,24 @@ public class Utilities {
 		}
 		return ch;
 	}
-	
+
+	/**
+	 * 
+	 * @param ck
+	 * @return true if a bracketed chunk is a reference/citation, refers to figs or tables, otherwise false
+	 */
+	public static boolean isProvenanceChunk(Chunk ck) {
+		String content = ck.toString();
+		boolean is =false;
+		if(content.matches(".*?\\b(fig\\s*\\.?\\s*|table|tab\\s*\\.\\s*)\\b?\\s*\\d.*")) is = true;
+		if(content.matches(".*?\\b(figs|tables)\\s*[,\\.]?\\s*\\d+.{0,2}\\s*(\\.|,|\\band\\b|-)\\s*\\d+.*")) is = true;
+		//2002 , p . 19 .
+		if(content.matches("[a-z]+\\s*(et al\\s*.|and [a-z]+)\\s*\\d\\d\\d\\d.*")) is = true;
+
+		System.out.println(is+" "+content);
+
+		return is;
+	}
 	/*
 	 	public static String lookupCharacter(String w, Connection conn, Hashtable<String, String> characterhash, String glosstable, String prefix) {
 		if(w.trim().length()==0) return null;
@@ -777,7 +798,7 @@ public class Utilities {
 		return ch;
 	}*/
 
-	
+
 	private static boolean isNounVerb(String word) {
 		WordNetWrapper wnw = new WordNetWrapper(word);
 		if(wnw.formchange() && wnw.isAdj()){return true;}
@@ -852,22 +873,22 @@ public class Utilities {
 			}			
 			String[] charas = chs.toArray(new String[]{});
 			String[] synonyms = syns.toArray(new String[]{});
- 			Arrays.sort(charas);		
- 			for(String character: charas){
- 				ch += character.replaceAll("\\s+", "_")+"_or_";
- 			}
+			Arrays.sort(charas);		
+			for(String character: charas){
+				ch += character.replaceAll("\\s+", "_")+"_or_";
+			}
 			if(ch.length()>0){
 				ch = ch.replaceFirst(Utilities.or+"$", "");				
 			}else{
 				return null;
 			}
-			
- 			for(String synonym: synonyms){
- 				syn += synonym+",";
- 			}
- 			result[0] = ch;
- 			result[1] = syn;
-			
+
+			for(String synonym: synonyms){
+				syn += synonym+",";
+			}
+			result[0] = ch;
+			result[1] = syn;
+
 			characterhash.put(wc, result);
 			return result;
 		}catch(Exception e){
@@ -917,7 +938,7 @@ public class Utilities {
 			stmt.close();
 			String[] charas = chs.toArray(new String[]{});
  			Arrays.sort(charas);
- 			
+
  			for(String character: charas){
  				ch += character.replaceAll("\\s+", "_")+"_or_";
  			}
@@ -931,7 +952,7 @@ public class Utilities {
 		}
 		return null;
 	}*/
-	
+
 	/**
 	 * 
 	 * @param term
@@ -972,7 +993,7 @@ public class Utilities {
 		}
 		return in;
 	}
-	
+
 	public static String plural(String b) {
 		return Utilities.plurals.get(b);
 	}
@@ -1003,7 +1024,7 @@ public class Utilities {
 		}
 		return tokens;
 	}
-	
+
 	public static String threeingSentence(String str) {
 		//hide the numbers in count list: {count~list~9~or~less~} <fin> <rays>
 		ArrayList<String> lists = new ArrayList<String>();
@@ -1022,23 +1043,23 @@ public class Utilities {
 		//Pattern pattern6 = Pattern.compile("([\\s]*0[\\s]*)+(?!~[a-z])"); //condense multiple 0s.
 		Pattern pattern6 = Pattern.compile("(?<=\\s)[0\\s]+(?=\\s)");
 		//Pattern pattern5 = Pattern.compile("((?<!(/|(\\.[\\s]?)))[\\d]+[\\-\\–]+[\\d]+(?!([\\–\\-]+/|([\\s]?\\.))))|((?<!(\\{|/))[\\d]+(?!(\\}|/)))");
-         //[\\d±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ%\\*\\{\\}\\[\\]=(<\\{)(\\}>)]+
+		//[\\d±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ%\\*\\{\\}\\[\\]=(<\\{)(\\}>)]+
 		Pattern pattern7 = Pattern.compile("[(\\[]\\s*\\d+\\s*[)\\]]"); // deal with ( 2 ), (23) is dealt with by NumericalHandler.numberpattern
-		
+
 		Matcher	 matcher1 = NumericalHandler.numberpattern.matcher(str);
-        str = matcher1.replaceAll("0");
+		str = matcher1.replaceAll("0");
 		matcher1.reset();
-         
-         /*matcher1 = pattern4.matcher(str);
+
+		/*matcher1 = pattern4.matcher(str);
          str = matcher1.replaceAll("0");
          matcher1.reset();*/
-         
-         matcher1 = pattern5.matcher(str);//single numbers
-         str = matcher1.replaceAll("0");
-         matcher1.reset();
-         
-         /* should not remove space around 0, because: pollen 70-80% 3-porate should keep 2 separate numbers: 70-80% and 3-porate
-		* 
+
+		matcher1 = pattern5.matcher(str);//single numbers
+		str = matcher1.replaceAll("0");
+		matcher1.reset();
+
+		/* should not remove space around 0, because: pollen 70-80% 3-porate should keep 2 separate numbers: 70-80% and 3-porate
+		 * 
          String scptemp = str;
          matcher1 = pattern6.matcher(str);//remove space around 0
          str = matcher1.replaceAll("0");
@@ -1046,27 +1067,27 @@ public class Utilities {
 		   System.out.println();
          }
          matcher1.reset();*/
-         
-         matcher1 = pattern7.matcher(str);//added for (2)
-         str = matcher1.replaceAll("0");
-         matcher1.reset();
-         //further normalization
-         
-         
-         //3 -{many} or 3- {many}=> {3-many}
-         str = str.replaceAll("0\\s*-\\s*", "0-").replaceAll("0(?!~[a-z])", "3").replaceAll("3\\s*[–-]\\{", "{3-").replaceAll("±(?!~[a-z])","{moreorless}").replaceAll("±","moreorless"); //stanford parser gives different results on 0 and other numbers.
-         
-         //2-or-{3-lobed} => {2-or-3-lobed}
-         str = str.replaceAll("(?<=-(to|or)-)\\{", "").replaceAll("[^\\{~]\\b(?=3-(to|or)-3\\S+\\})", " {"); //don't break {shape~list~lyrate~or~3-or-3-pinnatisect} to {shape~list~lyrate~or~ {3-or-3-pinnatisect}
-		
-         //unhide count list
-         if(hidden){
-        	 str = unCountLists(str, lists);
-         }
-         return str;
+
+		matcher1 = pattern7.matcher(str);//added for (2)
+		str = matcher1.replaceAll("0");
+		matcher1.reset();
+		//further normalization
+
+
+		//3 -{many} or 3- {many}=> {3-many}
+		str = str.replaceAll("0\\s*-\\s*", "0-").replaceAll("0(?!~[a-z])", "3").replaceAll("3\\s*[–-]\\{", "{3-").replaceAll("±(?!~[a-z])","{moreorless}").replaceAll("±","moreorless"); //stanford parser gives different results on 0 and other numbers.
+
+		//2-or-{3-lobed} => {2-or-3-lobed}
+		str = str.replaceAll("(?<=-(to|or)-)\\{", "").replaceAll("[^\\{~]\\b(?=3-(to|or)-3\\S+\\})", " {"); //don't break {shape~list~lyrate~or~3-or-3-pinnatisect} to {shape~list~lyrate~or~ {3-or-3-pinnatisect}
+
+		//unhide count list
+		if(hidden){
+			str = unCountLists(str, lists);
+		}
+		return str;
 	}
-	
-    /*public static int hasUnmatchedBracket(String text, String lbracket, String rbracket) {
+
+	/*public static int hasUnmatchedBracket(String text, String lbracket, String rbracket) {
     	int count = 0;
     	String[] tokens = text.split("\\s+");
     	for(String t: tokens){
@@ -1076,74 +1097,74 @@ public class Utilities {
 		return count;
     }*/
 
-    public static int hasUnmatchedBracket(String text, String lbracket, String rbracket) {
-    	if(lbracket.equals("[")) lbracket = "\\[";
-    	if(lbracket.equals("]")) lbracket = "\\]";
-    	
-    	int left = text.replaceAll("[^"+lbracket+"]", "").length();
-    	int right = text.replaceAll("[^"+rbracket+"]", "").length();
-    	if(left > right) return 1;
-    	if(left < right) return -1;
+	public static int hasUnmatchedBracket(String text, String lbracket, String rbracket) {
+		if(lbracket.equals("[")) lbracket = "\\[";
+		if(lbracket.equals("]")) lbracket = "\\]";
+
+		int left = text.replaceAll("[^"+lbracket+"]", "").length();
+		int right = text.replaceAll("[^"+rbracket+"]", "").length();
+		if(left > right) return 1;
+		if(left < right) return -1;
 		return 0;
 	}
-    
-    public static boolean hasUnmatchedBrackets(String text) {
-    	//String[] lbrackets = new String[]{"\\[", "(", "{"};
-    	//String[] rbrackets = new String[]{"\\]", ")", "}"};
-    	String[] lbrackets = new String[]{"\\[", "("};
-    	String[] rbrackets = new String[]{"\\]", ")"};
-    	for(int i = 0; i<lbrackets.length; i++){
-    		int left1 = text.replaceAll("[^"+lbrackets[i]+"]", "").length();
-    		int right1 = text.replaceAll("[^"+rbrackets[i]+"]", "").length();
-    		if(left1!=right1) return true;
-    	}
+
+	public static boolean hasUnmatchedBrackets(String text) {
+		//String[] lbrackets = new String[]{"\\[", "(", "{"};
+		//String[] rbrackets = new String[]{"\\]", ")", "}"};
+		String[] lbrackets = new String[]{"\\[", "("};
+		String[] rbrackets = new String[]{"\\]", ")"};
+		for(int i = 0; i<lbrackets.length; i++){
+			int left1 = text.replaceAll("[^"+lbrackets[i]+"]", "").length();
+			int right1 = text.replaceAll("[^"+rbrackets[i]+"]", "").length();
+			if(left1!=right1) return true;
+		}
 		return false;
 	}
-    
-    /**
-     * if bracket is left, then refresh the index of a new positive count
-     * if bracket is right, return the first index with a negative count
-     * @param bracket
-     * @param str
-     * @return index of unmatched bracket in str
-     */
+
+	/**
+	 * if bracket is left, then refresh the index of a new positive count
+	 * if bracket is right, return the first index with a negative count
+	 * @param bracket
+	 * @param str
+	 * @return index of unmatched bracket in str
+	 */
 	public static int indexOfunmatched(char bracket, String str) {
 		int cnt = 0;
 		char l = '('; char r=')';
 		switch(bracket){
-			case '(':  l = '('; r =')'; break;
-			case '[': l = '['; r =']'; break;
-			case ')':  l = '('; r =')'; break;
-			case ']': l = '['; r =']'; break;
+		case '(':  l = '('; r =')'; break;
+		case '[': l = '['; r =']'; break;
+		case ')':  l = '('; r =')'; break;
+		case ']': l = '['; r =']'; break;
 		}		
-		
+
 		if(bracket == r){
 			for(int i = 0; i < str.length(); i++) {
-			    if(str.charAt(i)== l){
-			    	cnt++;
-			    }else if(str.charAt(i) == r){
-			    	cnt--; 
-			    }			
-			    if(cnt<0) return i; //first index with negative count
+				if(str.charAt(i)== l){
+					cnt++;
+				}else if(str.charAt(i) == r){
+					cnt--; 
+				}			
+				if(cnt<0) return i; //first index with negative count
 			}
 		}
 
 		if(bracket == l){
 			int index = -1;
 			for(int i = 0; i < str.length(); i++) {
-			    if(str.charAt(i)== l){
-			    	cnt++;
-			    	index = i;
-			    }else if(str.charAt(i) == r){
-			    	cnt--; 
-			    }			
-			    if(cnt==0) index = -1; //first index with negative count
+				if(str.charAt(i)== l){
+					cnt++;
+					index = i;
+				}else if(str.charAt(i) == r){
+					cnt--; 
+				}			
+				if(cnt==0) index = -1; //first index with negative count
 			}
 			return index;
 		}
 		return -1;
 	}
-	
+
 	/**
 	 * hide lists such as
 	 * {upper} {pharyngeal} <tooth> <plates_4_and_5>
@@ -1199,68 +1220,68 @@ public class Utilities {
 		}
 	}
 
-	
+
 	/**remove all bracketed text such as "leaves large (or small as in abc)"
 	 * do not remove brackets that are part of numerical expression : 2-6 (-10)
 	 * @param str: "leaves large (or small as in abc)"
 	 * @return: "leaves large"
 	 */
-		public static String handleBrackets(String str) {
-			//remove nested brackets left by pl such as (petioles (2-)4-8 cm)
-			//String p1 ="\\([^()]*?[a-zA-Z][^()]*?\\)";
-			//String p2 = "\\[[^\\]\\[]*?[a-zA-Z][^\\]\\[]*?\\]";
-			//String p3 = "\\{[^{}]*?[a-zA-Z][^{}]*?\\}";				
-			if(str.matches(".*?\\(.*?[a-zA-Z].*?\\).*") || str.matches(".*?\\[.*?[a-zA-Z].*?\\].*")){ 
-				String[] pretokens = str.split("\\s+");
-				str = Utilities.threeingSentence(str);
-				String[] tokens = str.split("\\s+");
-				StringBuffer bracketfree = new StringBuffer();
-				boolean inbracket = false;
-				for(int i=0; i<tokens.length; i++){
-					if(tokens[i].matches("[(\\[].*")){
-						inbracket = true;
-					}
-					if(!inbracket){
-						if(tokens[i].compareTo("3")==0){
-							bracketfree.append(pretokens[i]+" ");
-						}else{
-							bracketfree.append(tokens[i]+" ");
-						}
-					}												
-					if(tokens[i].matches(".*[)\\]]")){
-						inbracket = false;
-					}
+	public static String handleBrackets(String str) {
+		//remove nested brackets left by pl such as (petioles (2-)4-8 cm)
+		//String p1 ="\\([^()]*?[a-zA-Z][^()]*?\\)";
+		//String p2 = "\\[[^\\]\\[]*?[a-zA-Z][^\\]\\[]*?\\]";
+		//String p3 = "\\{[^{}]*?[a-zA-Z][^{}]*?\\}";				
+		if(str.matches(".*?\\(.*?[a-zA-Z].*?\\).*") || str.matches(".*?\\[.*?[a-zA-Z].*?\\].*")){ 
+			String[] pretokens = str.split("\\s+");
+			str = Utilities.threeingSentence(str);
+			String[] tokens = str.split("\\s+");
+			StringBuffer bracketfree = new StringBuffer();
+			boolean inbracket = false;
+			for(int i=0; i<tokens.length; i++){
+				if(tokens[i].matches("[(\\[].*")){
+					inbracket = true;
 				}
-				str = bracketfree.toString().trim();
-				if(str.matches(".*?\\(\\s+?\\s+\\).*")){//2n=20( ? ), 30 => 2n=20?, 30
-					str = str.replaceAll("\\(\\s+?\\s+\\)", "?");
+				if(!inbracket){
+					if(tokens[i].compareTo("3")==0){
+						bracketfree.append(pretokens[i]+" ");
+					}else{
+						bracketfree.append(tokens[i]+" ");
+					}
+				}												
+				if(tokens[i].matches(".*[)\\]]")){
+					inbracket = false;
 				}
-				//str = str.replaceAll(p1, "").replaceAll(p2, "").replaceAll("\\s+", " ").trim();					
 			}
-			return str;
+			str = bracketfree.toString().trim();
+			if(str.matches(".*?\\(\\s+?\\s+\\).*")){//2n=20( ? ), 30 => 2n=20?, 30
+				str = str.replaceAll("\\(\\s+?\\s+\\)", "?");
+			}
+			//str = str.replaceAll(p1, "").replaceAll(p2, "").replaceAll("\\s+", " ").trim();					
 		}
+		return str;
+	}
 
-		
-		
 
-		
+
+
+
 	public static void main(String[] argv){
 		Connection conn = null;
 		try{
 			Class.forName("com.mysql.jdbc.Driver");
-		    String URL = ApplicationUtilities.getProperty("database.url");
+			String URL = ApplicationUtilities.getProperty("database.url");
 			//String URL = ApplicationUtilities.getProperty("database.url");
 			conn = DriverManager.getConnection(URL);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		
-		System.out.println(Utilities.lookupCharacter("sessile", conn, new Hashtable<String, String[]>(), "fnaglossaryfixed", "type1_test"));
+
+		System.out.println(Utilities.lookupCharacter("hl", conn, new Hashtable<String, String[]>(), "antglossaryfixed", "pib_6757"));
 		//System.out.println(Utilities.isNoun(",", new ArrayList<String>()));
 		//System.out.println(Utilities.plural("disc"));
 		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));
 		//System.out.println(Utilities.indexOfunmatched(']', "2-]5-20[-30+]"));
 	}
 
-	
+
 }
