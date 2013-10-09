@@ -121,7 +121,7 @@
 
 #use lib 'C:/Documents and Settings/hongcui/Desktop/WordNov2009/FNAParser/Unsupervised/';
 use lib '../Unsupervised/';
-use lib 'lib/Ecoding-FixLatin-1.02';
+use lib 'lib/Encoding-FixLatin-1.02';
 use NounHeuristics;
 use InitialMarkup;
 use SentenceSpliter;
