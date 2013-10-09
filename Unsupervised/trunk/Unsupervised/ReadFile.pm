@@ -1,5 +1,6 @@
 package ReadFile;
-use Encoding::FixLatin qw(fix_latin);
+use lib 'lib/Ecoding-FixLatin-1.02';
+#use Encoding::FixLatin qw(fix_latin);
 
 sub readfile{
 	my $file = shift;
