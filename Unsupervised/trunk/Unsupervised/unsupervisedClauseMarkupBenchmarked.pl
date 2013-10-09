@@ -121,7 +121,7 @@
 
 #use lib 'C:/Documents and Settings/hongcui/Desktop/WordNov2009/FNAParser/Unsupervised/';
 use lib '../Unsupervised/';
-use lib 'lib';
+use lib '../Unsupervised/lib';
 use Encoding::FixLatin qw(fix_latin);
 use NounHeuristics;
 use InitialMarkup;
