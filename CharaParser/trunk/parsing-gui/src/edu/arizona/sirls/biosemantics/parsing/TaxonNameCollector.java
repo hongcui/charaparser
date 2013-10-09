@@ -48,8 +48,16 @@ public class TaxonNameCollector {
 		st.close();
 		PreparedStatement stmt = conn.prepareStatement("create table if not exists "+this.outputtablename+" (nameid MEDIUMINT not null auto_increment primary key, name varchar(200), source varchar(50))");
 		stmt.execute();
+		//move taxon names from the glossary table to outputtablename
+		stmt=conn.prepareStatement("insert into "+this.outputtablename+"(name, source) (select term, '"+volume+"' from "+
+				MainForm.getGlossary(MainForm.glossaryPrefixCombo.getText().trim()) + " where category='taxon_name')");
+		stmt.execute();
+		stmt=conn.prepareStatement("insert into "+this.outputtablename+"(name, source) (select term, '"+volume+"' from "+
+				volume+"_"+ApplicationUtilities.getProperty("TERMCATEGORY") + " where category='taxon_name')");
+		stmt.execute();
 		stmt.close();
 		this.insert = conn.prepareStatement("insert into "+this.outputtablename+"(name, source) values (?, ?)");
+	
 		
 	}
 

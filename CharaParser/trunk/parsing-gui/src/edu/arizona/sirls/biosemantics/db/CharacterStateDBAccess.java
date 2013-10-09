@@ -421,14 +421,14 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 				//pstmt.execute();
 				return false;
 			}
-			String sql = "delete from " + prefix +"_term_category where term=?" ;
+			String sql = "delete from " + prefix +"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" where term=?" ;
 			/*Delete existing information */
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, term);
 			pstmt.execute();
 			
 			/* Insert the new decision */
-			sql = "insert into " + prefix +"_term_category(term, category) values (?,?)";
+			sql = "insert into " + prefix +"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"(term, category) values (?,?)";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, term);
 			pstmt.setString(2, decision);
@@ -441,7 +441,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 			
 			/* if decision=structure, update wordrole table too.*/
 			if(decision.compareToIgnoreCase("structure")==0){
-				sql = "update " + prefix +"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+"set semanticrole = 'op' where word = ?";
+				sql = "update " + prefix +"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+" set semanticrole = 'op' where word = ?";
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setString(1, term);
 				pstmt.execute();

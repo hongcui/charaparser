@@ -932,7 +932,7 @@ public class MainFormDbAccessor {
 				//count++;
 			}
 			
-			rs = stmt.executeQuery("select distinct term from " + this.prefix +"_term_category");
+			rs = stmt.executeQuery("select distinct term from " + this.prefix +"_"+ApplicationUtilities.getProperty("TERMCATEGORY"));
 			while(rs.next()){
 				count++;
 			}
@@ -956,7 +956,7 @@ public class MainFormDbAccessor {
 	
 	private void insert2TermCategoryTable(String term, String cat) throws SQLException {
 		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
-		String sql = "insert into " + this.prefix +"_term_category(term, category) values (?,?)";
+		String sql = "insert into " + this.prefix +"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"(term, category) values (?,?)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		pstmt.setString(1, term);
 		pstmt.setString(2, cat);

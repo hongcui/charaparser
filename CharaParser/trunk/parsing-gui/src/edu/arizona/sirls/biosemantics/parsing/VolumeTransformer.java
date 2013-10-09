@@ -340,9 +340,9 @@ public class VolumeTransformer extends Thread {
 				MainForm.conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 			}
 
-			String transformeddir = Registry.TargetDirectory+"\\transformed\\";
-			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, dataPrefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), dataPrefix);
-			tnc.collect();
+			/*String transformeddir = Registry.TargetDirectory+"transformed/";
+			TaxonNameCollector tnc = new TaxonNameCollector(MainForm.conn, transformeddir, this.dataprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), this.dataprefix);
+			tnc.collect();*/
 
 		} catch (Exception e) {
 			//LOGGER.error("VolumeTransformer : transform - error in parsing", e);
@@ -447,7 +447,7 @@ public class VolumeTransformer extends Thread {
 					Element stateid = new Element("statement_id");
 					stateid.setText(id.replaceAll("\\s*###\\s*", ""));
 					Element stmt = new Element("statement");
-					stmt.setText(text.replaceAll("\\s*###\\s*", ""));
+					stmt.setText(text.replaceAll("\\s*###\\s*", "").replaceAll("-\\s+(?=[a-zA-Z])", "-"));
 					Element dtm = null;
 					Element nextid = null;
 					if(determ!=null) {

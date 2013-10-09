@@ -3231,10 +3231,10 @@ public class MainForm {
 				stmt = conn.createStatement();
 				//update dataprefix_term_category dataprefix_syns
 				//save local version of term_category table
-				stmt.execute("drop table if exists "+dataprefix+"_term_category_local");
+				stmt.execute("drop table if exists "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_local");
 				stmt.execute("drop table if exists "+dataprefix+"_syns");
 				try{
-					stmt.execute("alter table "+dataprefix+"_term_category RENAME TO "+dataprefix+"_term_category_local");
+					stmt.execute("alter table "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" RENAME TO "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_local");
 				}catch(Exception e){
 					//ignore the error _term_category not exist
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
@@ -3267,7 +3267,7 @@ public class MainForm {
 				}
 				if(!trouble){
 					try{
-						stmt.execute("alter table "+dataprefix+"_"+timestamp+"_term_category RENAME TO "+dataprefix+"_term_category");
+						stmt.execute("alter table "+dataprefix+"_"+timestamp+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" RENAME TO "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY"));
 						stmt.execute("alter table "+dataprefix+"_"+timestamp+"_syns RENAME TO "+dataprefix+"_syns");
 					}catch(Exception e1){
 						//ignore the error _term_category not exist
@@ -3275,8 +3275,8 @@ public class MainForm {
 						e1.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 					}
 					//add "structure" terms from term_category_local to term_category
-					stmt.execute("insert into "+dataprefix+"_term_category (term, category) " +
-						"select term, category from "+dataprefix+"_term_category_local where category in ('structure', 'character')");	
+					stmt.execute("insert into "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" (term, category) " +
+						"select term, category from "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_local where category in ('structure', 'character')");	
 					Label text = new Label(MainForm.grpTermSets, SWT.NONE);
 					text.setText("CharaParser term set has been updated for term set "+dataprefix +". You can now proceed directly to step 7.");
 					text.setBounds(23, position, 700, 23);								

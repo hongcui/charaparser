@@ -110,16 +110,16 @@ public class Type2Transformer extends Thread {
 					writeDescription2Descriptions(text,f.getName().replaceAll("xml$", "txt") ); //record the position for each paragraph. 10.txt-0
 				}*/
 				
-				//allow multiple description elements
+				//allow multiple description and key elements
+				int count = 0;
 				List<Element> descrps = XPath.selectNodes(root, "/treatment/description");
 				if(descrps != null) {
-					int count = 0;
 					for(Element descrp: descrps){
 						//index descrp element, pids can be removed at the finalization step if needed
 						String pid = f.getName().replaceAll("xml$", "txt")+"p"+count;
 						Attribute index = new Attribute(ApplicationUtilities.getProperty("transformer.index"), pid);
 						descrp.setAttribute(index);
-						String text = descrp.getTextNormalize();
+						String text = descrp.getTextNormalize().replaceAll("-\\s+(?=[a-zA-Z])", "-"); //auto- matically =>auto-matically
 						text = pm.markPhrases(text); //phrases are connected via "_" and become words.
 						//file names for description text must not contain "-".
 						//record the position for each paragraph. 10.txtp0.txt-0
@@ -127,6 +127,24 @@ public class Type2Transformer extends Thread {
 						count++;
 					}
 				}
+				
+				descrps = XPath.selectNodes(root, "//key//statement");
+				if(descrps != null) {
+					for(Element descrp: descrps){
+						//index descrp element, pids can be removed at the finalization step if needed
+						String pid = f.getName().replaceAll("xml$", "txt")+"p"+count;
+						Attribute index = new Attribute(ApplicationUtilities.getProperty("transformer.index"), pid);
+						descrp.setAttribute(index);
+						descrp.setName("description");
+						String text = descrp.getTextNormalize().replaceAll("-\\s+(?=[a-zA-Z])", "-"); //auto- matically =>auto-matically;
+						text = pm.markPhrases(text); //phrases are connected via "_" and become words.
+						//file names for description text must not contain "-".
+						//record the position for each paragraph. 10.txtp0.txt-0
+						writeDescription2Descriptions(text,pid+".txt" ); 
+						count++;
+					}
+				}
+				
 				root.detach();
 				ParsingUtil.outputXML(root, new File(tgt, f.getName()), new Comment("added pid attribute in description elements"));
 				listener.progress((i+1)*100/total);
@@ -136,9 +154,9 @@ public class Type2Transformer extends Thread {
 				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 				MainForm.conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 			}
-			String transformeddir = Registry.TargetDirectory+"transformed/";
+			/*String transformeddir = Registry.TargetDirectory+"transformed/";
 			TaxonNameCollector tnc = new TaxonNameCollector(MainForm.conn, transformeddir, this.dataprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), this.dataprefix);
-			tnc.collect();
+			tnc.collect();*/
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}

@@ -17,7 +17,7 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
-public class TaxonNameCollector4TaxonX /*extends TaxonNameCollector*/ {
+public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 	protected String volume;
 	protected File transformeddir;
 	protected String outputtablename;
@@ -29,9 +29,9 @@ public class TaxonNameCollector4TaxonX /*extends TaxonNameCollector*/ {
 
 	public TaxonNameCollector4TaxonX(Connection conn, String transformeddir,
 			String outputtablename, String volume) throws Exception {
-		//super(conn, transformeddir, outputtablename, volume);
+		super(conn, transformeddir, outputtablename, volume);
 		// TODO Auto-generated constructor stub
-		this.transformeddir = new File(transformeddir);
+		/*this.transformeddir = new File(transformeddir);
 		this.outputtablename = outputtablename;
 		this.conn = conn;
 		this.volume = volume;
@@ -42,6 +42,7 @@ public class TaxonNameCollector4TaxonX /*extends TaxonNameCollector*/ {
 		stmt.execute();
 		stmt.close();
 		this.insert = conn.prepareStatement("insert into "+this.outputtablename+"(name, source) values (?, ?)");
+		*/
 	}
 	
 	public void collect4TaxonX(){

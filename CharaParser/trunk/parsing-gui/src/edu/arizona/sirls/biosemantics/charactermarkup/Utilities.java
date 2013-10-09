@@ -850,8 +850,8 @@ public class Utilities {
 				//}
 			}
 			//check _term_category table, terms in the table may have number suffix such as linear_1, linear_2, 
-			String q = "select term, category, hasSyn from "+prefix+"_term_category where term rlike '^"+w+"(_[0-9])?$' order by category";
-			//String q = "select term, category, hasSyn from "+prefix+"_term_category where term rlike '^"+w+"(_[0-9])?$' and category !='structure' order by category";
+			String q = "select term, category, hasSyn from "+prefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" where term rlike '^"+w+"(_[0-9])?$' order by category";
+			//String q = "select term, category, hasSyn from "+prefix+"_"+ApplicationUtilities.getProperty(TERMCATEGORY)+" where term rlike '^"+w+"(_[0-9])?$' and category !='structure' order by category";
 			if(debug) System.out.println(q);
 			rs = stmt.executeQuery(q);
 			while(rs.next()){
@@ -925,7 +925,7 @@ public class Utilities {
 				//}
 			}
 			//check _term_category table, terms in the table may have number suffix such as linear_1, linear_2, 
-			String q = "select distinct category from "+prefix+"_term_category where term rlike '"+w+"(_[0-9])?' and category !='structure' order by category";
+			String q = "select distinct category from "+prefix+"_"+ApplicationUtilities.getProperty(TERMCATEGORY)+" where term rlike '"+w+"(_[0-9])?' and category !='structure' order by category";
 			rs = stmt.executeQuery(q);
 			while(rs.next()){
 				String cat = rs.getString("category");
@@ -976,7 +976,7 @@ public class Utilities {
 				//nov 14, 2012, Hong: didn't understand why the term need to be inserted to term_category table here
 				//Hong: checked and found that it should not be inserted at all.
 				//Statement stmt1 = conn.createStatement();
-				//stmt1.execute("insert into "+prefix+"_term_category (term, category) values ('"+termcopy+"', '"+cat+"')");
+				//stmt1.execute("insert into "+prefix+"_"+ApplicationUtilities.getProperty(TERMCATEGORY)+" (term, category) values ('"+termcopy+"', '"+cat+"')");
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());

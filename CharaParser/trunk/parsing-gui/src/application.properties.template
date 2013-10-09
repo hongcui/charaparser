@@ -75,6 +75,7 @@ GLOSSTABLE=glossaryfixed
 WORDROLESTABLE=wordroles
 UNKNOWNWORDS=unknownwords
 ALLWORDS=allwords
+TERMCATEGORY=term_category
 TYPOS=typos
 TAXONNAMES=taxonnames
 SINGULARPLURAL=singularplural

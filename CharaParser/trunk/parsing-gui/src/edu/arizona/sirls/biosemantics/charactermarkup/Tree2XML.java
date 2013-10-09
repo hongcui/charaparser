@@ -76,7 +76,7 @@ public class Tree2XML {
 			return doc;
 		} catch (Exception e) {
 	      StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-	      System.out.print("Problem parsing the xml: \n" + xml+"\n"+e.toString());
+	      System.out.println("Problem parsing the xml: \n" + xml+"\n"+e.toString());
 	      throw e;
 		}
 		//return doc;

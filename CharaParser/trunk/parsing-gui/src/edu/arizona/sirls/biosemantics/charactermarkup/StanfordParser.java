@@ -162,6 +162,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				//if(src.compareTo("106.txt-3")!=0 /*&& src.compareTo("Rhapidophyllum.txt-6")!=0*/) continue;
 				//if(src.compareTo("1227.txt-16")!=0) continue;
 				//if(!src.startsWith("4. Exacum teres.txt-12")) continue;
+				//if(!src.startsWith("1.txtp108.txt-2")) continue;
 				try{
 					str = tagger.POSTag(str, src);
 				}catch(Exception e){

@@ -276,7 +276,7 @@ public class POSTagger4StanfordParser {
 	        		   sb.append(word+"/RB ");
 	        	   }else if(word.compareTo("becoming")==0 || word.compareTo("about")==0){
 	        		   sb.append(word+"/RB ");
-	        	   }else if(word.compareTo("throughout")==0 && tokens[i+1].matches("(,|or)")){
+	        	   }else if(word.compareTo("throughout")==0 && ( i ==tokens.length-1 || tokens[i+1].matches("(,|or|and|;|\\.)") )){
 	        		   sb.append(word+"/RB ");
 	        	   }else if(word.compareTo("at-least")==0){
 	        		   sb.append(word+"/RB ");
@@ -686,7 +686,7 @@ public class POSTagger4StanfordParser {
 					this.charactertokensReversed.add(getToken(word.replaceAll("[{}]", ""))); //"densely" 
 				}else{
 					//deal with cases where a position is used as a structure: {outer} {lance-ovate} to {narrowly} {lanceolate} 
-					if(charainfo[0].compareTo("position")==0 && !word.matches("\\{"+noadjorg+"\\}" )){//word = {outer}
+					if(charainfo[0].compareTo("position")==0 && !word.matches("\\{"+noadjorg+"\\}") && this.charactertokensReversed.size()>0){//word = {outer}
 						String character = this.charactertokensReversed.get(this.charactertokensReversed.size()-1); //character of the phrase following word in the str.
 						if(character.matches("\\w+") && !hasModifiedStructure() ){//not #, %, `,@
 							//change {outer} to <outer>

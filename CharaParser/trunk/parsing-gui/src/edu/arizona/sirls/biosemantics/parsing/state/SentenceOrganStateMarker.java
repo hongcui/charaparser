@@ -28,6 +28,10 @@ import edu.arizona.sirls.biosemantics.charactermarkup.StanfordParser;
 import edu.arizona.sirls.biosemantics.charactermarkup.Utilities;
 import edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
 import edu.arizona.sirls.biosemantics.parsing.MainForm;
+import edu.arizona.sirls.biosemantics.parsing.Registry;
+import edu.arizona.sirls.biosemantics.parsing.TaxonNameCollector;
+import edu.arizona.sirls.biosemantics.parsing.TaxonNameCollector4GoldenGATEnoSchema;
+import edu.arizona.sirls.biosemantics.parsing.TaxonNameCollector4TaxonX;
 
 /**
  * @author hongcui
@@ -91,6 +95,17 @@ public class SentenceOrganStateMarker {
 		ResultSet rs = null;
 		try{
 			//collect all taxonnames to be used in processParentheses in ChunkedSentence
+			String transformeddir = Registry.TargetDirectory+"\\transformed\\";
+			TaxonNameCollector tnc = null;
+			if(MainForm.type.compareTo("type1")==0 || MainForm.type.compareTo("type2")==0)
+				tnc = new TaxonNameCollector(conn, transformeddir, tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), tableprefix);
+			else if(MainForm.type.compareTo("type4")==0 && MainForm.type4xml.compareToIgnoreCase("taxonx")==0)
+				tnc = new TaxonNameCollector4TaxonX(conn, transformeddir, tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), tableprefix);
+			else if(MainForm.type.compareTo("type4")==0 && MainForm.type4xml.compareToIgnoreCase("taxonx")==0)
+				tnc = new TaxonNameCollector4GoldenGATEnoSchema(conn, transformeddir, tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), tableprefix);
+			tnc.collect();
+			
+			
 			stmt = conn.createStatement();
 			String taxonnames = "";
 			rs = stmt.executeQuery("select name from "+tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"));

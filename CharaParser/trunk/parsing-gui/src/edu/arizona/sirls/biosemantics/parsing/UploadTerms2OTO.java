@@ -58,7 +58,7 @@ public class UploadTerms2OTO{
 		success = scpTo(textfile);
 		if(!success) return false;
 		
-		String tcategory = dataprefix+"_term_category_dump.sql";
+		String tcategory = dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_dump.sql";
 		success = scpTo(tcategory);
 		if(!success) return false;
 		
@@ -82,8 +82,8 @@ public class UploadTerms2OTO{
       try {
     	  Runtime rt = Runtime.getRuntime();
     	  String[] term_category_command = new String[]{"mysqldump",  "--lock-tables=false", "-u"+ApplicationUtilities.getProperty("database.username"), 
-    			  "-p"+ApplicationUtilities.getProperty("database.password"),  ApplicationUtilities.getProperty("database.name"), dataprefix+"_term_category",
-    			  "-r", dumpfolder+dataprefix+"_term_category_dump.sql"};
+    			  "-p"+ApplicationUtilities.getProperty("database.password"),  ApplicationUtilities.getProperty("database.name"), dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY"),
+    			  "-r", dumpfolder+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_dump.sql"};
     	  String[] sentence_command = new String[]{"mysqldump", "--lock-tables=false", "-u"+ApplicationUtilities.getProperty("database.username"),
     			  "-p"+ApplicationUtilities.getProperty("database.password"), ApplicationUtilities.getProperty("database.name"), dataprefix+"_sentence",
     			  "-r", dumpfolder+dataprefix+"_sentence_dump.sql"};
@@ -130,14 +130,14 @@ public class UploadTerms2OTO{
     			/*commands[0] = "drop database if exists tempdatabase;";
     			commands[1] = "create database if not exists tempdatabase;";
     			commands[2] = "use tempdatabase;";
-    			commands[3] = "source ~/"+dataprefix+"_term_category_dump.sql;";
+    			commands[3] = "source ~/"+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_dump.sql;";
     			commands[4] = "source ~/"+dataprefix+"_sentence_dump.sql;";
     			commands[5] = "use markedupdatasets;";*/
     			
     			commands[0] = "use "+ApplicationUtilities.getProperty("database.name")+";";
     			commands[1] = "";
     			commands[2] = "";
-    			commands[3] = "source ~/"+dataprefix+"_term_category_dump.sql;";
+    			commands[3] = "source ~/"+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_dump.sql;";
     			commands[4] = "source ~/"+dataprefix+"_sentence_dump.sql;";
     			commands[5] = "";
     			
@@ -179,7 +179,7 @@ public class UploadTerms2OTO{
     			commands[22] = "create table "+datasetprefix+"_web_orders_terms like OTO_Demo_web_orders_terms;";
     			
     			//Insert terms into table _web_grouped_terms
-    			commands[23] = "insert into "+datasetprefix+"_web_grouped_terms(term, groupid) select distinct term, 0 as groupid from "+dataprefix+"_term_category;";
+    			commands[23] = "insert into "+datasetprefix+"_web_grouped_terms(term, groupid) select distinct term, 0 as groupid from "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+";";
     			
     			//Insert sentence
     			commands[24] = "insert into "+datasetprefix+"_sentence(sentid, source, sentence, originalsent, lead, status, tag, modifier, charsegment) " +
@@ -188,13 +188,13 @@ public class UploadTerms2OTO{
     			//Generate original decisions: some terms already have category information in source table _term_category 
     			commands[25] = "insert into "+datasetprefix+"_user_terms_decisions(term, decision, userid, decisiondate, groupid) " +
     					"select distinct term, category, " + Integer.toString(userid) + 
-    					" as userid, sysdate(), 0 as groupid from "+dataprefix+"_term_category where category in " +
+    					" as userid, sysdate(), 0 as groupid from "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" where category in " +
     							"(select category from categories);";
     			
     			//generate matching record in _confirmed_category
     			commands[26] = "insert into " + datasetprefix + "_confirmed_category (term, category, userid, termIndex, termWithIndex) " 
     					+ "select distinct term, category, " + Integer.toString(userid) + 
-    					" as userid, 0 as termIndex, term as termWithIndex from "+dataprefix+"_term_category where category in " +
+    					" as userid, 0 as termIndex, term as termWithIndex from "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" where category in " +
 						"(select category from categories);";
     			
     			//update a column with empty string. This is because the default value is null. we need empty string 
@@ -638,7 +638,7 @@ static int checkAck(InputStream in) throws IOException{
 		
 		String textfile = dataprefix+"_sqlscript.txt";
 		scpTo(textfile);
-		String tcategory = dataprefix+"_term_category_dump.sql";
+		String tcategory = dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_dump.sql";
 		scpTo(tcategory);
 		String tsentence = dataprefix+"_sentence_dump.sql";
 		scpTo(tsentence);

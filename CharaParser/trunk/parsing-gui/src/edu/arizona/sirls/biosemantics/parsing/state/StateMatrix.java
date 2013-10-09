@@ -51,8 +51,8 @@ public class StateMatrix {
 			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000))");
 			stmt.execute("drop table if exists "+tableprefix+"_group_decisions");
 			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
-			stmt.execute("drop table if exists "+tableprefix+"_term_category");
-			stmt.execute("create table if not exists "+tableprefix+"_term_category (term varchar(100), category varchar(200), hasSyn tinyint(1))");
+			stmt.execute("drop table if exists "+tableprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY"));
+			stmt.execute("create table if not exists "+tableprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" (term varchar(100), category varchar(200), hasSyn tinyint(1))");
 			stmt.execute("drop table if exists "+tableprefix+"_syns");
 			stmt.execute("create table if not exists "+tableprefix+"_syns (term varchar(200), synonym varchar(200))");	
 			//noneqterms must not be refreshed
@@ -94,8 +94,8 @@ public class StateMatrix {
 			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
 			stmt.execute("drop table if exists "+tableprefix+"_group_decisions");
 			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
-			stmt.execute("drop table if exists "+tableprefix+"_term_category");
-			stmt.execute("create table if not exists "+tableprefix+"_term_category (term varchar(100), category varchar(200), tinyint(1))");
+			stmt.execute("drop table if exists "+tableprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY"));
+			stmt.execute("create table if not exists "+tableprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" (term varchar(100), category varchar(200), tinyint(1))");
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}finally{
