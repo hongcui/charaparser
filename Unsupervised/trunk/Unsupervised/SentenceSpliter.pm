@@ -23,7 +23,8 @@ $VERSION = '0.25';
 
 # LC_CTYPE now in locale "French, Canada, codeset ISO 8859-1"
 #comment out 2lines by hong, 10/27/08
-$LOC=setlocale(LC_CTYPE, "fr_CA.ISO8859-1"); 
+#$LOC=setlocale(LC_CTYPE, "fr_CA.ISO8859-1"); 
+$LOC=setlocale(LC_CTYPE, "en_US.UTF-8"); 
 use locale;
 
 @ISA = qw( Exporter );

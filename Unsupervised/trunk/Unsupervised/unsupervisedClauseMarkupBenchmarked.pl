@@ -127,6 +127,7 @@ use SentenceSpliter;
 use ReadFile;
 use strict;
 use DBI;
+use utf8;
 
 #commandline:
 #perl unsupervisedClauseMarkupBenchmarked.pl D:\SMART RA\Work Folders\FOC-v7\target\descriptions(convert the xlsx file into a text file and put it into the folder format: structure: character value) markedupdatasets(change to phenoscape) plain focv7(change to fish)
@@ -174,8 +175,11 @@ my $taglength = 150;
 my $host = "localhost";
 my $user = "termsuser";
 my $password = "termspassword";
-my $dbh = DBI->connect("DBI:mysql:host=$host", $user, $password)
-or die DBI->errstr."\n";
+#my $dbh = DBI->connect("DBI:mysql:host=$host", $user, $password)
+#or die DBI->errstr."\n";
+
+my $dbh = DBI->connect("DBI:mysql:host=$host", $user, $password, { mysql_enable_utf8 => 1 }) or die DBI->errstr."\n";
+$dbh->do('SET NAMES utf8');
 
 my $CHECKEDWORDS = ":"; #leading three words of sentences
 my $N = 3; #$N leading words
@@ -512,7 +516,7 @@ sub addontostructureterms{
 	my $ontostructuretable = shift;
 	my $stmt = "insert into ".$prefix."_wordpos (word, pos) (select distinct underscored, 'p' from ".$ontostructuretable.")";
 	my $sth = $dbh->prepare($stmt);
-	$sth->execute();
+	$sth->execute() or print $sth->errstr."\n";
 }
 
 sub importfromkb{
@@ -525,7 +529,7 @@ sub importfromkb{
 	foreach (@forbid){
 		$stmt2 ="insert into ".$prefix."_wordpos(word, pos, role, certaintyu, certaintyl) values(\"$_\",\"f\",\"\",1,1)";
 		$sth2 = $dbh->prepare($stmt2);
-		$sth2->execute();
+		$sth2->execute()  or print $sth2->errstr."\n";
 	}
 
 
@@ -537,7 +541,7 @@ sub importfromkb{
 		if($w !~ /\w/ || $w =~/\b(?:$FORBIDDEN)\b/){next;}
 		$stmt2 ="insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl) values(\"$w\",\"b\",\"\",1,1)";
 		$sth2 = $dbh->prepare($stmt2);
-		$sth2->execute();
+		$sth2->execute() or print $sth2->errstr."\n";
 	}
 
 	#$stmt1 = "select distinct modifier from ".$kb.".learnedmodifiers where modifier !='' and not isnull(modifier)";
@@ -569,7 +573,7 @@ sub importfromkb{
 		if($w !~ /\w/ || $w =~/\b(?:$FORBIDDEN)\b/){next;}
 		$stmt2 ="insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl) values(\"$w\",\"n\",\"\",1,1)";
 		$sth2 = $dbh->prepare($stmt2);
-		$sth2->execute();
+		$sth2->execute()  or print $sth2->errstr."\n";
 	}
 }
 
@@ -622,12 +626,12 @@ $create->execute() or print STDOUT "$create->errstr\n";
 
 #$del = $dbh->prepare('drop table if exists '.$prefix.'_propernouns');
 #$del->execute() or print STDOUT "$del->errstr\n";
-#$create = $dbh->prepare('create table if not exists '.$prefix.'_propernouns (word varchar(200) not null, primary key (word)) engine=innodb');
+#$create = $dbh->prepare('create table if not exists '.$prefix.'_propernouns (word varchar(200) not null, primary key (word))  CHARACTER SET utf8 engine=innodb');
 #$create->execute() or print STDOUT "$create->errstr\n";
 #
 #$del = $dbh->prepare('drop table if exists '.$prefix.'_taxonnames');
 #$del->execute() or print STDOUT "$del->errstr\n";
-#$create = $dbh->prepare('create table if not exists '.$prefix.'_taxonnames (word varchar(200) not null, primary key (word)) engine=innodb');
+#$create = $dbh->prepare('create table if not exists '.$prefix.'_taxonnames (word varchar(200) not null, primary key (word))  CHARACTER SET utf8 engine=innodb');
 #$create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_sentInFile');
@@ -1071,7 +1075,7 @@ sub containsuffix{
 
 	$base =~ s#_##g; #cup_shaped
 	$wnoutputword = `wn $word -over`;
-	if($wnoutputword =~ /not recognized/){
+	if($wnoutputword =~ /not recognized/ and $wnoutputword !~ /overview/i){
 		print stdout "$wnoutputword:\n";
 		print stdout "Please make sure WordNet is properly installed and try again\n".
 		exit(1);
@@ -5747,7 +5751,7 @@ sub checkWN{
   #otherwise, call wn
   my $result = `wn $word -over`;
 #print STDOUT "$SENTID 3.2 $word: *$result*\n";  
-  if($result =~ /not recognized/){	
+  if($result =~ /not recognized/ and $result!~/overview/i){	#capture 'command not recognized error'
 		print STDOUT "$result:\n";
 		print STDOUT "Please make sure WordNet is properly installed and try again\n".
 		exit(1);

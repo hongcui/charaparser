@@ -1,12 +1,13 @@
 package ReadFile;
-#use encoding "iso-8859-1"; #latin1
-#use encoding "cp1252";
+use Encoding::FixLatin qw(fix_latin);
 
 sub readfile{
 	my $file = shift;
 	my $content = "";
-	open(F, "$file") || die "$!:$file\n";
+	open(F, "$file") || die "$!:$file\n"; #audo decoding on read
+	#open(F, '<:encoding(UTF-8)', "$file") || die "$!:$file\n"; #audo decoding on read
 	while($line =<F>){
+		$line = fix_latin($line);
 		$line =~ s#\r|\n# #g;
 		$content .= $line;
 	}		 
