@@ -672,6 +672,21 @@ $del->execute() or print STDOUT "$del->errstr\n";
 $create = $dbh->prepare('create table if not exists '.$prefix.'_substructure (structure varchar(200), substructure varchar(200), count int, primary key (structure, substructure)) CHARACTER SET utf8 engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
+#comparisonpattern
+#$IGNOREPTN
+
+$del = $dbh->prepare('select distinct pattern from comparisonpattern');
+if($del->execute()){
+	$IGNOREPTN = "";
+	while(my $ptn = $del->fetchrow_array){
+		if($ptn =~ /\S/){
+			$IGNOREPTN .= $ptn."|";
+		}
+	}
+	$IGNOREPTN =~ s#\|$##;
+	$IGNOREPTN = ".*?(".$IGNOREPTN.").*";
+}
+
 }
 
 
