@@ -10,11 +10,14 @@ import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
+
+import edu.arizona.sirls.biosemantics.parsing.diagnosis.TaxonXDiagnosis;
 
 /**
  * @author Hong Updates
@@ -34,6 +37,10 @@ public class Type4Transformer4TaxonX extends Type4Transformer {
 	protected void transformXML(File[] files) {
 		int number = 0;
 		try{
+			TaxonXDiagnosis txd = new TaxonXDiagnosis(files);
+			txd.parseDiagnosis(); //add new patterns to database
+
+			
 			SAXBuilder builder = new SAXBuilder();
 			for(int f = 0; f < files.length; f++) {
 				int fn = f+1;
@@ -51,10 +58,13 @@ public class Type4Transformer4TaxonX extends Type4Transformer {
 				}
 				//now doc is a template to create other treatment files
 				//root.detach();
+				//adding ids to description elements in treatment
 				formatDescription((Element)XPath.selectSingleNode(root,"/tax:taxonx/tax:taxonxBody/tax:treatment"),".//tax:div[@type='description']", "./tax:p", fn+"", 0);
 				root.detach();
+				//output to target folder
 				writeTreatment2Transformed(root, fn+"", 0);
 				listener.info((number++)+"", fn+"_0.xml"); // list the file on GUI here
+				//write out description text to description folder
 		        getDescriptionFrom("/tax:taxonx/tax:taxonxBody/tax:treatment/tax:div[@type='description']",root,fn+"", 0);
 				//replace treatement in doc with a new treatment in saved
 				Iterator<Element> it = saved.iterator();

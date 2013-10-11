@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Hashtable;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.jdom.Document;
@@ -37,6 +38,7 @@ public abstract class Type4Transformer extends Thread {
 	protected PhraseMarker pm;
 	private File source =new File(Registry.SourceDirectory); //a folder of xml documents to be annotated
 	File target = new File(Registry.TargetDirectory);
+	protected ArrayList<Pattern> comparisons = new ArrayList<Pattern>();
 
 	//File target = new File("Z:\\DATA\\Plazi\\2ndFetchFromPlazi\\target-taxonX-ants-trash");
 	//private String tableprefix = "plazi_ants";
@@ -55,8 +57,6 @@ public abstract class Type4Transformer extends Thread {
 				ApplicationUtilities.getProperty("ontophrases.bin").length()>0) this.pm = new PhraseMarker();
 		this.listener = listener;
 		this.dataprefix = dataprefix;
-		/* Remove this hardcoding later*/
-		//dataprefix = "plazi_ants";
 		if(!target.exists()){
 			target.mkdir();
 		}
@@ -69,10 +69,6 @@ public abstract class Type4Transformer extends Thread {
 		Utilities.resetFolder(target, "co-occurrence");
 		
 	}
-
-
-
-	
 	
 	public void run(){
 		listener.setProgressBarVisible(true);
@@ -102,6 +98,15 @@ public abstract class Type4Transformer extends Thread {
 
 	protected abstract void transformXML(File[] files);
 	
+	/**
+	 * adding ids to description elements in a treatment
+	 * @param treatment
+	 * @param descriptionXPath
+	 * @param paraXPath
+	 * @param fn
+	 * @param count
+	 * @return
+	 */
 	protected Element formatDescription(Element treatment, String descriptionXPath, String paraXPath, String fn, int count) {
 		try{
 			//Element description = (Element)XPath.selectSingleNode(treatment, descriptionXPath);
@@ -138,6 +143,13 @@ public abstract class Type4Transformer extends Thread {
 		return null;
 	}
 
+	/**
+	 * write out description text to description folder
+	 * @param descriptionpath
+	 * @param root
+	 * @param fn
+	 * @param count
+	 */
 	protected void getDescriptionFrom(String descriptionpath, Element root, String fn,  int count) {
 		try{
 		List<Element> divs = XPath.selectNodes(root, descriptionpath);
@@ -155,7 +167,7 @@ public abstract class Type4Transformer extends Thread {
 					StringBuffer sb = new StringBuffer();
 					for(int c = 0; c < size; c++){
 						Content cont = p.getContent(c);
-						if(cont instanceof Element){
+						if(cont instanceof Element){ 
 							//Mohan code to get all the text from the xml file into the descriptions
 							String localtext="";
 							XMLOutputter outp = new XMLOutputter();
@@ -165,6 +177,7 @@ public abstract class Type4Transformer extends Thread {
 						    StringBuffer sb1 = sw.getBuffer();
 						    //System.out.println(sb1.toString());
 						    localtext=sb1.toString().replaceAll("<.*?>", " ").replaceAll("\\s+", " ").trim();
+						    if(((Element) cont).getName().compareTo("tax:name")==0) localtext="taxonname-"+localtext.replace(" ", "-");
 						    sb.append(localtext+" ");
 							//End Mohan Code.
 							//sb.append(((Element)cont).getTextNormalize()+" ");
@@ -175,7 +188,8 @@ public abstract class Type4Transformer extends Thread {
 					
 					//writeDescription2Descriptions(sb.toString(), fn+"_"+count+"_"+i); //record the position for each paragraph.
 					String text = sb.toString().trim();
-					text = text.replaceAll("(?<=(^|\\b|\\W))[--](?=[A-Z])", ""); //seen in some ant description: "Worker.-Small ants, ...": remove the "-"
+					while(text.matches(".*?(?<=(^|\\W))[--]\\s*(?=[A-Z]).*"))
+						text = text.replaceAll("(?<=(^|\\W))[--]\\s*(?=[A-Z])", " "); //seen in some ant description: "Worker.-Small ants, ...": remove the "-"
 					writeDescription2Descriptions(text, fn+"_"+count+".txtp"+i); //record the position for each paragraph.
 					i++;
 				}
@@ -201,6 +215,12 @@ public abstract class Type4Transformer extends Thread {
 		
 	}
 
+	/**
+	 * output treatment to target folder
+	 * @param root
+	 * @param fn
+	 * @param count
+	 */
 	protected void writeTreatment2Transformed(Element root, String fn, int count) {
 		// TODO Auto-generated method stub
 		if(count>=0)

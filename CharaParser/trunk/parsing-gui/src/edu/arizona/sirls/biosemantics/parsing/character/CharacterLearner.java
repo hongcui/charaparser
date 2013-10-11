@@ -227,7 +227,7 @@ public class CharacterLearner  implements Learn2Parse{
 			String tag = rs1.getString("tag");
 			tag = tag==null? "" : tag.trim();
 
-			tag = tag.replaceFirst("\\b(2n|n|x)\\b", "chromosomes");
+			tag = tag.replaceFirst("\\b(2n|n|x)\\b", ApplicationUtilities.getProperty("source.n"));
 			tag = tag.replaceAll("\\s+", "_");
 			
 			

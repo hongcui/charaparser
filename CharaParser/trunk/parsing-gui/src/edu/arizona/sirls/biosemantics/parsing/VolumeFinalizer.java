@@ -351,7 +351,7 @@ public class VolumeFinalizer extends Thread {
 		String glosstable = this.glossaryPrefix;
 		
 
-		String transformeddir = Registry.TargetDirectory+"/transformed/";
+		//String transformeddir = Registry.TargetDirectory+"/transformed/";
 
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,glosstable, false);
 		if(!standalone) this.showOutputMessage("System is POS-tagging sentences...");

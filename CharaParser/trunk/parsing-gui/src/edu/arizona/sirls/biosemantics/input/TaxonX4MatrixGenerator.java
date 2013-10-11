@@ -123,9 +123,9 @@ public class TaxonX4MatrixGenerator {
 			List<Element> mdscrps = mdscrpath.selectNodes(dscrip);
 			for(Element mdscrp: mdscrps){
 				List<Element> statements = mdscrp.getChildren(); //ignore free text, only collect statements
-				for(int i = 0; i <statements.size(); i++){
+				for(int i = 0; i <statements.size();){
 					Element statement = statements.get(i);
-					statement.detach();
+					statement.detach();//implicitely i++
 					description.addContent(statement);
 					getSingularPlural(statement);
 				}
@@ -203,9 +203,9 @@ public class TaxonX4MatrixGenerator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String input = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\20597\\target\\final";
-		String output = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\20597\\target\\final4matrix";	
-		String spfile = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\20597\\target\\singluar-plural.txt";	
+		String input = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\21401\\target\\final";
+		String output = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\21401\\target\\final4matrix";	
+		String spfile = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\21401\\target\\singluar-plural.txt";	
 		TaxonX4MatrixGenerator t4m = new TaxonX4MatrixGenerator(input, output, spfile);
 
 	}

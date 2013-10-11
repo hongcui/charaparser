@@ -20,6 +20,8 @@ import org.jdom.Content;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
 
 import edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
@@ -416,7 +418,11 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							}*/
 
 							if(statement!=null) description.addContent(statement);
-
+							XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
+							
+								System.out.println();
+								System.out.println(xo.outputString(description));
+							
 							pdescID = thisdescID;
 							pfileindex = thisfileindex;
 						}catch(Exception e){
@@ -906,8 +912,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String prefix = "sponges_1";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "spongeglossaryfixed", false);	
 		*/
-		//sp.POSTagging();
-		//sp.parsing();
+		sp.POSTagging();
+		sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);

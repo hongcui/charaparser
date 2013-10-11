@@ -16,6 +16,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Iterator;
@@ -76,7 +77,8 @@ public class CharacterAnnotatorChunked {
 	private boolean printProvenance = false;
 	private boolean debugextraattributes =false;
 	private static XPath unknownsubject;
-	private static XPath negatedstructure;
+	private static XPath negatedstructure1;
+	private static XPath negatedstructure2;
 	private static XPath path1;
 	//private static XPath path2;
 	//private static XPath path3;
@@ -86,7 +88,8 @@ public class CharacterAnnotatorChunked {
 	static{
 		try{
 			unknownsubject = XPath.newInstance(".//*[@name='"+ApplicationUtilities.getProperty("unknown.structure.name")+"']");
-			negatedstructure = XPath.newInstance(".//structure[@negation='true']");
+			negatedstructure1 = XPath.newInstance(".//structure[@negation='true']");
+			negatedstructure2 = XPath.newInstance(".//structure/character[@name='presence'][@value='no']");
 		    path1 = XPath.newInstance(".//character[@value='none']");
 		    //path2 = XPath.newInstance(".//character[@name='presence'][@value='no']");
 	        //path3 = XPath.newInstance(".//character[@value='present']");
@@ -133,7 +136,7 @@ public class CharacterAnnotatorChunked {
 	 * reset annotator to process next description paragraph.
 	 */
 	public void reset(){
-		this.subjects = new ArrayList<Element>();//static so a ditto sent can see the last subject
+		this.subjects = new ArrayList<Element>();//static so a ditto sentence can not see the last subject
 		this.latestelements = new ArrayList<Element>();//save the last set of elements added. independent from adding elements to <Statement>
 		this.unassignedcharacter = null;
 		//this.inbrackets = false;
@@ -286,10 +289,18 @@ public class CharacterAnnotatorChunked {
         for (Element e : es) {
             e.setAttribute("value", "0");
         }
-		//nomarlization presence
-		List<Element> negated = negatedstructure.selectNodes(this.statement);
-		nomarlizePresence(negated);
+        
+		/*XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
+		if(printAnnotation){
+			System.out.println();
+			System.out.println(xo.outputString(this.statement));
+		}*/
 		
+		//nomarlization presence
+		List<Element> negated = negatedstructure1.selectNodes(this.statement);
+		normalizePresence1(negated);
+		negated = negatedstructure2.selectNodes(this.statement);
+		normalizePresence2(negated);
         /* the remaining presence = no cases */
         //es = path2.selectNodes(this.statement);
         //for (Element e : es) {
@@ -317,7 +328,7 @@ public class CharacterAnnotatorChunked {
 	 * if no characters, add count=presence modifier = "not".
 	 * @param negated
 	 */
-	private void nomarlizePresence(List<Element> negatedstructures) {
+	private void normalizePresence1(List<Element> negatedstructures) {
 		if(negatedstructures.size()==0) return;
         try {		 
            //add negation = true for relations
@@ -350,6 +361,54 @@ public class CharacterAnnotatorChunked {
 	            //finally remove negation = "true" from the negatedstructures
 	            	s.removeAttribute("negation");
             }
+        } catch (Exception e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+        }
+	}
+	
+	/**
+	 * <statement id="1_1.txtp4.txt-0">
+            <text>No winged queens are known.</text>
+            <structure id="o42" name_original="queens" name="queen">
+              <character name="presence" value="no" />
+              <character name="architecture" value="winged" />
+            </structure>
+          </statement>
+	 * 
+	 * =>
+	 * 
+	 * <statement id="1_1.txtp4.txt-0">
+            <text>No winged queens are known.</text>
+            <structure id="o42" name_original="queens" name="queen" constraint="winged">
+              <character name="presence" value="no" />
+            </structure>
+          </statement>
+	 * @param negatedcharacters
+	 */
+	private void normalizePresence2(List<Element> negatedcharacters) {
+		if(negatedcharacters.size()==0) return;
+        try {		 
+        	String text = this.statement.getChildText("text");
+        	HashSet<Element> tobedetached = new HashSet<Element>();
+        	for(Element character: negatedcharacters){
+        		String name_o = character.getParentElement().getAttributeValue("name_original");
+        		List<Element> chars = character.getParentElement().getChildren("character");
+        		for(Element chara: chars){
+        			String name = chara.getAttributeValue("name");
+        			if(name.compareTo("presence")!=0){
+        				String value = chara.getAttribute("value")!=null? chara.getAttributeValue("value"): null;
+        				if(text.matches(".*?"+value+" [\\w -]*"+name_o+"\\b.*")){ //may have other words (not puncts) in btw value and name_original
+        					//remove this character
+        					//add character as a constraint to the structure
+        					this.addAttribute(character.getParentElement(), "constraint", value);
+        					tobedetached.add(chara);
+        				}
+        			}
+        		}
+        	}
+            
+        	for(Element tbd: tobedetached) tbd.detach();
+        	
         } catch (Exception e) {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
@@ -753,6 +812,7 @@ public class CharacterAnnotatorChunked {
 				if(ck instanceof ChunkMeasure){
 					character = text.substring(0, text.indexOf("[")).replaceAll("[_-]", " ");
 					text = text.substring(text.indexOf("[")+1, text.lastIndexOf("]"));
+					this.establishSubject("("+ApplicationUtilities.getProperty("unknown.structure.name")+")", cs); //put in a place holder only when content is not like "diameter (of xxx 5 -10 um)"
 				}				
 				boolean resetfrom = false;
 				if(text.matches(".*\\bto \\d.*")){ //m[mostly] to 6 m ==> m[mostly] 0-6 m
@@ -800,7 +860,8 @@ public class CharacterAnnotatorChunked {
 				updateLatestElements(chars);
 			}else if(ck instanceof ChunkChrom){
 				Element structure = new Element("structure");
-				this.addAttribute(structure, "name", "chromosome");
+				this.addAttribute(structure, "name", ApplicationUtilities.getProperty("source.n"));
+				structure.setAttribute("name_original", "");
 				this.addAttribute(structure, "id", "o"+this.structid);
 				this.structid++;
 				ArrayList<Element> parents = new ArrayList<Element>();
@@ -966,10 +1027,10 @@ public class CharacterAnnotatorChunked {
 				annotateScopeChunk(ck, parallelism, cs);
 			}else if(ck instanceof ChunkChrom){
 				String content = ck.toString().replaceAll("[^\\d()\\[\\],+ -]", "").trim();
-				//Element structure = new Element("chromosome");
+				//Element structure = new Element(ApplicationUtilities.getProperty("source.n"));
 				Element structure = new Element("structure");
-				this.addAttribute(structure, "name", "chromosome");
-				this.addAttribute(structure, "name_original", ""); //what value should it be?
+				this.addAttribute(structure, "name", ApplicationUtilities.getProperty("source.n"));
+				structure.setAttribute("name_original", ""); //what value should it be?
 				this.addAttribute(structure, "id", "o"+this.structid);
 				this.structid++;
 				ArrayList<Element> list = new ArrayList<Element>();
@@ -1582,15 +1643,19 @@ public class CharacterAnnotatorChunked {
 		}
 	}
 	
-	//fix: should prohibit grabbing subject across treatments
+	/*
+	 *  grabbing a subject across treatments is prohibit
+	 *  as when a treatment is output ca.reset() is called by StandfordParser
+	 */
 	private void reestablishSubject() {
 		//if(this.subjects.size()>0){
 			Iterator<Element> it = this.subjects.iterator();
 			this.latestelements = new ArrayList<Element>();
 			while(it.hasNext()){
 				Element e = it.next();
-				e.detach();
-				this.statement.addContent(e);
+				//move the subject to this statement: update: it is confusion to do so. Now just borrow the element (save it in the lastelement)
+				//e.detach();
+				//this.statement.addContent(e); 
 				this.latestelements.add(e);
 			}
 		//}else{//reach out to the last statement

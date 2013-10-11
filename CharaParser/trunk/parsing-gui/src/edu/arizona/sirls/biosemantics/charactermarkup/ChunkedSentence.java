@@ -1616,9 +1616,9 @@ public class ChunkedSentence {
 	 * move pointer after lead in chunkedtokens
 	 * @param lead
 	 */
-	public void skipLead(String[] tobeskipped){
+	/*public void skipLead(String[] tobeskipped){
 		int wcount = 0;
-		if(tobeskipped[tobeskipped.length-1].compareTo("chromosome")==0){
+		if(tobeskipped[tobeskipped.length-1].compareTo(ApplicationUtilities.getProperty("source.n"))==0){
 			for(int i = 0; i<this.chunkedtokens.size(); i++){
 				if(this.chunkedtokens.get(i).endsWith("=")){
 					this.pointer = i;
@@ -1632,9 +1632,9 @@ public class ChunkedSentence {
 			int sl = tobeskipped.length;
 			for(int i = 0; i<this.chunkedtokens.size(); i++){
 				//chunkedtokens may be a list: shape[{shape~list~planoconvex~to~ventribiconvex~subquadrate~to~subcircular}]
-				/*wcount += (this.chunkedtokens.get(i)+" a").replaceAll(",", "or").replaceAll("\\b(or )+", "or ")
-				.replaceFirst("^.*?~list~", "").replaceAll("~", " ")
-				.trim().split("\\s+").length-1;*/
+				//wcount += (this.chunkedtokens.get(i)+" a").replaceAll(",", "or").replaceAll("\\b(or )+", "or ")
+				//.replaceFirst("^.*?~list~", "").replaceAll("~", " ")
+				//.trim().split("\\s+").length-1;
 				wcount ++;
 				//if(this.chunkedtokens.get(i).matches(".*?\\b"+tobeskipped[sl-1]+".*") && wcount>=sl){
 				if(this.chunkedtokens.get(i).replace("SG", "").replaceAll("(\\w+\\[|\\]|\\)|\\(|\\{|\\})", "").replaceAll("-", "_").toLowerCase().matches(".*?\\b"+(tobeskipped[sl-1].length()-2>0 ? tobeskipped[sl-1].substring(0, tobeskipped[sl-1].length()-2) : tobeskipped[sl-1])+".*") && wcount>=sl){//try to match <phyllaries> to phyllary, "segement I", i is 1-character long
@@ -1659,7 +1659,7 @@ public class ChunkedSentence {
 			}
 			this.pointer++;
 		}
-	}
+	}*/
 
 	public boolean hasNext(){
 		if(pointer <this.chunkedtokens.size()){
@@ -1685,15 +1685,15 @@ public class ChunkedSentence {
 		//String content = ck.toString();
 		if(ck instanceof ChunkChrom) return ck;
 		
-		/*
-		if(content.indexOf("-LRB-")>=0 || content.indexOf("-RRB-")>=0 || content.indexOf("-LSB-")>=0 || content.indexOf("-RSB-")>=0){
-			//remove () and its content
-			String trimmed = content.replaceAll("-L[RS]B-/-L[RS]B-.*?-R[RS]B-/-R[RS]B-", "");
-			String removed = content.replaceAll(".*?(?=-L[RS]B-/-L[RS]B-)", "").replaceAll("(?<=-R[RS]B-/-R[RS]B-).*", "");
-			System.err.println("Removed "+removed+ " from "+content);
-			ck.setText(trimmed.replaceAll("\\s+", " "));
-		}
-		*/
+		//
+		//if(content.indexOf("-LRB-")>=0 || content.indexOf("-RRB-")>=0 || content.indexOf("-LSB-")>=0 || content.indexOf("-RSB-")>=0){
+		//	//remove () and its content
+		//	String trimmed = content.replaceAll("-L[RS]B-/-L[RS]B-.*?-R[RS]B-/-R[RS]B-", "");
+		//	String removed = content.replaceAll(".*?(?=-L[RS]B-/-L[RS]B-)", "").replaceAll("(?<=-R[RS]B-/-R[RS]B-).*", "");
+		//	System.err.println("Removed "+removed+ " from "+content);
+		//	ck.setText(trimmed.replaceAll("\\s+", " "));
+		//}
+		
 		return ck;
 	}
 	/**
@@ -2745,7 +2745,7 @@ parallelism scope: q[other chunks]
 	/**
 	 * no longer used
 	 */
-	private void findSubject(){
+	/*private void findSubject(){
 		String senttag = null;
 		String sentmod = null;
 		String text = null;
@@ -2768,10 +2768,10 @@ parallelism scope: q[other chunks]
 			if(rs.next()){
 				text = rs.getString(1).replaceAll("[{}<>]", "").trim();
 			}
-			/*rs = stmt.executeQuery("select * from "+this.glosstable+" where category ='life_style' and term like'%"+senttag+"'");
-			if(rs.next()){
-				islifestyle = true;
-			}*/
+			//rs = stmt.executeQuery("select * from "+this.glosstable+" where category ='life_style' and term like'%"+senttag+"'");
+			//if(rs.next()){
+			//	islifestyle = true;
+			//}
 
 		}
 		catch(Exception e){
@@ -2793,11 +2793,11 @@ parallelism scope: q[other chunks]
 		
 		if(senttag.compareTo("ignore")!=0){
 			//sentence subject
-			if(senttag.compareTo("whole_organism")==0 /*|| islifestyle*/){
+			if(senttag.compareTo("whole_organism")==0){
 				this.subjecttext = "(whole_organism)";
-			}else if(senttag.compareTo("chromosome")==0){
-				this.subjecttext = "(chromosome)";
-				skipLead("chromosome".split("\\s"));
+			}else if(senttag.compareTo(ApplicationUtilities.getProperty("source.n"))==0){
+				this.subjecttext = "("+ApplicationUtilities.getProperty("source.n")+")";
+				skipLead(ApplicationUtilities.getProperty("source.n").split("\\s"));
 			}else if(senttag.compareTo("ditto")!=0 && senttag.length()>0){
 				//find the subject segment
 				String subject = "";
@@ -2817,11 +2817,11 @@ parallelism scope: q[other chunks]
 						}else{
 							seg = seg.replaceFirst("...$", "\\\\w+\\\\b");
 						}
-						/*if(seg.length() - seg.lastIndexOf(")")-1 >=3){
-							seg =seg.replaceFirst("...$", "\\\\w+\\\\b");
-						}else{
-							seg = seg.replaceFirst("(?<=\\)).*", "\\\\w+\\\\b");
-						}*/
+						//if(seg.length() - seg.lastIndexOf(")")-1 >=3){
+						//	seg =seg.replaceFirst("...$", "\\\\w+\\\\b");
+						//}else{
+						//	seg = seg.replaceFirst("(?<=\\)).*", "\\\\w+\\\\b");
+						//}
 						//seg = seg.replaceFirst("(and|or) ", "(and|or|plus|,) .*?");
 						seg = seg.replaceFirst("(and|or) ", "(\\\\band\\\\b|\\\\bor\\\\b|\\\\bplus\\\\b|,).*?\\\\b");
 						//tag derived from complex text expression: "biennial or short_lived perennial" from "iennials or short-lived , usually monocarpic perennials ,"
@@ -2879,17 +2879,17 @@ parallelism scope: q[other chunks]
 						skipLead(mt.split("\\s+"));
 				}
 				
-				/*
-				String subject = ("{"+sentmod.replaceAll("[\\[\\]]", "").replaceAll(" ", "} {")+"} ("+senttag.replaceAll("[\\[\\]]", "").replaceAll(" ", ") (")+")").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ").trim();
-				establishSubject(subject, true);
-				String mt = "";
-				if(of){
-					mt = senttag.replaceAll("\\[+.+?\\]+", "").replaceAll("\\s+", " ").trim();
-				}else{
-					mt = (sentmod+" "+senttag).replaceAll("\\[+.+?\\]+", "").replaceAll("\\s+", " ").trim();
-				}
-				if(mt.length()>0)
-					cs.skipLead(mt.split("\\s+"));*/
+				
+				//String subject = ("{"+sentmod.replaceAll("[\\[\\]]", "").replaceAll(" ", "} {")+"} ("+senttag.replaceAll("[\\[\\]]", "").replaceAll(" ", ") (")+")").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ").trim();
+				//establishSubject(subject, true);
+				//String mt = "";
+				//if(of){
+				//	mt = senttag.replaceAll("\\[+.+?\\]+", "").replaceAll("\\s+", " ").trim();
+				//}else{
+				//	mt = (sentmod+" "+senttag).replaceAll("\\[+.+?\\]+", "").replaceAll("\\s+", " ").trim();
+				//}
+				//if(mt.length()>0)
+				//	cs.skipLead(mt.split("\\s+"));
 			}else if(senttag.compareTo("ditto")==0){
 				if(sentsrc.endsWith("0")){
 					this.subjecttext ="(whole_organism)";//it is a starting sentence in a treatment, without an explicit subject.
@@ -2917,10 +2917,10 @@ parallelism scope: q[other chunks]
 								this.subjecttext =null;
 								break;
 							}
-							/*else
-							{
-								this.subjecttext="ditto";
-							}*/
+							//else
+							//{
+							//	this.subjecttext="ditto";
+							//}
 						}
 						
 					}
@@ -2936,7 +2936,7 @@ parallelism scope: q[other chunks]
 				this.subjecttext = "ignore";
 			}
 		}
-	}
+	}*/
 	
 	
 
