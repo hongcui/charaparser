@@ -64,7 +64,7 @@ public class Type4Transformer4GoldenGATEnoSchema extends Type4Transformer {
 					e.printStackTrace();
 				}
 				//TaxonNameCollector4GoldenGATEnoSchema tnc = new TaxonNameCollector4GoldenGATEnoSchema(MainForm.conn, transformeddir, this.dataprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), this.dataprefix);
-				//tnc.collect4TaxonX();
+				//tnc.collect();
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());

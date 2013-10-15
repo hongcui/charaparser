@@ -418,10 +418,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							}*/
 
 							if(statement!=null) description.addContent(statement);
-							XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
-							
-								System.out.println();
-								System.out.println(xo.outputString(description));
+							//XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
+							//System.out.println();
+							//System.out.println(xo.outputString(description));
 							
 							pdescID = thisdescID;
 							pfileindex = thisfileindex;

@@ -671,7 +671,10 @@ public class CharacterAnnotatorChunked {
 						bracketedprep = bracketedprep.replaceFirst("] ", " o[")+" "+object;
 						processChunkBracketed(new ChunkBracketed(bracketedprep), cs); //prep chunk in brackets
 					}
-				}else{
+				}else if(ckstring.matches(".*?[ol]\\[taxonname-.*")){
+					//in taxon, as in taxon, except taxa
+					processTaxonname(ckstring, cs);
+				}else{				
 					processPrep(ckstring, cs); // 7-12-02 add cs
 				}				
 			}else if(ck instanceof ChunkCHPP){//t[c/r[p/o]] this chunk is converted internally and not shown in the parsing output
@@ -1102,8 +1105,28 @@ public class CharacterAnnotatorChunked {
 				this.unassignedcharacter = null;
 			}
 		}
-
 	}
+	
+	/**
+	 * 
+	 * @param ckstring
+	 * @param cs
+	 */
+	private void processTaxonname(String ckstring, ChunkedSentence cs) {
+		if(this.latestelements.size()==0){
+			//"In Name", ... => save ckstring, which later may be used as a taxon_constraint or a reference
+			cs.addScopeAttributes(new Attribute("taxon_constraint", ckstring));
+		}else{
+			Element last = this.latestelements.get(this.latestelements.size()-1);
+			if(last.getName().compareTo("character")==0 || last.getName().compareTo("relation")==0){
+				this.addAttribute(last, "taxon_constaint", ckstring.replaceAll("(\\w\\[|\\])", ""));
+			}else{
+				//save ckstring, which later may be used as a taxon_constraint or a reference
+				cs.addScopeAttributes(new Attribute("taxon_constraint", ckstring));
+			}
+		}		
+	}
+	
 	private void processChunkBracketed(Chunk ck, ChunkedSentence cs) throws Exception{
 		//ChunkedSentence newcs = new ChunkedSentence(ck.getChunkedTokens() , ck.toString(), conn, glosstable, this.tableprefix);
 		//newcs.setInSegment(true);

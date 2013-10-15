@@ -37,7 +37,7 @@ public class TaxonNameCollector4GoldenGATEnoSchema extends
 	 * populate this.names
 	 * @param file
 	 */
-	private void collectNames(File xmlfile){
+	protected void collectNames(File xmlfile){
 		try{
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(xmlfile);

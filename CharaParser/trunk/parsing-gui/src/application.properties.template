@@ -26,6 +26,8 @@ source.fl = false
 #what should n=20 be marked up as?
 #source.n = chromosome
 source.n = sample
+source.type=type4
+source.subtype=taxonx
 
 #ontology use
 #location of serialized anatomy ontology phrases

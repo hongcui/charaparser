@@ -67,7 +67,8 @@ public class ChunkedSentence {
 	public static final String clusters="clusters|cluster|involucres|involucre|rosettes|rosette|pairs|pair|series|ornamentation|ornament|arrays|array|turfs|turf|multiples"; //pl before singular.
 	public static final String allsimplepreps = "aboard|about|above|across|after|against|along|alongside|amid|amidst|among|amongst|anti|around|as|astride|at|atop|bar|barring|before|behind|below|beneath|beside|besides|between|beyond|but|by|circa|concerning|considering|counting|cum|despite|down|during|except|excepting|excluding|following|for|from|given|gone|in|including|inside|into|less|like|minus|near|notwithstanding|of|off|on|onto|opposite|outside|over|past|pending|per|plus|pro|re|regarding|respecting|round|save|saving|since|than|through|throughout|till|to|touching|toward|towards|under|underneath|unlike|until|up|upon|versus|via|with|within|without|worth";
 	public static final String prepositions = "above|across|after|along|among|amongst|around|as|at|before|behind|below|beneath|between|beyond|by|during|for|from|in|into|near|of|off|on|onto|out|outside|over|per|than|through|throughout|to|toward|towards|up|upward|with|without|"+POSTagger4StanfordParser.comprepstring;
-	public static final String stop = "a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|if|in|into|inside|inward|is|it|its|may|might|more|most|near|no|not|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
+	//public static final String stop = "a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|if|in|into|inside|inward|is|it|its|may|might|more|most|near|no|not|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
+	public static final String stop = "a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|if|in|into|inside|inward|is|it|its|may|might|more|most|near|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
 	public static final String skip = "and|becoming|if|or|that|these|this|those|to|what|when|where|which|why|not|throughout";
 	private Pattern taxonnamepattern1 = null;
 	public static Pattern taxonnamepattern2 = null;
@@ -1262,7 +1263,7 @@ public class ChunkedSentence {
 				if(j>0){
 					do{
 						if(j > 0) chara = this.chunkedtokens.get(--j).trim();
-					}while(chara.length()==0);
+					}while(chara.length()==0 && j>0);
 				}
 				if(chara.startsWith("{") && chara.endsWith("}")){//found the character
 					this.chunkedtokens.set(j, "");
@@ -2591,7 +2592,12 @@ parallelism scope: q[other chunks]
 				thantype.put(token, "ChunkTHAN");
 				return "ChunkTHAN"; //character
 			}else if(afterthan.matches(".*?\\d.*")){// "n[{longer} than 3 (cm)]" => n[size[{longer} than 3 (cm)]]
-				if(charainfo==null){chara="count";}
+				if(charainfo==null){
+					//more than 3_jointed
+					charainfo = Utilities.lookupCharacter(afterthan.replaceAll("[()\\[\\]]", ""), this.conn, ChunkedSentence.characterhash, glosstable, tableprefix);
+					if(charainfo==null)	chara="count";
+					else chara = charainfo[0];
+				}
 				else{chara = charainfo[0];}
 				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
 				this.chunkedtokens.set(id, token);

@@ -18,13 +18,13 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
 public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
-	protected String volume;
-	protected File transformeddir;
-	protected String outputtablename;
-	protected Connection conn;
-	protected PreparedStatement insert;
-	protected TreeSet<String> names = new TreeSet<String>();
-	 protected static final Logger LOGGER = Logger.getLogger(TaxonNameCollector4TaxonX.class);  
+	//protected String volume;
+	//protected File transformeddir;
+	//protected String outputtablename;
+	//protected Connection conn;
+	//protected PreparedStatement insert;
+	//protected TreeSet<String> names = new TreeSet<String>();
+	 //protected static final Logger LOGGER = Logger.getLogger(TaxonNameCollector4TaxonX.class);  
 
 
 	public TaxonNameCollector4TaxonX(Connection conn, String transformeddir,
@@ -45,7 +45,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 		*/
 	}
 	
-	public void collect4TaxonX(){
+	/*public void collect4TaxonX(){
 		try{
 			File[] xmlfiles = this.transformeddir.listFiles();
 			for(File xmlfile: xmlfiles){
@@ -55,7 +55,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-	}
+	}*/
 	
 	protected void saveNames() {
 		try{
@@ -83,7 +83,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void collectNames(File xmlfile) {
+	protected void collectNames(File xmlfile) {
 		try{
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(xmlfile);
@@ -122,20 +122,20 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 							for(int x=0;x<synchunks.length;x++)
 							{
 								String localname =synchunks[x].trim().toString().toLowerCase();
-								this.names.add(localname);
+								this.names.add(localname); //many ( in names???
 							}		
 					}
 				}
 				
-				//There can be text within the name tag itself. If it is the case then add that too.
-				if(namestr.trim().length()!=0){
+				//There can be text within the name tag itself. Don't add that because the namestr could have authority name in it too.
+				/*if(namestr.trim().length()!=0){
 					String[] synchunks = new String[2];
 					synchunks=namestr.split("\\s");
 					for(int x=0;x<synchunks.length;x++)
 					{
 						this.names.add(synchunks[x].trim().toString().toLowerCase());
 					}
-				}
+				}*/
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
@@ -160,7 +160,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 			String outputtablename = "plazi_8538_taxonnames";
 			String volume = "plazi_8538";
 			TaxonNameCollector4TaxonX tnc = new TaxonNameCollector4TaxonX(conn, transformeddir, outputtablename, volume);
-			tnc.collect4TaxonX();
+			tnc.collect();
 			}catch(Exception e){
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}finally{

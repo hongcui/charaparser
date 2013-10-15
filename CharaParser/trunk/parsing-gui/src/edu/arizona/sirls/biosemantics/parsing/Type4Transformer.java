@@ -135,6 +135,11 @@ public abstract class Type4Transformer extends Thread {
 						i++;
 					}
 				}
+				/*XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
+				
+					System.out.println();
+					System.out.println(xo.outputString(treatment));*/
+				
 				return treatment;
 			}
 		}catch(Exception e){
@@ -175,9 +180,14 @@ public abstract class Type4Transformer extends Thread {
 						    StringWriter sw = new StringWriter();
 						    outp.output(((Parent) p.getContent(c)).getContent(), sw);
 						    StringBuffer sb1 = sw.getBuffer();
-						    //System.out.println(sb1.toString());
-						    localtext=sb1.toString().replaceAll("<.*?>", " ").replaceAll("\\s+", " ").trim();
-						    if(((Element) cont).getName().compareTo("tax:name")==0) localtext="taxonname-"+localtext.replace(" ", "-");
+						    localtext=sb1.toString();
+						    System.out.println("full: "+localtext);
+						    String freetext = localtext.substring(localtext.lastIndexOf(">")+1).trim(); //take this if local text is empty
+						    localtext = localtext.substring(0, localtext.lastIndexOf(">")+1);
+						    localtext=localtext.replaceAll("<.*?>", " ").replaceAll("\\s+", " ").trim();
+						    if(localtext.length()==0) localtext=freetext; 
+						    System.out.println("name: "+localtext);
+						    if(((Element) cont).getName().compareTo("name")==0) localtext="taxonname-"+localtext.replace(" ", "-");
 						    sb.append(localtext+" ");
 							//End Mohan Code.
 							//sb.append(((Element)cont).getTextNormalize()+" ");

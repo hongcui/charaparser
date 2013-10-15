@@ -159,6 +159,9 @@ public class POSTagger4StanfordParser {
 	           str = normalizeAsAs(str);
 	        }
 	        
+	        if(str.matches(".*? at [{<]*most[>}]* .*")){
+		           str = normalizeAtMost(str);
+		        }
 	        if(str.matches(".*?(?<=[a-z])/(?=[a-z]).*")){
 	        	str = str.replaceAll("(?<=[a-z])/(?=[a-z])", "-");
 	        }
@@ -1126,6 +1129,15 @@ public class POSTagger4StanfordParser {
 		}
 		result+=str;
 		return result.trim();
+	}
+	
+	/**
+	 * at most 2-jointed => no more than 2-jointed
+	 * @param str
+	 * @return
+	 */
+	private String normalizeAtMost(String str) {
+		return str.replaceAll("\\bat [{<]*most[>}]* ", "no more than " );
 	}
 
 	/**

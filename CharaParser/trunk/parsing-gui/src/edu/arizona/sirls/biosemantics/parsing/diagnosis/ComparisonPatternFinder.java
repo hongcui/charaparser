@@ -49,7 +49,7 @@ public class ComparisonPatternFinder {
 	public ArrayList<Pattern> extractPattern(){
 		ArrayList<Pattern> ptns = new ArrayList<Pattern>();
 		ptns.add(Pattern.compile("as in"));
-		ptns.add(Pattern.compile("taxonname-"));
+		ptns.add(Pattern.compile("taxonname"));
 
 		try{
 			Statement stmt = conn.createStatement();

@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -95,17 +96,30 @@ public class SentenceOrganStateMarker {
 		ResultSet rs = null;
 		try{
 			//collect all taxonnames to be used in processParentheses in ChunkedSentence
-			String transformeddir = Registry.TargetDirectory+"\\transformed\\";
+			String transformeddir = (Registry.TargetDirectory==null? ApplicationUtilities.getProperty("target"): Registry.TargetDirectory)+"/transformed/";
 			TaxonNameCollector tnc = null;
+			if(MainForm.type.length()==0) MainForm.type=ApplicationUtilities.getProperty("source.type");
+			if(MainForm.type4xml==null) MainForm.type4xml = ApplicationUtilities.getProperty("source.subtype");
 			if(MainForm.type.compareTo("type1")==0 || MainForm.type.compareTo("type2")==0)
 				tnc = new TaxonNameCollector(conn, transformeddir, tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), tableprefix);
 			else if(MainForm.type.compareTo("type4")==0 && MainForm.type4xml.compareToIgnoreCase("taxonx")==0)
 				tnc = new TaxonNameCollector4TaxonX(conn, transformeddir, tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), tableprefix);
-			else if(MainForm.type.compareTo("type4")==0 && MainForm.type4xml.compareToIgnoreCase("taxonx")==0)
+			else if(MainForm.type.compareTo("type4")==0 && MainForm.type4xml.compareToIgnoreCase("taxonx")!=0)
 				tnc = new TaxonNameCollector4GoldenGATEnoSchema(conn, transformeddir, tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), tableprefix);
-			tnc.collect();
+			tnc.collect();//save names to a database table
 			
+			//move taxon names from the glossary and term_category table to outputtablename
+			PreparedStatement stmt1=conn.prepareStatement("insert into "+tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES")+"(name, source)"
+					+ " (select term, '"+tableprefix+"' from "+ this.glosstable
+					 + " where category='taxon_name')");
+			stmt1.execute();
+			stmt1=conn.prepareStatement("insert into "+tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES")+"(name, source)"
+					+ " (select term, '"+tableprefix+"' from "+
+					tableprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY") + " where category='taxon_name')");
+			stmt1.execute();
+			stmt1.close();
 			
+			//then read them out
 			stmt = conn.createStatement();
 			String taxonnames = "";
 			rs = stmt.executeQuery("select name from "+tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"));
@@ -124,7 +138,6 @@ public class SentenceOrganStateMarker {
 				SentenceOrganStateMarker.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*");
 				//this.taxonnamepattern2 = Pattern.compile(".*?\\b([A-Z]\\.[ ~])?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
 				SentenceOrganStateMarker.taxonnamepattern2 = Pattern.compile(".*?\\b([a-z] \\. )?("+taxonnames+")\\b.*");
-
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
@@ -152,6 +165,7 @@ public class SentenceOrganStateMarker {
 					String source = rs.getString("source");
 					//if(!source.equals("1_37.txtp1.txt-3")) continue;
 					String osent = rs.getString("originalsent");
+					sent = sent.replace("taxonname_", ""); //clean up the mark from the Transformer step
 					sent = sent.replaceAll("</?[BNOM]>", "");
 					sent = sent.replaceAll("\\bshades of\\b", "shades_of");
 					sent = sent.replaceAll("\\bat least\\b", "at_least");
@@ -168,7 +182,7 @@ public class SentenceOrganStateMarker {
 					//text = text.replaceAll("\\bca\\s*\\.", "ca");
 					text = text.replaceAll("\\bdiam\\s*\\.(?=\\s?[,a-z])", "diam");
 					text = stringCompoundPP(text);
-					text = markTaxonNames(text);
+					//text = markTaxonNames(text);
 					text = rs.getString("modifier")+"##"+tag+"##"+text;
 					sentences.put(source, text);
 					}
@@ -308,10 +322,10 @@ public class SentenceOrganStateMarker {
 			remain = remain.substring(end);
 			String formated = name.replaceAll("\\s+\\.\\s+", "-taxonname-");
 			if(!formated.contains("-taxonname-")) formated = "taxonname-"+formated; //the taxon name doesn't have . in it: chamissoi => name~chamissoi
-			text = text.replaceAll(name, formated);
+			text = text.replaceAll(name, formated); //could result in taxonname-taxonname-bothroponera
 			m = SentenceOrganStateMarker.taxonnamepattern2.matcher(remain);
 		}
-		return text;
+		return text.replaceAll("taxonname-taxonname", "taxonname"); //correct the problem mentioned above
 	}
 	
 	/*
@@ -387,6 +401,7 @@ public class SentenceOrganStateMarker {
 					String tag = splits[1];
 					sent = splits[2].trim().replaceAll("\\b("+this.ignoredstrings+")\\b", "");
 					taggedsent = markASentence(source, modifier, tag.trim(), sent);
+					taggedsent = markTaxonNames(taggedsent);
 				//}
 				
 				if(debug) System.out.println(taggedsent);
@@ -676,7 +691,9 @@ public class SentenceOrganStateMarker {
 			}
 			
 			/*wordroles only holds word not in glossary, so need to use glossary to mark a sentence as well.*/
-			rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category not in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'life_style')");
+			rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category not in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'life_style', 'taxon_name')"
+					+ " union "
+					+ "select distinct term from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" where category not in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'life_style', 'taxon_name')");
 			while(rs.next()){
 				String term = rs.getString("term").trim();
 				if(term == null){continue;}
@@ -805,7 +822,9 @@ public class SentenceOrganStateMarker {
 	protected void organNameFromGloss(StringBuffer tags, Statement stmt) {
 		ResultSet rs = null;
 		try{
-			rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'structure')");
+			rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('STRUCTURE', 'SUBSTANCE', 'nominative', 'structure', 'taxon_name')"
+					+" union "+
+					" select distinct term from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" where category in ('STRUCTURE', 'SUBSTANCE', 'nominative', 'taxon_name')");
 			while(rs.next()){
 				String term = rs.getString("term").trim();
 				if(term == null){continue;}
@@ -900,7 +919,7 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pib_6757", "antglossaryfixed", true, null, null);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pib_20597_uncleaned", "antglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);

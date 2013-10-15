@@ -91,7 +91,7 @@ public class SentenceChunker4StanfordParser {
 	private boolean printVB = false;
 	private boolean printPP = false;
 	private boolean printNPlist = false;
-	private boolean debug = false;
+	private boolean debug = true;
 	//private boolean printPPTO = true;
 	/**
 	 * @param taxonnamepattern2 

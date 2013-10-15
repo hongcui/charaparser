@@ -27,13 +27,13 @@ import org.jdom.xpath.XPath;
  * exceptions (e.g "leaves red (green in species s)") in FNA
  */
 public class TaxonNameCollector {
-	private String volume;
-	private File transformeddir;
-	private String outputtablename;
-	private Connection conn;
-	private PreparedStatement insert;
-	private TreeSet<String> names = new TreeSet<String>();
-	 private static final Logger LOGGER = Logger.getLogger(TaxonNameCollector.class);  
+	protected String volume;
+	protected File transformeddir;
+	protected String outputtablename;
+	protected Connection conn;
+	protected PreparedStatement insert;
+	protected TreeSet<String> names = new TreeSet<String>();
+	protected static final Logger LOGGER = Logger.getLogger(TaxonNameCollector.class);  
 
 	/**
 	 * 
@@ -47,13 +47,6 @@ public class TaxonNameCollector {
 		st.execute("drop table if exists "+this.outputtablename);
 		st.close();
 		PreparedStatement stmt = conn.prepareStatement("create table if not exists "+this.outputtablename+" (nameid MEDIUMINT not null auto_increment primary key, name varchar(200), source varchar(50))");
-		stmt.execute();
-		//move taxon names from the glossary table to outputtablename
-		stmt=conn.prepareStatement("insert into "+this.outputtablename+"(name, source) (select term, '"+volume+"' from "+
-				MainForm.getGlossary(MainForm.glossaryPrefixCombo.getText().trim()) + " where category='taxon_name')");
-		stmt.execute();
-		stmt=conn.prepareStatement("insert into "+this.outputtablename+"(name, source) (select term, '"+volume+"' from "+
-				volume+"_"+ApplicationUtilities.getProperty("TERMCATEGORY") + " where category='taxon_name')");
 		stmt.execute();
 		stmt.close();
 		this.insert = conn.prepareStatement("insert into "+this.outputtablename+"(name, source) values (?, ?)");
@@ -77,7 +70,10 @@ public class TaxonNameCollector {
 	private void saveNames() {
 		try{
 			for(String name: names){
+				name = name.replaceAll("[(),;:]", "").trim();
+				name = name.replaceFirst("\\.$", "").trim();
 				if(name.length() > 200) name = name.substring(0, name.indexOf(" "));//each name should be 1-word long.
+				if(name.length()<=1 || name.matches("\\w\\.")) continue; //'a.' is not a name
 				insert.setString(1, name);	
 				insert.setString(2, this.volume);
 				insert.execute();
@@ -98,7 +94,7 @@ public class TaxonNameCollector {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void collectNames(File xmlfile) {
+	protected void collectNames(File xmlfile) {
 		try{
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(xmlfile);
@@ -117,7 +113,7 @@ public class TaxonNameCollector {
 	 * @param names
 	 * @param nametype
 	 */
-	private void addNames(List<Element> names) {
+	protected void addNames(List<Element> names) {
 		try{
 			for(Element name: names){
 				String namerank = name.getName();
@@ -161,9 +157,5 @@ public class TaxonNameCollector {
 	}
 
 
-	protected void collect4TaxonX() {
-		// TODO Auto-generated method stub
-		
-	}
 
 }
