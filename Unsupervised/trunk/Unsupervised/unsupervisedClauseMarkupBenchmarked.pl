@@ -218,7 +218,7 @@ my $bptn = "([,;:\\.]*\$|,*[bm]|(?<=[pon]),*q)"; #grouped #when following a p, a
 my $SEGANDORPTN = "(?:".$mptn."?".$nptn.")"; #((?:[mq],?)*&?(?:m|q(?=p))?)((?:[np],?)*&?[np])
 my $ANDORPTN = "^(?:".$SEGANDORPTN."[,&]+)*".$SEGANDORPTN.$bptn;
 
-my $IGNOREPTN = "(assignment|resemb[a-z]+|like [A-Z]|similar|differs|differ|revision|genus|family|suborder|species|specimen|order|superfamily|class|known|characters|characteristics|prepared|subphylum|assign[a-z]*|available|nomen dubium|said|topotype|1[5-9][0-9][0-9])";
+my $IGNOREPTN = "(assignment|resemb[a-z]+|belong[sing]? to|like [A-Z]|similar|classified|differs|differ|distribution|revision|genus|family|suborder|species|specimen|order|superfamily|who|class|characters|characteristics|prepared|subphylum|assign[a-z]*|available|nomen dubium|said|topotype|collections|collection|localities|locality|1[5-9][0-9][0-9])";
 
 my $stop = $NounHeuristics::STOP;
 
@@ -677,14 +677,16 @@ $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('select distinct pattern from comparisonpattern');
 if($del->execute()){
-	$IGNOREPTN = "";
+	$IGNOREPTN =~ s#\)$##; #prep to add additional patterns
+	$IGNOREPTN =~ s#^\(##; 
+	$IGNOREPTN = $IGNOREPTN."|";
 	while(my $ptn = $del->fetchrow_array){
 		if($ptn =~ /\S/){
 			$IGNOREPTN .= $ptn."|";
 		}
 	}
 	$IGNOREPTN =~ s#\|$##;
-	$IGNOREPTN = ".*?(".$IGNOREPTN.").*";
+	$IGNOREPTN = "(".$IGNOREPTN.")";
 }
 
 }
@@ -3440,7 +3442,7 @@ sub markupignore{
 	my ($sth);
 	#4/26/09
 	#$sth = $dbh->prepare("update ".$prefix."_sentence set tag = 'ignore', modifier='' where originalsent rlike '^$IGNOREPTN ' or originalsent rlike '[^,;.]+ $IGNOREPTN '");
-	$sth = $dbh->prepare("update ".$prefix."_sentence set tag = 'ignore', modifier='' where originalsent rlike '(^| )$IGNOREPTN ' ");
+	$sth = $dbh->prepare("update ".$prefix."_sentence set tag = 'ignore', modifier='' where originalsent rlike '(^| )".$IGNOREPTN."[[:>:]]' ");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 
 
