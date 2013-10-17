@@ -2867,7 +2867,7 @@ public class CharacterAnnotatorChunked {
 				}
 			}
 			if(o.length()==0) continue;
-			o = o.replaceAll("(\\w\\[|\\]|\\(|\\))", "").trim();
+			o = o.replaceAll("(\\w\\[|\\]|\\(|\\)|\\{|\\})", "").trim();
 			//create element, 
 			Element e = new Element("structure");
 			String strid = "o"+this.structid;

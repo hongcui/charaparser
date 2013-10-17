@@ -680,6 +680,7 @@ public class Utilities {
 			notadverbs.add(word);
 			return false;
 		}
+
 		if(word.matches("\\b("+StateCollector.stop+")\\b")){
 			notadverbs.add(word);
 			return false;

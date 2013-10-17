@@ -40,6 +40,7 @@ public class TaxonX4MatrixGenerator {
 	static XPath speciesname;
 	static XPath nameid;
 	static XPath structure;
+	static XPath withtaxonconstraint;
 	static{
 		try{
 			treatpath = XPath.newInstance(".//tax:taxonxBody/tax:treatment");
@@ -54,14 +55,18 @@ public class TaxonX4MatrixGenerator {
 			speciesname.addNamespace("x", "http://digir.net/schema/conceptual/darwin/2003/1.0");
 			nameid = XPath.newInstance(".//tax:name/tax:xid");
 			structure = XPath.newInstance(".//structure");
+			withtaxonconstraint = XPath.newInstance(".//character[@taxon_constraint]");
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
 	
+	
 	StringBuffer spmapping = new StringBuffer();
 	HashSet<String> strterms = new HashSet<String>();
 	int pseudorank = 100000; //don't touch this number
+	
+	boolean removeWithTaxonContraint = true;
 	/**
 	 * 
 	 */
@@ -125,6 +130,12 @@ public class TaxonX4MatrixGenerator {
 				List<Element> statements = mdscrp.getChildren(); //ignore free text, only collect statements
 				for(int i = 0; i <statements.size();){
 					Element statement = statements.get(i);
+					if(this.removeWithTaxonContraint){
+						List<Element> chwtc = withtaxonconstraint.selectNodes(statement);
+						for(Element ch: chwtc){
+							ch.detach();
+						}
+					}
 					statement.detach();//implicitely i++
 					description.addContent(statement);
 					getSingularPlural(statement);
@@ -203,9 +214,9 @@ public class TaxonX4MatrixGenerator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String input = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\21401\\target\\final";
-		String output = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\21401\\target\\final4matrix";	
-		String spfile = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\21401\\target\\singluar-plural.txt";	
+		String input = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\uncleaned\\20597\\target\\final";
+		String output = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\uncleaned\\20597\\target\\final4matrix";	
+		String spfile = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\uncleaned\\20597\\target\\singluar-plural.txt";	
 		TaxonX4MatrixGenerator t4m = new TaxonX4MatrixGenerator(input, output, spfile);
 
 	}
