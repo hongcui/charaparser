@@ -34,7 +34,7 @@ public class NumericalHandler  {
 	//static public Pattern numberpattern = Pattern.compile("[()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%\\?]{2,}(?![a-z{}])"); //added , and ? for chromosome counts
 	static public Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{2,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts
 	static public Pattern numberpattern = Pattern.compile("[()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{2,}(?![a-z{}])"); //added , and ? for chromosome counts
-	static private boolean debug = false;
+	static private boolean debug = true;
 	private static final Logger LOGGER = Logger.getLogger(NumericalHandler.class);
 	
 	public NumericalHandler() {
@@ -82,7 +82,7 @@ public class NumericalHandler  {
 	 * @return: characters marked up in XML format <character name="" value="">
 	 */
 	//public static ArrayList<Element> characterstate(String plaincharset, String state){
-	public static ArrayList<Element> parseNumericals(String numberexp, String cname){	
+	public static ArrayList<Element> parseNumericals(String numberexp, String suggestedcharaname){	
 		//new CharStateHandler();
 		if(debug) {
 			System.out.println();
@@ -319,8 +319,8 @@ public class NumericalHandler  {
         	//int sizect = 0;
 			String toval;
 			String fromval;
-			cname = cname==null || cname.length()==0? cname = "size" : cname;
-			numberexp = annotateSize(numberexp, innertagstate, cname);
+			suggestedcharaname = suggestedcharaname==null || suggestedcharaname.length()==0? suggestedcharaname = "size" : suggestedcharaname;
+			numberexp = annotateSize(numberexp, innertagstate, suggestedcharaname);
         	
         	
         	
@@ -583,7 +583,7 @@ public class NumericalHandler  {
             		if(extreme.charAt(q-2)=='–' | extreme.charAt(q-2)=='-'){
             			Element character = new Element("character");
             			character.setAttribute("char_type", "range_value");
-            			character.setAttribute("name", "atypical_"+(cname==null?"count": cname));
+            			character.setAttribute("name", "atypical_"+(suggestedcharaname==null?"count": suggestedcharaname));
             			character.setAttribute("from", extreme.substring(p+1,q-2).trim());
             			character.setAttribute("to", "");
             			innertagstate.add(character);
@@ -592,7 +592,7 @@ public class NumericalHandler  {
             		}else{
             			Element character = new Element("character");
             			character.setAttribute("char_type", "range_value");
-            			character.setAttribute("name", "atypical_"+(cname==null?"count": cname));
+            			character.setAttribute("name", "atypical_"+(suggestedcharaname==null?"count": suggestedcharaname));
             			character.setAttribute("from", extreme.substring(p+1,extreme.indexOf("-",p+1)).trim());
             			String tmp = extreme.substring(extreme.indexOf("-",p+1)+1,q-1).trim();
             			character.setAttribute("to", tmp.replaceFirst("[^0-9]+$", ""));
@@ -618,7 +618,7 @@ public class NumericalHandler  {
             			if (extreme.charAt(q-2)=='+'){
             				Element character = new Element("character");
                 			character.setAttribute("char_type", "range_value");
-                			character.setAttribute("name", "atypical_"+(cname==null?"count": cname));
+                			character.setAttribute("name", "atypical_"+(suggestedcharaname==null?"count": suggestedcharaname));
                 			character.setAttribute("from", "");
                 			character.setAttribute("to", extreme.substring(p+2,q-2).trim());
                 			character.setAttribute("upper_restricted", "false");
@@ -627,7 +627,7 @@ public class NumericalHandler  {
             			}else{
             				Element character = new Element("character");
                 			character.setAttribute("char_type", "range_value");
-                			character.setAttribute("name", "atypical_"+(cname==null?"count": cname));
+                			character.setAttribute("name", "atypical_"+(suggestedcharaname==null?"count": suggestedcharaname));
                 			character.setAttribute("from", "");
                 			character.setAttribute("to", extreme.substring(p+2,q-1).trim());
                 			innertagstate.add(character);
@@ -638,7 +638,7 @@ public class NumericalHandler  {
             			if (extreme.charAt(q-2)=='+'){
             				Element character = new Element("character");
                 			character.setAttribute("char_type", "range_value");
-                			character.setAttribute("name", "atypical_"+(cname==null?"count": cname));
+                			character.setAttribute("name", "atypical_"+(suggestedcharaname==null?"count": suggestedcharaname));
                 			character.setAttribute("from", extreme.substring(p+1,extreme.indexOf("-",p+1)).trim());
                 			character.setAttribute("to", extreme.substring(p+1,extreme.indexOf("-",p+1)).trim());
                 			character.setAttribute("upper_restricted", "false");
@@ -647,7 +647,7 @@ public class NumericalHandler  {
             			}else{
             				Element character = new Element("character");
                 			character.setAttribute("char_type", "range_value");
-                			character.setAttribute("name", "atypical_"+(cname==null?"count": cname));
+                			character.setAttribute("name", "atypical_"+(suggestedcharaname==null?"count": suggestedcharaname));
                 			character.setAttribute("from", extreme.substring(p+1,extreme.indexOf("-",p+1)).trim());
                 			character.setAttribute("to", extreme.substring(extreme.indexOf("-",p+1)+1,q-1).trim());
                 			innertagstate.add(character);
@@ -666,14 +666,14 @@ public class NumericalHandler  {
             		if (extreme.charAt(q-2)=='+'){
             			Element character = new Element("character");
             			character.setAttribute("char_type", "range_value");
-            			character.setAttribute("name", "atypical_"+(cname==null?"count": cname));
+            			character.setAttribute("name", "atypical_"+(suggestedcharaname==null?"count": suggestedcharaname));
             			character.setAttribute("from", extreme.substring(p+1,q-2).trim());
             			character.setAttribute("upper_restricted", "false");
             			innertagstate.add(character);
             			//innertagstate = innertagstate.concat("<character name=\"atypical_count\" from=\""+extreme.substring(p+1,q-2).trim()+"\" upper_restricted=\"false\"/>");
             		}else{
             			Element character = new Element("character");
-            			character.setAttribute("name", "atypical_"+(cname==null?"count": cname));
+            			character.setAttribute("name", "atypical_"+(suggestedcharaname==null?"count": suggestedcharaname));
             			character.setAttribute("value", extreme.substring(p+1,q-1).trim());
                			innertagstate.add(character);
         				//innertagstate = innertagstate.concat("<character name=\"atypical_count\" value=\""+extreme.substring(p+1,q-1).trim()+"\"/>");
@@ -698,7 +698,7 @@ public class NumericalHandler  {
         			}
         			Element character = new Element("character");
         			character.setAttribute("char_type", "range_value");
-        			character.setAttribute("name", cname==null?"count": cname);
+        			character.setAttribute("name", suggestedcharaname==null?"count": suggestedcharaname);
         			character.setAttribute("from", extract.substring(0, extract.indexOf('-')).trim());
         			character.setAttribute("to", to);
         			if(!upperrestricted)
@@ -712,7 +712,7 @@ public class NumericalHandler  {
         			//String extract = extreme.substring(i,j).trim();
         			if(extract.length()>0){
 	        			Element character = new Element("character");
-	        			character.setAttribute("name", cname==null?"count": cname);
+	        			character.setAttribute("name", suggestedcharaname==null?"count": suggestedcharaname);
 	        			if(extract.endsWith("+")){
 	        				extract = extract.replaceFirst("\\+$", "").trim();
 	        				character.setAttribute("char_type", "range_value");
@@ -745,7 +745,7 @@ public class NumericalHandler  {
         			}
         			Element character = new Element("character");
         			character.setAttribute("char_type", "range_value");
-        			character.setAttribute("name", cname==null?"count": cname);
+        			character.setAttribute("name", suggestedcharaname==null?"count": suggestedcharaname);
         			character.setAttribute("from", extract.substring(0, extract.indexOf('-')).trim());
         			character.setAttribute("to", to);
         			if(!upperrestricted)
@@ -759,7 +759,7 @@ public class NumericalHandler  {
         			//String extract = extreme.substring(i,j).trim();
         			if(extract.length()>0){
 	        			Element character = new Element("character");
-	        			character.setAttribute("name", cname==null?"count": cname);
+	        			character.setAttribute("name", suggestedcharaname==null?"count": suggestedcharaname);
 	        			if(extract.endsWith("+")){
 	        				extract = extract.replaceFirst("\\+$", "").trim();
 	        				character.setAttribute("char_type", "range_value");
@@ -827,6 +827,9 @@ public class NumericalHandler  {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 		
+		//atypical measure to average measure if atypical values are in the range of typical values
+		refinement(innertagstate);
+		
 		if(debug){
 			try{
 				XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
@@ -841,6 +844,75 @@ public class NumericalHandler  {
 		}
  		return innertagstate;
 	}
+	
+	/**
+	 * change 
+	 * <character name="atypical_count" value="2" />
+	   <character char_type="range_value" name="count" from="1" to="3" />
+
+		to
+	  <character name="average_count" value="2" />
+	  <character char_type="range_value" name="count" from="1" to="3" />	
+	 * @param innertagstate
+	 * @return
+	 */
+
+	private static void refinement(
+			ArrayList<Element> innertagstate) {
+
+		float atypicalfrom = -1f;
+		float atypicalto = -1f;
+
+		for(Element chara: innertagstate){
+			if(chara.getAttributeValue("name").startsWith("atypical")){
+				String character = chara.getAttributeValue("name").replaceFirst("atypical_", "");
+				if(chara.getAttribute("from")!=null){
+					atypicalfrom = Float.parseFloat(chara.getAttributeValue("from"));
+				}
+				if(chara.getAttribute("to")!=null){
+					atypicalto = Float.parseFloat(chara.getAttributeValue("to"));
+				}
+				if(chara.getAttribute("value")!=null){
+					atypicalfrom = Float.parseFloat(chara.getAttributeValue("value"));
+					atypicalto = Float.parseFloat(chara.getAttributeValue("value"));
+				}	
+				
+				float[] typical = getTypical(innertagstate, character);
+				if(typical!=null){
+					if(atypicalfrom >= typical[0] && atypicalto<= typical[1]){
+						chara.setAttribute("name", "average_"+character);
+					}
+				}
+			}
+			
+		}
+	}
+
+	
+
+
+	private static float[] getTypical(ArrayList<Element> innertagstate,
+			String character) {
+		for(Element chara: innertagstate){
+			if(chara.getAttributeValue("name").compareTo(character)==0){
+				float[] result = new float[2];
+				if(chara.getAttribute("from")!=null){
+					result[0] = Float.parseFloat(chara.getAttributeValue("from"));
+				}
+				if(chara.getAttribute("to")!=null){
+					result[1]= Float.parseFloat(chara.getAttributeValue("to"));
+				}
+				if(chara.getAttribute("value")!=null){
+					result[0] = Float.parseFloat(chara.getAttributeValue("value"));
+					result[1] = Float.parseFloat(chara.getAttributeValue("value"));
+				}	
+				return result;
+			}
+		}
+		return null;
+	}
+
+
 
 	private static String annotateSize(String plaincharset, ArrayList<Element> innertagstate, String chara) {
 		int i;
@@ -1104,7 +1176,7 @@ public class NumericalHandler  {
 		//String str2 = "area";	
 		//String str1 = "40–80(–150+) cm ";
 		//String str2 = "size";
-		String str1 = "[1]2-3 cm";//not dealt with by this class
+		String str1 = "1-3 (1-2)";//not dealt with by this class
 		String str2 = "size";
 		ArrayList<Element> e = NumericalHandler.parseNumericals(str1, str2);
 		System.out.println(e);

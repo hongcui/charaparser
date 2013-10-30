@@ -26,7 +26,7 @@ import  edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
  *
  */
 public class OntologyClassFetcher4UBERON extends OntologyClassFetcher {
-	private boolean debug = true;
+	private boolean debug = false;
 
 	/**
 	 * @param ontopath
@@ -145,31 +145,48 @@ public class OntologyClassFetcher4UBERON extends OntologyClassFetcher {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String ontoURL = "C:/Users/updates/CharaParserTest/Ontologies/ext.owl";
-		Connection conn = null;
-		//String termsobject = ApplicationUtilities.getProperty("ontophrases.bin");
-		//String table = ApplicationUtilities.getProperty("ontophrases.table");
-		String termsobject = "C:/Users/updates/CharaParserTest/Ontologies/ext_terms.bin";
-		String table = "uberon"+ApplicationUtilities.getProperty("ontophrases.table.suffix");
-		//String table = "uberon_structures";
-		String database="biocreative2012";
-		String username="biocreative";
-		String password="biocreative";
-		try{
-			if(conn == null){
-				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password+"&connectTimeout=0&socketTimeout=0&autoReconnect=true";
-				conn = DriverManager.getConnection(URL);
+		ArrayList<String> suffix = new ArrayList<String>();
+		suffix.add("");
+		suffix.add("_38484");
+		suffix.add("_40674");
+		suffix.add("_40676");
+		suffix.add("_40716");
+		suffix.add("_40717");
+		suffix.add("_40718");
+		suffix.add("_best");
+		for(String suf: suffix){
+
+			String termsobject = "C:/Users/updates/CharaParserTest/Ontologies/charaparser_eval/Ontologies/ext"+suf+"_terms.bin";
+			String psobject = "C:/Users/updates/CharaParserTest/Ontologies/charaparser_eval/Ontologies/ext"+suf+"_terms.p2s.bin";
+			String ontoURL = "C:/Users/updates/CharaParserTest/Ontologies/charaparser_eval/Ontologies/ext"+suf+".owl";
+			String table = "ext"+suf+"_onto_structures";
+
+
+			Connection conn = null;
+			//String termsobject = ApplicationUtilities.getProperty("ontophrases.bin");
+			//String table = ApplicationUtilities.getProperty("ontophrases.table");
+			//String table = "uberon"+ApplicationUtilities.getProperty("ontophrases.table.suffix");
+			//String table = "uberon_structures";
+			String database="charaparsereval2013";
+			String username="biocreative";
+			String password="biocreative";
+			try{
+				if(conn == null){
+					Class.forName("com.mysql.jdbc.Driver");
+					String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password+"&connectTimeout=0&socketTimeout=0&autoReconnect=true";
+					conn = DriverManager.getConnection(URL);
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+				//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
-		}catch(Exception e){
-			e.printStackTrace();
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			OntologyClassFetcher4UBERON ocf = new OntologyClassFetcher4UBERON(ontoURL, conn, table);
+			ocf.selectClasses();
+			ocf.saveSelectedClass("UBERON|CL");
+			ocf.recordHeadNouns();
+			ocf.serializeTermArrayList(termsobject);
+			ocf.serializePSArrayList(psobject);
 		}
-		OntologyClassFetcher4UBERON ocf = new OntologyClassFetcher4UBERON(ontoURL, conn, table);
-		ocf.selectClasses();
-		ocf.saveSelectedClass("UBERON");
-		ocf.recordHeadNouns();
-		ocf.serializeTermArrayList(termsobject);
 	}
 
 }

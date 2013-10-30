@@ -6065,7 +6065,7 @@ public class MainForm {
 	 */
 	public static String getGlossary(String glosstype) {
 		if(glosstype.compareToIgnoreCase("plant")==0){
-			return "fnaglossaryfixed";
+			return "gg_noschema_fnaglossaryfixed";
 		}else if(glosstype.compareToIgnoreCase("hymenoptera")==0){
 			return "antglossaryfixed";
 		}else if(glosstype.compareToIgnoreCase("fossil")==0){

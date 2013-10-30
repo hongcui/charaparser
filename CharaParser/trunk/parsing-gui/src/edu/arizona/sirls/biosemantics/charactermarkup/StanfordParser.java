@@ -527,12 +527,13 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		sent = sent.replaceAll("2\\s*x\\s*=", "2x=");
 		sent = sent.replaceAll("n\\s*=", "n=");
 		sent = sent.replaceAll("x\\s*=", "x=");
+		sent = sent.replaceAll("q\\s*=", "q=");
 
 		//sent = sent.replaceAll("[–—-]", "-").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").replaceAll("\\s+", " ").trim();
 		sent = sent.replaceAll("[~–—-]", "-").replaceAll("°", " ° ").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\s+", " ").trim();
 		sent = sent.replaceAll("(?<=\\d) (?=\\?)", ""); //deals especially x=[9 ? , 13] 12, 19 cases
 		sent = sent.replaceAll("(?<=\\?) (?=,)", "");
-		if(sent.matches(".*?[nx]=.*")){
+		if(sent.matches(".*?[nxq]=.*")){
 			sent = sent.replaceAll("(?<=[\\d?])\\s*,\\s*(?=\\d)", ","); //remove spaces around , for chromosome only so numericalHandler.numericalPattern can "3" them into one 3. Other "," connecting two numbers needs spaces to avoid being "3"-ed (fruits 10, 3 of them large) 
 		}
 		sent = sent.replaceAll("\\b(?<=\\d+) \\. (?=\\d+)\\b", ".");//2 . 5 => 2.5
@@ -587,7 +588,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//mohan code 11/9/2011 to replace (?) by nothing
 		sent = sent.replaceAll("\\(\\s*\\?\\s*\\)","");
 		//end mohan code
-		sent = sent.replaceAll("(?<=[xn]=)\\s+(?=[\\d\\[(])", "");//2n= 44 => 2n=44
+		sent = sent.replaceAll("(?<=[xnq]=)\\s+(?=[\\d\\[(])", "");//2n= 44 => 2n=44
 	
 		//make sure brackets that are not part of a numerical expression are separated from the expression by a space
 		if(sent.contains("(") || sent.contains(")")) sent = normalizeBrackets(sent, '(');
@@ -595,6 +596,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 		sent = sent.replaceAll("\\[(?=-[a-z])", "[ ");//[-subpalmately ] => [ -subpalmately ]
 		sent = sent.replaceAll("\\((?=-[a-z])", "( ");//[-subpalmately ] => [ -subpalmately ]
+		
+		sent = sent.replaceAll("\\bav\\s*\\.", "av.");
 		return sent;
 	}
 

@@ -188,7 +188,7 @@ public class ChunkedSentence {
 				String closebrackets = treetoken[i].replaceAll("[^\\]]", "*"); //]
 				closebrackets = closebrackets.substring(closebrackets.lastIndexOf('*')).replace("*", ""); 
 				String token = treetoken[i].substring(0, treetoken[i].length()-closebrackets.length());
-				treetoken[i] = token.replace("~list~", "[{").replaceAll("\\{(?=\\w{2,}\\[)", "").replaceAll("(?<=~[a-z0-9-]{1,40})(\\}| |$)","}]")+closebrackets;
+				treetoken[i] = token.replace("~list~", "[{").replaceAll("\\{(?=\\w{2,}\\[)", "").replaceAll("(?<=~[_a-z0-9-]{1,40})(\\}| |$)","}]")+closebrackets;
 				//treetoken[i] = treetoken[i].replace("~list~", "[{").replaceAll("\\{(?=\\w{2,}\\[)", "").replaceAll("(?<=~[a-z0-9-]{1,40})(\\}| |$)","}]");
 			}
 		}		
@@ -1685,6 +1685,7 @@ public class ChunkedSentence {
 		//parenthetical expression
 		//String content = ck.toString();
 		if(ck instanceof ChunkChrom) return ck;
+		if(ck instanceof ChunkQRatio) return ck;
 		
 		//
 		//if(content.indexOf("-LRB-")>=0 || content.indexOf("-RRB-")>=0 || content.indexOf("-LSB-")>=0 || content.indexOf("-RSB-")>=0){
@@ -1720,7 +1721,7 @@ public class ChunkedSentence {
 			return new ChunkComma(",");
 		}
 
-		if((NumericalHandler.isNumerical(token) ||token.matches("^to~\\d.*")|| token.matches("[wl]\\s*\\W\\s*[wl]")) && !token.matches(".*?[nx]=[\\[(\\d].*")){//l-w or l/w
+		if((NumericalHandler.isNumerical(token) ||token.matches("^to~\\d.*")|| token.matches("[wl]\\s*\\W\\s*[wl]")) && !token.matches(".*?[qnx]=[\\[(\\d].*")){//l-w or l/w
 				chunk = getNextNumerics();//pointer++;
 				if(this.unassignedmodifier != null){
 					chunk.setText(this.unassignedmodifier+ " "+chunk.toString());
@@ -1746,16 +1747,36 @@ public class ChunkedSentence {
 		}
 
 		if(token.indexOf("=")>0){//chromosome count 2n=, FNA specific, also seen in Diatom descriptions
-			if(token.matches(".?\\b\\d?[xn]=\\s*[\\[(]?\\d.*")){
+			//Q_ratio Q=, seen in mushroom descriptions
+			if(token.matches(".?\\b\\d?[xnq]=\\s*[\\[(]?\\d.*")){
 				String l = "";
 				String t= this.chunkedtokens.get(pointer++);
 				while(t.indexOf("SG")<0 && this.chunkedtokens.size()>pointer-1){
 					l +=t+" ";
 					t= this.chunkedtokens.get(pointer++);				
 				}
-				l = l.replaceFirst("\\b\\d?[xn]=", "").trim();
-				chunk = new ChunkChrom(l);
+				l = l.replaceFirst("\\b\\d?[xnq]=", "").trim();
+				//1.15-1.40 , av. 1.22-1.27
+				l = l.replaceFirst("[\\W]+av.\\s*", "(av.");
+				int i = l.indexOf(" ", l.indexOf("(av.")+5);
+				if(i<0) l = l+")";
+				else l = l.substring(0, i)+")"+l.substring(i+1);
+				l = l.replaceFirst("\\(av.", "(");
+				if(token.contains("q=")){
+					chunk = new ChunkQRatio(l);
+				}else{
+					chunk = new ChunkChrom(l);
+				}
 				return chunk;
+			}
+		}
+		
+		if(token.matches(".*?\\bav\\s*\\..*")){
+			pointer++;
+			Chunk num = this.getNextNumerics();
+			if(num !=null){
+				pointer++;
+				return new ChunkAverage(num.toString());
 			}
 		}
 		
@@ -2310,7 +2331,7 @@ public class ChunkedSentence {
 			pointer++;
 			return new ChunkValueDegree(numerics.trim());
 		}
-		if(t.matches(".*?[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*(-\\s*("+ChunkedSentence.counts+")\\b|$)")){ //ends with a number
+		if(t.matches(".*?[()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%]*(-\\s*("+ChunkedSentence.counts+")\\b|$)")){ //ends with a number
 			numerics += t+ " ";
 			pointer++;
 			if(pointer==this.chunkedtokens.size()){
@@ -2332,9 +2353,6 @@ public class ChunkedSentence {
 				pointer++;
 				adjustPointer4Dot(pointer);//in bhl, 10 cm . long, should skip the ". long" after the unit
 				numerics = numerics.replaceAll("[{<>}]", "").trim();
-				if(numerics.contains("×")){
-					return new ChunkArea(numerics);
-				}
 				return new ChunkValue(numerics);
 			}
 			if(t.matches("^[{<(]*("+ChunkedSentence.clusters+")\\b.*?")){
@@ -2363,7 +2381,12 @@ public class ChunkedSentence {
 			}*/
 			return new ChunkCount(numerics.replaceAll("[{}]", "").trim());
 		}
-		
+		if(t.matches("(.*?)([\\d\\.()+-]+\\{?[µucmd]?m?\\}?[x×]\\S*\\s*[\\d\\.()+-]+\\{?[µucmd]?m\\}?[x×]?(\\S*\\s*[\\d\\.()+-]+\\{?[ucmd]?m\\}?)?)")){ //areas could have units mixed in numbers
+			numerics += t;
+			if(numerics.contains("×") || numerics.contains("x")){
+				return new ChunkArea(numerics);
+			}
+		}
 		if(t.matches("[wl]\\s*\\W\\s*[wl]")){
 			String name = t;
 			while(!t.matches(".*?\\d.*")){

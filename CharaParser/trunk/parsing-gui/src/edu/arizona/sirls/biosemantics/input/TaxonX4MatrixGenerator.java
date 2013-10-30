@@ -214,6 +214,9 @@ public class TaxonX4MatrixGenerator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		//String input = "C:\\Users\\updates\\CharaParserTest\\GoldenGATE_no_schema\\target\\final";
+		//String output = "C:\\Users\\updates\\CharaParserTest\\GoldenGATE_no_schema\\target\\final4matrix";
+		//String spfile ="C:\\Users\\updates\\CharaParserTest\\GoldenGATE_no_schema\\target\\singluar-plural.txt";
 		String input = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\uncleaned\\20597\\target\\final";
 		String output = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\uncleaned\\20597\\target\\final4matrix";	
 		String spfile = "C:\\Users\\updates\\CharaParserTest\\proibioPilot\\uncleaned\\20597\\target\\singluar-plural.txt";	

@@ -46,7 +46,7 @@ public abstract class OntologyClassFetcher {
 	protected ArrayList<String> selectedClassLabels = new ArrayList<String>();
 	protected ArrayList<String> selectedClassCategories = new ArrayList<String>();
 	protected ArrayList<String> selectedClassIds = new ArrayList<String>();
-	protected ArrayList<String> terms = new ArrayList<String>();
+	protected HashSet<String> terms = new HashSet<String>();
 	protected Hashtable<String, String> newphrases = new Hashtable<String, String>(); //plural => singular
 	/**
 	 * table: must have at least three fields: ontoid, term, category, underscored. 
@@ -109,13 +109,14 @@ public abstract class OntologyClassFetcher {
 					if(label.indexOf("(")>0){
 						label = label.substring(0, label.indexOf("(")).trim();
 					}
+					label = cleanup(label);
 					if(label.length()>0){
 						stmt.setString(1, this.selectedClassIds.get(i));
 						stmt.setString(2, label);
 						stmt.setString(3, this.selectedClassCategories.get(i));
 						stmt.setString(4, label.replaceAll("\\s+", "_")); //underscored: anal fin => anal_fin
 						stmt.execute();
-						if(this.selectedClassIds.get(i).contains(condition))
+						if(this.selectedClassIds.get(i).matches(".*?("+condition+").*"))
 							terms.add(label);
 						}
 				}
@@ -132,24 +133,27 @@ public abstract class OntologyClassFetcher {
 					if(label.length()>0){
 						String pl = getPl(label);
 						if(pl!=null){
+							pl = cleanup(pl);
+							if(pl.length()>0){
 							stmt.setString(1, this.selectedClassIds.get(i)+"_pl");
 							stmt.setString(2, pl);
 							stmt.setString(3, this.selectedClassCategories.get(i));
 							stmt.setString(4, pl.replaceAll("\\s+", "_")); //underscored: anal fin => anal_fin
 							stmt.execute();
-							if(this.selectedClassIds.get(i).contains(condition))
+							if(this.selectedClassIds.get(i).matches(".*?("+condition+").*"))
 								terms.add(pl);
+							}
 						}
 					}
 				}
 			}
 				
 			//serialize the plural-singular mapping
-			File file = new File(ApplicationUtilities.getProperty("ontophrases.p2s.bin"));
+			/*File file = new File(ApplicationUtilities.getProperty("ontophrases.p2s.bin"));
 			ObjectOutputStream out = new ObjectOutputStream(
 					new FileOutputStream(file));
 			out.writeObject(newphrases);
-			out.close();
+			out.close();*/
 		}catch (Exception e){
 			e.printStackTrace();
 		}finally{
@@ -201,6 +205,39 @@ public abstract class OntologyClassFetcher {
 		}
 	}
 	
+	public void serializePSArrayList(String filepath){
+		//serialize the plural-singular mapping
+		try {
+		File file = new File(filepath);
+		ObjectOutputStream out = new ObjectOutputStream(
+				new FileOutputStream(file));
+		out.writeObject(newphrases);
+		out.close();
+		} catch (IOException e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}
+	}
+	
+	/**
+	 * remove the following: [;\]\[,+'/\.&%@<>=`:]
+	 * @param str
+	 * @return "" or the str without those symbols.
+	 */
+	public String cleanup(String str){
+		while(str.matches(".*?\\[.*?\\].*")){
+			str = str.replaceAll("\\[.*?\\]", "").trim();
+		}
+		while(str.matches(".*?<.*?>.*")){
+			str = str.replaceAll("<.*?>", "").trim();
+		}
+		str = str.replaceAll("`", "'");
+		if(str.contains("%")) str = "";
+		str = str.replaceFirst("[@=+;,.&:<>\\]\\[].*", ""); //@fr, x=y, x+y+z
+		if(str.matches(".*?[;\\]\\[,+\\.&%@<>=`:].*")){
+			System.out.print(str+ " ");
+		}
+		return str;
+	}
 	/**
 	 * @param args
 	 */

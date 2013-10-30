@@ -8,7 +8,7 @@ package edu.arizona.sirls.biosemantics.charactermarkup;
  * @author hongcui
  *
  */
-public class ChunkChrom extends Chunk {
+public class ChunkChrom extends ChunkPattern {
 
 	/**
 	 * @param text

@@ -61,7 +61,7 @@ public class POSTagger4StanfordParser {
 	private static Pattern hyphenedtoorpattern = Pattern.compile("(.*?)((\\d-,\\s*)+ (to|or) \\d-\\{)(.*)");
 	private static Pattern bulletpattern  = Pattern.compile("^(and )?([(\\[]\\s*\\d+\\s*[)\\]]|\\d+.)\\s+(.*)"); //( 1 ), [ 2 ], 12.
 	private static Pattern distributePrepPattern = Pattern.compile("(^.*~list~)(.*?~with~)(.*?~or~)(.*)");
-	private static Pattern areapattern = Pattern.compile("(.*?)([\\d\\.()+-]+ ?\\{?[cmd]?m?\\}?[x×]\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?[x×]?(\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?)?)(.*)");
+	private static Pattern areapattern = Pattern.compile("(.*?)([\\d\\.()+-]+ ?\\{?[µucmd]?m?\\}?[x×]\\S*\\s*[\\d\\.()+-]+ \\{?[µucmd]?m\\}?[x×]?(\\S*\\s*[\\d\\.()+-]+ \\{?[ucmd]?m\\}?)?)(.*)");
 	//private static Pattern charalistpattern-old = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+([@,;\\.] )+\\s*)(([_a-z-]+ )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//
 	private static Pattern charalistpattern = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+[& ]*([`@,;\\.] )+\\s*)(([_a-z-]+ |[0-9a-z–\\[\\]\\+-]+ly )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[`@,;\\.%\\[\\]\\(\\)&#a-z].*)");//
 	//\\4 should match a single character (i.e. a single word, to avoid results like {shape~list~outer~lanceolate~to~lance-ovate~(~often~herbaceous~punct~glandular-hirtellous~punct~equaling~or~surpassing~inner~punct~<apices>~acute~to~long-attenuate~)~punct~inner~lanceolate~to~lance-linear}. UPdate: the issue is solved by converting those position terms to structure in lookupcharacters, not by changing the patterns.  

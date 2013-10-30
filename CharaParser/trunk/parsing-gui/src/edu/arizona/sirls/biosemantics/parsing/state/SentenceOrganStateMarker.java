@@ -64,7 +64,7 @@ public class SentenceOrganStateMarker {
 	private static Pattern range = Pattern.compile("(.*?)\\b(?:from|between)\\s*([\\d\\. /\\(\\)\\?+-]+)\\s*(?:to|and|-)\\s*([\\d\\. /\\(\\)\\?+-]+)(.*)");
 	//private static Pattern thelargest = Pattern.compile("(.*)(,\\s*\\S+est})( [^<].*)"); //tested and failed. too general. many superlatives are not subjects.
 	private static Pattern thelargest = Pattern.compile("(.*)(,\\s*(?:the )?\\S+est})( [^<].*)"); //narrowed down to size cases by checking group(3)
-	public static String compoundprep = "according to|ahead of|along with|apart from|as for|aside from|as per|as to as well as|away from|because of|but for|by means of|close to|contrary to|depending on|due to|except for|forward of|further to|in addition to|in association with|in between|in case of|in combination with|in face of|in favour of|in front of|in lieu of|in spite of|instead of|in view of|near to|next to|on account of|on behalf of|on board|on to|on top of|opposite to|other than|out of|outside of|owing to|preparatory to|prior to|regardless of|save for|thanks to|together with|up against|up until|vis-a-vis|with reference to|with regard to";
+	public static String compoundprep = "according to|ahead of|along with|apart from|as for|aside from|as per|as to as well as|away from|because of|but for|by means of|close to|contrary to|depending on|due to|except for|forward of|further to|in addition to|in association with|in between|in case of|in combination with|in contact with|in face of|in favour of|in front of|in lieu of|in spite of|instead of|in view of|near to|next to|on account of|on behalf of|on board|on to|on top of|opposite to|other than|out of|outside of|owing to|preparatory to|prior to|regardless of|save for|thanks to|together with|up against|up until|vis-a-vis|with reference to|with regard to";
 	public static Pattern compreppattern = Pattern.compile("(.*?)\\b("+compoundprep+")\\b(.*)");
 	private String ignoredstrings = "if at all|at all|as well (?!as)|was|is|were|are";
 	//private static String compoundprep = "according to|ahead of|along with|apart from|as for|aside from|as per|as to as well as|away from|because of|but for|by means of|close to|contrary to|depending on|due to|except for|forward of|further to|in addition to|in association with|in between|in case of|in combination with|in face of|in favour of|in front of|in lieu of|in spite of|instead of|in view of|near to|next to|on account of|on behalf of|on board|on to|on top of|opposite to|other than|out of|outside of|owing to|preparatory to|prior to|regardless of|save for|thanks to|together with|up against|up to|up until|vis-a-vis|with reference to|with regard to";
@@ -463,6 +463,8 @@ public class SentenceOrganStateMarker {
 	public String markASentence(String source, String modifier, String tag, String sent) {
 		String taggedsent = markthis(source, sent, organnames, "<", ">");
 		taggedsent = markthis(source, taggedsent, statenames, "{", "}");
+		//light_c_red should be tagged with {}
+		taggedsent = taggedsent.replaceAll("(?=\\b\\w+?_c_\\w+)", "{").replaceAll("(?<=\\{\\w{1,20}_c_\\w{1,20}\\b)", "}");
 		taggedsent = taggedsent.replaceAll("[<{]or[}>]", "or"); //make sure to/or are left untagged
 		taggedsent = taggedsent.replaceAll("[<{]to[}>]", "to");
 		//tested and failed
@@ -919,7 +921,7 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pib_20597_uncleaned", "antglossaryfixed", true, null, null);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "gg_noschema", "gg_noschema_fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);

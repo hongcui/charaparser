@@ -84,6 +84,8 @@ public class CharacterAnnotatorChunked {
 	//private static XPath path3;
 	private ArrayList<String> phrases = new ArrayList<String> (); //can be empty
 	private Hashtable<String, String> p2sphrases = new Hashtable<String, String> (); //can be empty
+	private String parentorgan;
+
 	
 	static{
 		try{
@@ -162,6 +164,8 @@ public class CharacterAnnotatorChunked {
 		//	this.annotatedMeasurements(this.text, cs); //this will not work on "Scape short to moderate, SI 59 - 83"
 		//}
 		this.text = cs.getText();
+		boolean startsent = false;
+		if(text.matches("[A-Z].*?")) startsent = true; 
 		if(this.text.startsWith("Characters of ") && this.text.replaceAll("[^,;\\.:]", "").length()<=1){
 			return this.statement; //characters of abc. one sentence.
 		}
@@ -307,6 +311,30 @@ public class CharacterAnnotatorChunked {
         //    e.setAttribute("value", "absent");
        /// }
 		
+		if(Boolean.valueOf(ApplicationUtilities.getProperty("attachparentorgan"))){
+			if(startsent){ //record parentorgan
+				Element structure = this.statement.getChild("structure");
+				if(structure!=null){
+					String constraint = structure.getAttribute("constraint") !=null? structure.getAttributeValue("constraint") : null;
+					if(constraint!=null){
+						if(Utilities.isOrgan(constraint, conn, tableprefix)) this.parentorgan = constraint;
+					}else{
+						this.parentorgan = structure.getAttributeValue("name");
+					}
+				}
+			}else{
+				//apply parentorgan to the first structure
+				if(this.parentorgan!=null){
+					Element struct = this.statement.getChild("structure");
+					this.addAttribute(struct, "constraint", this.parentorgan);
+
+					/*List<Element> structures = this.statement.getChildren("structure");
+					for(Element structure: structures){
+						this.addAttribute(structure, "constraint", this.parentorgan);
+					}*/
+				}
+			}
+		}
 		XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
 		if(printAnnotation){
 			System.out.println();
@@ -805,6 +833,36 @@ public class CharacterAnnotatorChunked {
 				}
 				ArrayList<Element> chars = annotateNumericals(content, "area", "", lastStructures(), false, cs); //added cs
 				updateLatestElements(chars);
+			}else if(ck instanceof ChunkAverage){
+				ArrayList<Element> structures = new ArrayList<Element> ();
+				if(this.latestelements.size()>0){		
+					//find structure element
+					Element lastelement = this.latestelements.get(this.latestelements.size()-1);
+					int i = 2;
+					while(lastelement.getName().compareTo("comma")==0 && this.latestelements.size()>i){
+						lastelement = this.latestelements.get(this.latestelements.size()-i);
+						i++;
+					}
+					if(lastelement!=null && lastelement.getName().compareTo("character") == 0){
+						structures.add(lastelement.getParentElement());
+					}else if (lastelement!=null && lastelement.getName().compareTo("structure") == 0){
+						structures.addAll(this.latestelements);
+					}
+				}else{
+					structures.addAll(this.subjects);
+				}
+				if(structures.size()==0){
+					structures = this.createStructureElements("("+ApplicationUtilities.getProperty("unknown.structure.name")+")", cs); 
+				}
+				//parsing numerical expression
+				ArrayList<Element> chars = NumericalHandler.parseNumericals(ck.toString(), null);
+				//add characters to structures
+				for(Element structure: structures){
+					for(Element chara: chars){
+						chara.setAttribute("name", "average_"+chara.getAttributeValue("name"));
+						structure.addContent(chara);
+					}
+				}						
 			}else if(ck instanceof  ChunkNumericals){
 				//** find parents, modifiers
 				//TODO: check the use of [ and ( in extreme values
@@ -1039,6 +1097,24 @@ public class CharacterAnnotatorChunked {
 				ArrayList<Element> list = new ArrayList<Element>();
 				list.add(structure);
 				this.annotateNumericals(content, "count", "", list, false, cs);
+				/*for(int i = 0; i<counts.length; i++){
+					Element character = new Element("character");
+					this.addAttribute(character, "count", counts[i]);
+					structure.addContent(character);
+				}*/
+				addClauseModifierConstraint(cs, structure);
+				this.statement.addContent(structure);
+			}else if(ck instanceof ChunkQRatio){
+				String content = ck.toString().replaceAll("[^\\d()\\.\\[\\],+ -]", "").trim();
+				//Element structure = new Element(ApplicationUtilities.getProperty("source.n"));
+				Element structure = new Element("structure");
+				this.addAttribute(structure, "name", "Q");
+				structure.setAttribute("name_original", "Q"); //what value should it be?
+				this.addAttribute(structure, "id", "o"+this.structid);
+				this.structid++;
+				ArrayList<Element> list = new ArrayList<Element>();
+				list.add(structure);
+				this.annotateNumericals(content, "ratio", "", list, false, cs);
 				/*for(int i = 0; i<counts.length; i++){
 					Element character = new Element("character");
 					this.addAttribute(character, "count", counts[i]);
@@ -1868,8 +1944,8 @@ public class CharacterAnnotatorChunked {
 		String tomodifier = to.replace(tovalue, "").trim();
 		if(tomodifier.length() == 0) tomodifier = frommodifier;
 		
-		rangecharacter.setAttribute("from", from.replaceAll("-c-", " ")); //a or b to c => b to c
-		rangecharacter.setAttribute("to", to.replaceAll("-c-", " "));
+		rangecharacter.setAttribute("from", from.replaceAll("_c_", " ")); //a or b to c => b to c
+		rangecharacter.setAttribute("to", to.replaceAll("_c_", " "));
 		
 		boolean usedm = false;
 		Iterator<Element> it = parents.iterator();
@@ -2665,6 +2741,9 @@ public class CharacterAnnotatorChunked {
 		if(value.contains("~list~")){
 			value = value.replaceFirst(".*~list~", "").replaceAll("~", " ").trim();
 		}
+		if(value.contains("_c_")){
+			value = value.replaceFirst("_c_", " ").trim();
+		}
 		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\)|<|>)", "").replaceAll("\\s+;\\s+", ";").replaceAll("\\[", "").trim();
 		if(value.indexOf("LRB-")>0) value = NumericalHandler.originalNumForm(value);
 		value = value.replaceAll("\\b("+this.notInModifier+") ", "").trim(); //not match a in "a. livermorensis" (taxon name)
@@ -3326,11 +3405,12 @@ public class CharacterAnnotatorChunked {
 					String unit = cvalue.replace(value, "").trim();
 					if(unit.length()>0){character.setAttribute("unit", unit);}
 					cvalue = value;
-				}else if(cvalue.indexOf("-c-")>=0 && (cname.compareTo("color") == 0 || cname.compareTo("coloration") ==0)){//-c- set in SentenceOrganStateMarkup
-					String color = cvalue.substring(cvalue.lastIndexOf("-c-")+3); //pale-blue
-					String m = cvalue.substring(0, cvalue.lastIndexOf("-c-")); //color = blue m=pale
-					modifiers = modifiers.length()>0 ? modifiers + ";"+ m : m;
-					cvalue = color;
+				}else if(cvalue.indexOf("_c_")>=0 && (cname.compareTo("color") == 0 || cname.compareTo("coloration") ==0)){//-c- set in SentenceOrganStateMarkup
+					//String color = cvalue.substring(cvalue.lastIndexOf("_c_")+3); //pale-blue
+					//String m = cvalue.substring(0, cvalue.lastIndexOf("_c_")); //color = blue m=pale
+					//modifiers = modifiers.length()>0 ? modifiers + ";"+ m : m;
+					//cvalue = color;
+					cvalue = cvalue.replaceAll("_c_", " ");
 				}
 				if(char_type.length() >0){
 					character.setAttribute("char_type", char_type);

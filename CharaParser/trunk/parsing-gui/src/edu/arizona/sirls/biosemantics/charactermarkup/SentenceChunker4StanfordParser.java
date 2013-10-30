@@ -1276,7 +1276,8 @@ end procedure
 				Iterator<Element> itc = children.iterator();
 				while(itc.hasNext()){
 					Element e = itc.next();
-					if(!e.getName().matches("\\b(NP|NN|NNS|CC|PUNCT|PRN)\\b")){//add PRN for parenthesis
+					//if(!e.getName().matches("\\b(NP|NN|NNS|CC|PUNCT|PRN)\\b")){//add PRN for parenthesis
+					if(!e.getName().matches("\\b(NP|NN|NNS|CC|PUNCT|PRN|ADJP|JJ|RB)\\b")){//extended on 10/29/2013, not backwards tested
 						isList=false;
 					}
 					List<Element> echildren = e.getChildren();
@@ -1285,7 +1286,8 @@ end procedure
 							isList=false;
 						}
 					}
-					if(XPath.selectSingleNode(e, ".//ADJP")!=null ||XPath.selectSingleNode(e, ".//PP")!=null){
+					//if(XPath.selectSingleNode(e, ".//ADJP")!=null ||XPath.selectSingleNode(e, ".//PP")!=null){
+					if(XPath.selectSingleNode(e, ".//PP")!=null){//extended on 10/29/2013, not backwards tested
 						isList=false;
 					}
 				}

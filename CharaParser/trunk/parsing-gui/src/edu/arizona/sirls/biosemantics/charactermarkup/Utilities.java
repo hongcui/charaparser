@@ -151,7 +151,7 @@ public class Utilities {
 		return false;
 	}
 
-	private static boolean isOrgan(String term, Connection conn, String tablePrefix) {
+	public static boolean isOrgan(String term, Connection conn, String tablePrefix) {
 		if(isOrgan.get(term)!=null) return Boolean.valueOf(isOrgan.get(term));
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -1277,7 +1277,10 @@ public class Utilities {
 			e.printStackTrace();
 		}
 
-		System.out.println(Utilities.lookupCharacter("hl", conn, new Hashtable<String, String[]>(), "antglossaryfixed", "pib_6757"));
+		String[] result = Utilities.lookupCharacter("pale_c_cream", conn, new Hashtable<String, String[]>(), "gg_noschema_fnaglossaryfixed", "gg_noschema");
+		for(String r: result){
+			System.out.println(r);
+		}
 		//System.out.println(Utilities.isNoun(",", new ArrayList<String>()));
 		//System.out.println(Utilities.plural("disc"));
 		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));

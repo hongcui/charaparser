@@ -24,10 +24,11 @@ server.username=
 #Fl. as flowering time, like 'fl . may \u2013 jun , fr . jul \u2013 aug .' at the end of description paragraph
 source.fl = false
 #what should n=20 be marked up as?
-#source.n = chromosome
-source.n = sample
+source.n = chromosome
+#source.n = sample
 source.type=type4
 source.subtype=taxonx
+attachparentorgan=true
 
 #ontology use
 #location of serialized anatomy ontology phrases

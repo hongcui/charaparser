@@ -622,8 +622,10 @@ static int checkAck(InputStream in) throws IOException{
 	}
 
 	public static void main(String[] args) {	
-		String dataprefix = "pib_20597";
-		int glosstype = 2;
+		//String dataprefix = "pib_20597";
+		//int glosstype = 2;
+		String dataprefix = "gg_noschema";
+		int glosstype = 1;
 		/* (1, 'Plant'),
 			(2, 'Hymenoptera'),
 			(3, 'Algea')
