@@ -36,6 +36,7 @@ public class ApplicationUtilities {
 	private static InputStream fstream = null; 
 	private static InputStream notepadstream = null;
 	
+	
 	static {
 		try {
 						
