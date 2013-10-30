@@ -3166,7 +3166,7 @@ public class MainForm {
 		boolean downloadable = false;
 		ArrayList<String> result = UploadTerms2OTO.execute(
 				"ls "+ApplicationUtilities.getProperty("OTO.downloadable.dir")+ 
-				" | grep "+dataprefix+"_.*_groupterms.*sql$");
+				" | grep "+dataprefix+"_groupterms.sql$");
 		if(result.size()> 1) downloadable = true; //the last element in result is the return status
 		//final boolean ddble = downloadable;
 		if(!downloadable){
@@ -3214,13 +3214,13 @@ public class MainForm {
 	}
 
 	private void downloadTermSet(String dataprefix, String file, /*Boolean success, boolean downloadable,*/ int position) {
-		String timestamp = file.replaceFirst(dataprefix+"_", "").replaceFirst("_groupterms.*", "");
+		//String timestamp = file.replaceFirst(dataprefix+"_", "").replaceFirst("_groupterms.*", "");
 		if(file.equals("no selection")){
 			Label text = new Label(MainForm.grpTermSets, SWT.NONE);
 			text.setText("You chose not to use any "+dataprefix +" term set(s) that is(are) available. Please proceed to the next step. ");
 			text.setBounds(23, position, 700, 23);
 		}else{				
-			UploadTerms2OTO.scpFrom(ApplicationUtilities.getProperty("OTO.dowloadable.dir")+file, Registry.TargetDirectory+file);
+			UploadTerms2OTO.scpFrom(ApplicationUtilities.getProperty("OTO.downloadable.dir")+file, Registry.TargetDirectory+file);
 			//restore sql dump 
 			Statement stmt = null;
 			try{
@@ -3266,14 +3266,16 @@ public class MainForm {
 					trouble = true;
 				}
 				if(!trouble){
-					try{
-						stmt.execute("alter table "+dataprefix+"_"+timestamp+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" RENAME TO "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY"));
-						stmt.execute("alter table "+dataprefix+"_"+timestamp+"_syns RENAME TO "+dataprefix+"_syns");
+					/*try{
+						//stmt.execute("alter table "+dataprefix+"_"+timestamp+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" RENAME TO "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY"));
+						//stmt.execute("alter table "+dataprefix+"_"+timestamp+"_syns RENAME TO "+dataprefix+"_syns");
+						stmt.execute("alter table "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" RENAME TO "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY"));
+						stmt.execute("alter table "+dataprefix+"_syns RENAME TO "+dataprefix+"_syns");
 					}catch(Exception e1){
 						//ignore the error _term_category not exist
 						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
 						e1.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-					}
+					}*/
 					//add "structure" terms from term_category_local to term_category
 					stmt.execute("insert into "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" (term, category) " +
 						"select term, category from "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_local where category in ('structure', 'character')");	

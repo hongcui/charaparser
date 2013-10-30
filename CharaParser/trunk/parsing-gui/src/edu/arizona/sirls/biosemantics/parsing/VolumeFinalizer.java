@@ -354,6 +354,9 @@ public class VolumeFinalizer extends Thread {
 		//String transformeddir = Registry.TargetDirectory+"/transformed/";
 
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,glosstable, false);
+		if(!standalone) this.showOutputMessage("System is remarking sentences...");
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(this.conn, this.dataPrefix, glosstable, true, display, null);//tag organ names
+		sosm.markSentences();
 		if(!standalone) this.showOutputMessage("System is POS-tagging sentences...");
 		sp.POSTagging();
 		//if(!standalone) listener.progress(50);
