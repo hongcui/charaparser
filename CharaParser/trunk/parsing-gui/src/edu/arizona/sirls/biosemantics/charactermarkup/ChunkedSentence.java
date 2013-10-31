@@ -69,7 +69,7 @@ public class ChunkedSentence {
 	public static final String prepositions = "above|across|after|along|among|amongst|around|as|at|before|behind|below|beneath|between|beyond|by|during|for|from|in|into|near|of|off|on|onto|out|outside|over|per|than|through|throughout|to|toward|towards|up|upward|with|without|"+POSTagger4StanfordParser.comprepstring;
 	//public static final String stop = "a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|if|in|into|inside|inward|is|it|its|may|might|more|most|near|no|not|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
 	public static final String stop = "a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|however|if|in|into|inside|inward|is|it|its|may|might|more|most|near|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
-	public static final String skip = "and|becoming|if|or|that|these|this|those|to|what|when|where|which|why|not|throughout";
+	public static final String skip = "and|becoming|if|or|that|these|this|those|to|what|when|where|which|why|not|throughout|but";
 	private Pattern taxonnamepattern1 = null;
 	public static Pattern taxonnamepattern2 = null;
 	public static Pattern sandwich = Pattern.compile(".*?(N.*?C.*N|C.*?N.*?C).*"); 
@@ -129,6 +129,7 @@ public class ChunkedSentence {
 		eqcharacters.put("long", "length");
 		eqcharacters.put("broad", "width");
 		eqcharacters.put("diam", "diameter");
+		eqcharacters.put("high", "height");
 		//eqcharacters.put("diameter", "diameter");
 				
 		this.tableprefix = tableprefix;
@@ -1313,6 +1314,9 @@ public class ChunkedSentence {
 				}
 				if(!startn){
 					this.chunkedtokens = copy; //not finding the organ, reset
+					if(this.chunkedtokens.get(i-1).endsWith("ing")){ //changing to
+						this.chunkedtokens.set(i, this.chunkedtokens.get(i).replaceAll("(\\w\\[|\\])", ""));
+					}
 				}else{
 					if(this.printNormTo){
 						System.out.println("To needs normalization!");

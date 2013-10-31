@@ -2742,7 +2742,10 @@ public class CharacterAnnotatorChunked {
 			value = value.replaceFirst(".*~list~", "").replaceAll("~", " ").trim();
 		}
 		if(value.contains("_c_")){
-			value = value.replaceFirst("_c_", " ").trim();
+			value = value.replaceAll("_c_", " ").trim();
+		}
+		if(value.contains("_")){
+			value = value.replaceAll("(?<!\\d)_", " ").trim();
 		}
 		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\)|<|>)", "").replaceAll("\\s+;\\s+", ";").replaceAll("\\[", "").trim();
 		if(value.indexOf("LRB-")>0) value = NumericalHandler.originalNumForm(value);
@@ -3334,10 +3337,22 @@ public class CharacterAnnotatorChunked {
 						}
 						if(charainfo==null && Utilities.isAdv(w, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){//TODO: can be made more efficient, since sometimes character is already given
 							modifiers +=w+" ";
-						}else if(w.matches(".*?\\d.*") && !w.matches(".*?[a-z].*")){//TODO: 2 times =>2-times?
-							results = this.annotateNumericals(w, "count", modifiers, parents, false, cs); //added cs
-							//annotateCount(parents, w, modifiers);
-							modifiers = "";
+						}else if(w.matches(".*?\\d.*") && !w.matches(".*?[a-z].*")){//TODO: 2 times =>2-times? 2 mm =>2-mm
+							if(tokens.length>j+1 && tokens[j+1].matches("times|"+ChunkedSentence.units)){
+								if(tokens.length>j+2 && ChunkedSentence.eqcharacters.get(tokens[j+2].replaceAll("[{}]", ""))!=null){
+									results = this.annotateNumericals(w+" "+tokens[j+1], ChunkedSentence.eqcharacters.get(tokens[j+2].replaceAll("[{}]", "")), modifiers, parents, false, cs);
+									j = j+2;
+									modifiers="";
+								}else{
+									results = this.annotateNumericals(w+" "+tokens[++j], "size", modifiers, parents, false, cs); //added cs
+									//annotateCount(parents, w, modifiers);
+									modifiers = "";
+								}
+							}else{
+								results = this.annotateNumericals(w, "count", modifiers, parents, false, cs); //added cs
+								//annotateCount(parents, w, modifiers);
+								modifiers = "";
+							}
 						}else{
 							//String chara = MyPOSTagger.characterhash.get(w);
 							if(charainfo != null){

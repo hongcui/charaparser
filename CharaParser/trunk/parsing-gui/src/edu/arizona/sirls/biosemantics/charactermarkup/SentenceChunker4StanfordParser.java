@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Content;
@@ -720,6 +721,9 @@ end procedure
 						    		.replaceFirst(inname.replaceAll("\\[", "\\\\[").replaceAll("\\]","\\\\]"), "").trim();
 							String n = allText(p);
 							if(n.matches(".*?, [a-z]+$")) return ""; //last word (the NN) should not directly follow a comma
+							if(n.matches(".*("+ChunkedSentence.units+")") && ((Element) e.getChildren().get(e.getChildren().size()-1)).getName().startsWith("NP")){
+								n = all; //3 mm long hairs
+							}
 							int index = all.indexOf(n);
 							if(index!= -1){
 								String fnp = all.substring(0, index)+n;

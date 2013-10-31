@@ -46,8 +46,10 @@ public class POSTagger4StanfordParser {
 	private String glosstable = null;
 	private String src;
 	private static String noadjorg ="low"; //list of position terms that can not be used as a ref to an organ/part
-	public static String comprepstring = "according-to|ahead-of|along-with|apart-from|as-for|aside-from|as-per|as-to|as-well-as|away-from|because-of|but-for|by-means-of|close-to|contrary-to|depending-on|due-to|except-for|except-in|forward-of|further-to|in-addition-to|in-between|in-case-of|in-face-of|in-favour-of|in-front-of|in-lieu-of|in-spite-of|instead-of|in-view-of|near-to|next-to|on-account-of|on-behalf-of|on-board|on-to|on-top-of|opposite-to|other-than|out-of|outside-of|owing-to|preparatory-to|prior-to|regardless-of|save-for|thanks-to|together-with|up-against|up-to|up-until|vis-a-vis|with-reference-to|with-regard-to";
-	private static Pattern compreppattern = Pattern.compile("\\{?(according-to|ahead-of|along-with|apart-from|as-for|aside-from|as-per|as-to-as-well-as|away-from|because-of|but-for|by-means-of|close-to|contrary-to|depending-on|due-to|except-for|forward-of|further-to|in-addition-to|in-between|in-case-of|in-face-of|in-favour-of|in-front-of|in-lieu-of|in-spite-of|instead-of|in-view-of|near-to|next-to|on-account-of|on-behalf-of|on-board|on-to|on-top-of|opposite-to|other-than|out-of|outside-of|owing-to|preparatory-to|prior-to|regardless-of|save-for|thanks-to|together-with|up-against|up-to|up-until|vis-a-vis|with-reference-to|with-regard-to)\\}?");
+	//keep the pattern synch with compoundprep
+	//public static String compoundprep =  "according to|ahead of|along with|apart from|as for|aside from|as per|as to|as well as|away from|because of|but for|by means of|close to|contrary to|depending on|due to|except for|except in|forward of|further to|in addition to|in association with|in between|in case of|in combination with|in contact with|in face of|in favour of|in front of|in lieu of|in spite of|instead of|in view of|near to|next to|on account of|on behalf of|on board|on to|on top of|opposite to|other than|out of|outside of|owing to|preparatory to|prior to|regardless of|save for|thanks to|together with|up against|up to|up until|vis-a-vis|with reference to|with regard to";
+	public static String comprepstring = "according-to|ahead-of|along-with|apart-from|as-for|aside-from|as-per|as-to|as-well-as|away-from|because-of|but-for|by-means-of|close-to|contrary-to|depending-on|due-to|except-for|except-in|forward-of|further-to|in-addition-to|in-association-with|in-between|in-case-of|in-combination-with|in-contact-with|in-face-of|in-favour-of|in-front-of|in-lieu-of|in-spite-of|instead-of|in-view-of|near-to|next-to|on-account-of|on-behalf-of|on-board|on-to|on-top-of|opposite-to|other-than|out-of|outside-of|owing-to|preparatory-to|prior-to|regardless-of|save-for|thanks-to|together-with|up-against|up-to|up-until|vis-a-vis|with-reference-to|with-regard-to";
+	private static Pattern compreppattern = Pattern.compile("\\{?(according-to|ahead-of|along-with|apart-from|as-for|aside-from|as-per|as-to|as-well-as|away-from|because-of|but-for|by-means-of|close-to|contrary-to|depending-on|due-to|except-for|except-in|forward-of|further-to|in-addition-to|in-association-with|in-between|in-case-of|in-combination-with|in-contact-with|in-face-of|in-favour-of|in-front-of|in-lieu-of|in-spite-of|instead-of|in-view-of|near-to|next-to|on-account-of|on-behalf-of|on-board|on-to|on-top-of|opposite-to|other-than|out-of|outside-of|owing-to|preparatory-to|prior-to|regardless-of|save-for|thanks-to|together-with|up-against|up-to|up-until|vis-a-vis|with-reference-to|with-regard-to)\\}?");
 	private static Pattern colorpattern = Pattern.compile("(.*?)((coloration|color)\\s+%\\s+(?:(?:coloration|color|@|%) )*(?:coloration|color))\\s((?![^,;()\\[\\]]*[#]).*)");
 	//private Pattern viewptn = Pattern.compile( "(.*?\\b)(in\\s+[a-z_<>{} -]+\\s+[<{]*view[}>]*)(\\s.*)"); to match in dorsal view
 	private static Pattern viewptn = Pattern.compile( "(.*?\\b)((?:in|at)\\s+[a-z_<>{} -]*\\s*[<{]*(?:view|profile|closure)[}>]*)(\\s.*)"); //to match in dorsal view and in profile
@@ -88,7 +90,8 @@ public class POSTagger4StanfordParser {
 	private static Pattern asaspattern = Pattern.compile("(.*?\\b)(as\\s+[\\w{}<>]+\\s+as)(\\b.*)");
 	private static Pattern modifierlist = Pattern.compile("(.*?\\b)(\\w+ly\\s+(?:to|or)\\s+\\w+ly)(\\b.*)");
 	private static String negations = "not|never|seldom";//not -ly words. -ly words are already treated in character list patterns
-
+	private static String[] modifierphrases = new String[] {"at first"};
+	public static ArrayList<String> modifiertokens = new ArrayList<String>();
 	/**
 	 * 
 	 */
@@ -219,6 +222,9 @@ public class POSTagger4StanfordParser {
 					if(printArea) System.out.println("Area:" +str);
 				}
 
+				for(String modifierphrase: modifierphrases){
+					str = str.replaceAll(modifierphrase, modifierphrase.replace(" ", "_"));
+				}
 				//str = handleBrackets(str);
 
 				//str = Utilities.handleBrackets(str);
@@ -271,6 +277,8 @@ public class POSTagger4StanfordParser {
 	        	   Matcher mc = compreppattern.matcher(word);
 	        	   if(mc.matches()){
 	        		   sb.append(word+"/IN ");
+	        	   }else if(modifiertokens.contains(word)){
+	        		   sb.append(word+"/RB "); 
 	        	   }else if(word.contains("taxonname-")){
 	        		   sb.append(word+"/NNS "); 
 	        	   }else if(word.matches("(in|at)-.*?(-?view|profile|closure)")){

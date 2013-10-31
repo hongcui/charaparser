@@ -656,6 +656,7 @@ public class Utilities {
 
 	public static boolean isAdv(String word, ArrayList<String> adverbs, ArrayList<String> notadverbs) {
 		word = word.replaceAll("[<>{}\\]\\[()\\d+-]", "").trim();
+		if(POSTagger4StanfordParser.modifiertokens.contains(word)) return true;
 		if(word.matches("(no|not|at-?least|throughout|much)")){//add 'no' so it would be included as a modifier for cases such as 'no more than 5'.
 			return true;
 		}
