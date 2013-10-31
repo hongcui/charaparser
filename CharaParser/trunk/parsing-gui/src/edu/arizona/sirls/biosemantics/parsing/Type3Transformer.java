@@ -17,7 +17,6 @@ import java.util.*;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
-
 import org.jdom.*;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
@@ -37,7 +36,7 @@ import edu.arizona.sirls.biosemantics.db.*;
  */
 @SuppressWarnings("unchecked")
 public class Type3Transformer extends Thread {
-	private PhraseMarker pm = new PhraseMarker();
+	private PhraseMarker pm;
 	private ArrayList<String> seeds = new ArrayList<String>();
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
 	//private File source = new File("Z:\\WorkFeb2008\\WordNov2009\\Description_Extraction\\extractionSource\\Plain_text");
@@ -57,6 +56,8 @@ public class Type3Transformer extends Thread {
 	Type3Transformer(ProcessListener listener, Display display, 
 			Text perllog, String dataprefix,String glossarytable, ArrayList seeds){
 		//super(listener, display, perllog, dataprefix);
+		if(ApplicationUtilities.getProperty("ontophrases.bin")!=null && 
+				ApplicationUtilities.getProperty("ontophrases.bin").length()>0) this.pm = new PhraseMarker();
 		this.seeds = seeds;
 		this.listener = listener;
 		this.perlLog = perllog;
@@ -248,7 +249,7 @@ public class Type3Transformer extends Thread {
 		try{
 			BufferedWriter out = new BufferedWriter(
 					new FileWriter(new File(desfolder, fname)));
-			text = pm.markPhrases(text); //phrases are connected via "_" and become words.
+			if(pm!=null) text = pm.markPhrases(text); //phrases are connected via "_" and become words.
 			out.write(text);
 			out.flush();
 			out.close();

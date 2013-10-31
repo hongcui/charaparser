@@ -30,7 +30,8 @@ import org.jdom.xpath.XPath;
  */
 @SuppressWarnings({ "unused" })
 public class Type2Transformer extends Thread {
-	private PhraseMarker pm = new PhraseMarker();
+	
+	private PhraseMarker pm; 
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
 	private File source = new File(Registry.SourceDirectory);
 	//File target = new File(Registry.TargetDirectory);
@@ -53,6 +54,8 @@ public class Type2Transformer extends Thread {
 	 * @param dataprefix
 	 */
 	public Type2Transformer(ProcessListener listener, String dataprefix) {
+		if(ApplicationUtilities.getProperty("ontophrases.bin")!=null && 
+				ApplicationUtilities.getProperty("ontophrases.bin").length()>0) this.pm = new PhraseMarker();
 		this.listener = listener;
 		this.dataprefix = dataprefix;
 		File target = new File(Registry.TargetDirectory);
@@ -120,7 +123,7 @@ public class Type2Transformer extends Thread {
 						Attribute index = new Attribute(ApplicationUtilities.getProperty("transformer.index"), pid);
 						descrp.setAttribute(index);
 						String text = descrp.getTextNormalize().replaceAll("-\\s+(?=[a-zA-Z])", "-"); //auto- matically =>auto-matically
-						text = pm.markPhrases(text); //phrases are connected via "_" and become words.
+						if(pm!=null) text = pm.markPhrases(text); //phrases are connected via "_" and become words.
 						//file names for description text must not contain "-".
 						//record the position for each paragraph. 10.txtp0.txt-0
 						writeDescription2Descriptions(text,pid+".txt" ); 
@@ -137,7 +140,7 @@ public class Type2Transformer extends Thread {
 						descrp.setAttribute(index);
 						descrp.setName("description");
 						String text = descrp.getTextNormalize().replaceAll("-\\s+(?=[a-zA-Z])", "-"); //auto- matically =>auto-matically;
-						text = pm.markPhrases(text); //phrases are connected via "_" and become words.
+						if(pm!=null) text = pm.markPhrases(text); //phrases are connected via "_" and become words.
 						//file names for description text must not contain "-".
 						//record the position for each paragraph. 10.txtp0.txt-0
 						writeDescription2Descriptions(text,pid+".txt" ); 
