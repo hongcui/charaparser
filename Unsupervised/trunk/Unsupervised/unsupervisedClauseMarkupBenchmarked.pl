@@ -675,19 +675,19 @@ $create->execute() or print STDOUT "$create->errstr\n";
 #comparisonpattern
 #$IGNOREPTN
 
-$del = $dbh->prepare('select distinct pattern from comparisonpattern');
-if($del->execute()){
-	$IGNOREPTN =~ s#\)$##; #prep to add additional patterns
-	$IGNOREPTN =~ s#^\(##; 
-	$IGNOREPTN = $IGNOREPTN."|";
-	while(my $ptn = $del->fetchrow_array){
-		if($ptn =~ /\S/){
-			$IGNOREPTN .= $ptn."|";
-		}
-	}
-	$IGNOREPTN =~ s#\|$##;
-	$IGNOREPTN = "(".$IGNOREPTN.")";
-}
+#$del = $dbh->prepare('select distinct pattern from comparisonpattern');
+#if($del->execute()){
+#	$IGNOREPTN =~ s#\)$##; #prep to add additional patterns
+#	$IGNOREPTN =~ s#^\(##; 
+#	$IGNOREPTN = $IGNOREPTN."|";
+#	while(my $ptn = $del->fetchrow_array){
+#		if($ptn =~ /\S/){
+#			$IGNOREPTN .= $ptn."|";
+#		}
+#	}
+#	$IGNOREPTN =~ s#\|$##;
+#	$IGNOREPTN = "(".$IGNOREPTN.")";
+#}
 
 }
 
@@ -6116,7 +6116,10 @@ while(defined ($file=readdir(IN))){
 		#}
     	$stmt = "insert into ".$prefix."_sentence(sentid, source, sentence, originalsent, lead, status) values($SENTID,'$source' ,'$line','$oline','$lead', '$status')";
 		$sth = $dbh->prepare($stmt);
-    	$sth->execute() or print STDOUT $sth->errstr.": SQL Statement: ".$stmt."\n";
+		#$sth->execute() or print STDOUT $sth->errstr;
+    	if(!$sth->execute()){ 
+    		print STDOUT "problem with SQL Statement: ".$stmt."\n";
+    	}
 		#print "Sentence: $line\n" if $debug;
 		#print "Leading words: @words\n\n" if $debug;
 		$SENTID++;

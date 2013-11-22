@@ -33,7 +33,7 @@ use locale;
 		get_EOS set_EOS);
 
 $EOS="\001";
-$P = q/[\.!?;:]/;			## PUNCTUATION
+$P = q/[\.!?;]/;			## PUNCTUATION
 $AP = q/(?:'|"|»|\)|\]|\})?/;	## AFTER PUNCTUATION
 $PAP = $P.$AP;
 $SAP = q/(?:\.|'|"|»|\)|\]|\})?/;
@@ -236,6 +236,7 @@ sub split_unsplit_stuff {
 
 	return $text;
 }
+
 
 sub clean_sentences {
 	my ($sentences) = @_;
