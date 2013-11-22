@@ -19,6 +19,7 @@ import org.jdom.Attribute;
 import org.jdom.Content;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
@@ -45,6 +46,7 @@ import edu.arizona.sirls.biosemantics.parsing.state.SentenceOrganStateMarker;
 @SuppressWarnings({ "unused","static-access" })
 public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private static final Logger LOGGER = Logger.getLogger(StanfordParser.class);
+	private static CharacterAnnotatorChunked cac;
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
@@ -83,7 +85,16 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	
 	static StringWriter sw;
 	static PrintWriter pw;
-
+	private static XPath statementpath;
+	private static XPath clausestartpath;
+	static{
+		try{
+			statementpath = XPath.newInstance(".//statement");
+			clausestartpath = XPath.newInstance(".//structure[@clausestart]");
+		}catch(Exception e){
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator"), e);
+		}
+	}
 	/**
 	 * 
 	 */
@@ -165,7 +176,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				//if(src.compareTo("106.txt-3")!=0 /*&& src.compareTo("Rhapidophyllum.txt-6")!=0*/) continue;
 				//if(src.compareTo("1227.txt-16")!=0) continue;
 				//if(!src.startsWith("4. Exacum teres.txt-12")) continue;
-				//if(!src.startsWith("1.txtp108.txt-2")) continue;
+				//if(!src.startsWith("182.txtp0.txt-2")) continue;
 				try{
 					str = tagger.POSTag(str, src);
 				}catch(Exception e){
@@ -286,7 +297,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			Matcher m = null;
 			Tree2XML t2x = null;
 			Document doc = null;
-			CharacterAnnotatorChunked cac = new CharacterAnnotatorChunked(conn, this.tableprefix, glosstable, this.evaluation);
+			cac = new CharacterAnnotatorChunked(conn, this.tableprefix, glosstable, this.evaluation);
 			SentenceChunker4StanfordParser ex = null;
 			Element statement = null;
 			ChunkedSentence cs = null;
@@ -741,7 +752,13 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				  "http://apache.org/xml/properties/schema/external-schemaLocation",
 				  "http://biosemantics.googlecode.com/svn/trunk/characterStatements/ characterAnnotationSchema.xsd");
 		builder.build(description);*/
-		
+
+		//this is to be done because some relation may cross sentences
+		if(Boolean.valueOf(ApplicationUtilities.getProperty("attachparentorgan"))){
+			attachParentOrgan(description); //by heuristics -- may not be reliable at all depending on the writing style of the source descriptions
+		}
+		removeClauseStartAttribute(description);
+
 		if(dID.indexOf(".txtp")>=0){//1.txtp436_1.txt
 			String pid = dID.replaceFirst("\\.txt$", "");//1.txtp436_1
 			VolumeFinalizer.replaceWithAnnotated(description, baseroot, ".//description[@"+ApplicationUtilities.getProperty("transformer.index")+"=\""+pid+"\"]");			
@@ -751,6 +768,127 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 	}
 	
+	/**
+	 * remove all occurrences of clausestart attributes
+	 * @param description
+	 */
+	@SuppressWarnings("unchecked")
+	private void removeClauseStartAttribute(Element description) {
+		try{
+			List<Element> structures = this.clausestartpath.selectNodes(description);
+			for(Element structure: structures){
+				structure.removeAttribute("clausestart");
+			}
+		}catch(Exception e){
+			LOGGER.error(e);
+		}
+		
+	}
+
+	/**
+	 * using the clues of using 'comma' and capitalization to determine the parentorgan of a structure 
+	 * for example, Leaves large, blade smooth.
+	 * with the assumption that Capitalized structure is the main structure (leaves) and parts are described after ',', we can attach 'leaf' as the parent organ to 'blade' (leaf blade);
+	 * this may not be a reliable solution at all, (eg, Blade smooth, petiole hairy) but may work for some descriptions (especially human annotated descriptions to meet this expectation)
+	 * @param startsent
+	 */
+	@SuppressWarnings("unchecked")
+	private void attachParentOrgan(Element description) {
+		try{
+			String parentorgan=null;
+			//XMLOutputter xo1 = new XMLOutputter(Format.getPrettyFormat());
+			//System.out.println(xo1.outputString(description));
+			List<Element> statements = statementpath.selectNodes(description);
+			for(Element statement: statements){
+				if(statement.getChild("text").getText().matches("^[A-Z].*")){ //record parentorgan
+					Element structure = statement.getChild("structure"); //get 1st structure
+					if(structure!=null){
+						parentorgan = attachPOto(description, statement, structure, "");		
+					}
+				}else{//sentences not starting with a capitalized structure names = those structures after ;
+					if(parentorgan!=null){
+						Element struct = statement.getChild("structure");
+						if(struct!=null){
+							//apply parentorgan + localpo to other structures in the statement(clause-starting structures and with structures)
+							attachPOto(description,statement, struct, parentorgan);
+							//then apply parentorgan to the first structure 
+							cac.addAttribute(struct, "constraint", parentorgan);
+						}
+					}
+				}
+			}
+			
+		}catch(Exception e){
+			LOGGER.error(e);
+		}
+		
+	}
+	
+
+	@SuppressWarnings("unchecked")
+	private String attachPOto(Element description, Element statement, Element structure, String po) {
+		String parentorgan = null;
+		if(structure!=null){
+			String constraint = structure.getAttribute("constraint") !=null? structure.getAttributeValue("constraint") : null;
+			if(constraint!=null){
+				if(Utilities.isOrgan(constraint, conn, tableprefix)) parentorgan = po+" "+constraint;
+			}else{
+				parentorgan = po+" "+structure.getAttributeValue("name");
+			}
+
+			parentorgan = parentorgan.trim();
+			//attach parentorgan to other 'clausestart' structures in this statement
+			List<Element> structures = statement.getChildren(); //could include 'relation' too
+			for(Element struct: structures){ 
+				if(struct.getName().compareTo("structure")==0){
+					if(!struct.equals(structure)){//skip the structure
+						if(struct.getAttribute("clausestart")!=null && Boolean.valueOf(struct.getAttributeValue("clausestart"))){
+							//attach parent organ to other 'clausestart' structure = those structures after ,
+							cac.addAttribute(struct, "constraint", parentorgan);
+						}else{
+							//attach parent organ to other structure that are related to parent organ through relation with/has/possess
+							if(possess(structure, struct, description)){
+								cac.addAttribute(struct, "constraint", parentorgan);
+							}
+						}
+					}
+				}
+			}
+		}
+		return parentorgan;
+	}
+	
+	
+	/**
+	 * 
+	 * @param structure
+	 * @param struct
+	 * @return true if structure possess [with, has, posses] struct. This could be expressed as relation or as character constraint
+	 */
+	
+	private boolean possess(Element structure, Element struct, Element description) {
+		String idw = structure.getAttributeValue("id");
+		String idp = struct.getAttributeValue("id");
+		try{
+			XPath rel = XPath.newInstance(".//relation[@name='with'][@from='"+idw+"'][@to='"+idp+"']|"
+					+ ".//relation[@name='has'][@from='"+idw+"'][@to='"+idp+"']|"
+					+ ".//relation[@name='consist_of'][@from='"+idw+"'][@to='"+idp+"']|"
+					+ ".//relation[@name='possess'][@from='"+idw+"'][@to='"+idp+"']");
+			if(rel.selectNodes(description).size()>0) return true;
+			
+			rel = XPath.newInstance(".//character[contains(@constraintid,'"+idp+"')]");
+			
+			List<Element>characters = rel.selectNodes(description);
+			for(Element character: characters){
+				if(character.getParentElement().getAttributeValue("id").compareTo(idw)==0 &&
+				(character.getAttributeValue("constraint").matches("^with\\b.*")||character.getAttributeValue("constraint").matches("^consist[_ -]of\\b.*")))
+					return true;
+			}
+		}catch(Exception e){
+			LOGGER.error("",e);
+		}
+		return false;
+	}
 	
 	public ArrayList<String> getMarkedDescription(String source){
 		return null;
@@ -906,7 +1044,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String posedfile = ApplicationUtilities.getProperty("target")+"/"+prefix+"_posedsentences.txt";
 		String parsedfile = ApplicationUtilities.getProperty("target")+"/"+prefix+"_parsedsentences.txt";
 		String transformedir=ApplicationUtilities.getProperty("target")+ "/transformed";
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "gg_noschema_fnaglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
 		
 		/*String database = "markedupdatasets";
 		String posedfile = "C:\\Users\\updates\\CharaParserTest\\Sponges\\sponges-11mar13\\target\\sponges_1__posedsentences.txt";

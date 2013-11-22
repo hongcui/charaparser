@@ -27,6 +27,38 @@ public class Test {
 	public Test() {
 	}
 	
+	/**
+	 * more|greater than 5 => 5+
+	 * more than or equal to 5 => 5+
+	 * less|fewer than 5 => 0-5	
+	 * @param str
+	 * @return
+	 */
+	private String normalizeVagueNumbers(String str) {
+		Pattern p = Pattern.compile("(.*?)\\b((?:equal[ _-]to|(?:more|greater|less|fewer) than|or| )+) ([\\d.]+)(.*)");
+		Matcher m = p.matcher(str);
+		while(m.matches()){
+			if(m.group(2).matches(".*?\\b(more|greater)\\b.*")){
+				str = m.group(1)+" "+m.group(3)+"+"+m.group(4);
+			}else if(m.group(2).matches(".*?\\b(less|fewer)\\b.*")){
+				str = m.group(1)+" 0-"+m.group(3)+m.group(4);
+			}else{
+				return str;
+			}
+			m = p.matcher(str);
+		}
+		str = str.replaceAll("\\s+", " ");
+		//4+ and 0-6 => 4-6
+		str = str.replaceAll("(?<=\\d)\\+ (and|but) 0(?=-\\d)", "");
+		//0-6 feet and 4+ =>4-6
+		Pattern p2 = Pattern.compile("(.*?)0(-[\\d.]+)( \\w+ )(?:and|but) ([\\d.]+)\\+(.*)");
+		Matcher m2 = p2.matcher(str);
+		while(m2.matches()){
+			str = m2.group(1)+" "+m2.group(4)+m2.group(2)+" "+m2.group(3)+" "+m2.group(5);
+			m2 = p2.matcher(str);
+		}
+		return str.replaceAll("\\s+", " ").trim();
+	}
 	public void constraint(){
 		String[] organ = new String[]{"long", "cauline", "leaf", "abaxial", "surface", "trichomode"};
 		Hashtable<String, String> mapping = new Hashtable<String, String>();
@@ -200,6 +232,9 @@ public class Test {
 		result[1] = text2;//{oblanceolate} , 15-70×30-150+ , {flat} 
 		return result;
 }
+	
+
+
 	/**
 	 * @param args
 	 */
@@ -210,7 +245,12 @@ public class Test {
 		//t.addSentmod("{distal} (face)", "distal [basal leaf]")
 		//t.combineModifiers("<character name=\"n\" modifier=\"a\" value=\"c\"/>")
 		//t.normalizemodifier("leaves shallowly to deeply pinnatifid, weekly to strongly angled")
-		t.normalizeArea("{pistillate} 9-47 ( -55 in <fruit> ) ×5.5-19 mm , {flowering} <branchlet> 0-4 mm ;")[1]		
+		//t.normalizeArea("{pistillate} 9-47 ( -55 in <fruit> ) ×5.5-19 mm , {flowering} <branchlet> 0-4 mm ;")[1]		
+		
+		t.normalizeVagueNumbers("more than or equal to 4 and equal to or less than 6 feet")	+"\n"+
+		t.normalizeVagueNumbers("more than or equal to 4 ")	+"\n"+
+		t.normalizeVagueNumbers("equal to or less than 6 feet")	+"\n"+
+		t.normalizeVagueNumbers("equal to or less than 6 feet and more than or equal to 4 ")+"\n"
 				);
 		//{pistillate} 9-47 ( -55 in <fruit> )×5.5-19mm , {flowering} <branchlet> 0-4 mm ;
 		//String text = "that often do not overtop the heads";

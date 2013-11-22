@@ -721,7 +721,7 @@ end procedure
 						    		.replaceFirst(inname.replaceAll("\\[", "\\\\[").replaceAll("\\]","\\\\]"), "").trim();
 							String n = allText(p);
 							if(n.matches(".*?, [a-z]+$")) return ""; //last word (the NN) should not directly follow a comma
-							if(n.matches(".*("+ChunkedSentence.units+")") && ((Element) e.getChildren().get(e.getChildren().size()-1)).getName().startsWith("NP")){
+							if(n.matches(".*\\b("+ChunkedSentence.units+")\\b") && ((Element) e.getChildren().get(e.getChildren().size()-1)).getName().startsWith("NP")){
 								n = all; //3 mm long hairs
 							}
 							int index = all.indexOf(n);

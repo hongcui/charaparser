@@ -56,7 +56,7 @@ public class ChunkedSentence {
 	private String tableprefix = null;
 	private Hashtable<String, String> thantype = new Hashtable<String, String>();
 	public static final String locationpp="near|from";
-	public static final String units= "cm|mm|dm|m|meters|meter|microns|micron|unes|µm|um|centimeters|centimeter|millimeters|millimeter";
+	public static final String units= "pm|cm|mm|dm|m|meters|meter|microns|micron|unes|µm|um|centimeters|centimeter|millimeters|millimeter";
 	public static final String percentage="%|percent";
 	public static final String degree="°|degrees|degree";
 	public static final String times = "times|folds|lengths|widths";
@@ -130,6 +130,7 @@ public class ChunkedSentence {
 		eqcharacters.put("broad", "width");
 		eqcharacters.put("diam", "diameter");
 		eqcharacters.put("high", "height");
+		eqcharacters.put("thick", "thickness");
 		//eqcharacters.put("diameter", "diameter");
 				
 		this.tableprefix = tableprefix;
@@ -193,6 +194,8 @@ public class ChunkedSentence {
 				//treetoken[i] = treetoken[i].replace("~list~", "[{").replaceAll("\\{(?=\\w{2,}\\[)", "").replaceAll("(?<=~[a-z0-9-]{1,40})(\\}| |$)","}]");
 			}
 		}		
+		
+		
 		for(i= 0; i<treetoken.length; i++){
 			if(treetoken[i].indexOf('[') >=0){
 				int bcount  = treetoken[i].replaceAll("[^\\[]", "").trim().length();
@@ -819,7 +822,7 @@ public class ChunkedSentence {
 				}
 			}			
 			/*end mohan*/
-			if((t.matches("\\{\\w+\\}") && !t.matches("\\{("+StanfordParser.characters+")\\}")) || t.contains("~list~") || t.matches(".*?\\d+?")){
+			if((t.matches("\\{\\w+\\}") && !t.matches("\\{("+StanfordParser.characters+")\\}")) || t.contains("~list~") || t.matches(".*?[\\d]+\\+?")){
 				chunk = t+" "+chunk;
 				foundm = true;
 			}else if(!foundm && (t.endsWith(">") ||t.endsWith(")") )){ //if m o m o, collect two chunks
@@ -2622,6 +2625,12 @@ parallelism scope: q[other chunks]
 				if(charainfo==null){
 					//more than 3_jointed
 					charainfo = Utilities.lookupCharacter(afterthan.replaceAll("[()\\[\\]]", ""), this.conn, ChunkedSentence.characterhash, glosstable, tableprefix);
+					if(Arrays.asList(charainfo).contains("structure")){ //change to nonsubject organ
+						token = token.replaceFirst("n\\[", "u\\[").replaceAll("\\s+(?!\\()", "_");
+						this.chunkedtokens.set(id, token);
+						thantype.put(token, "ChunkNonsubjectOrgan");
+						return "ChunkNonSubjectOrgan";
+					}
 					if(charainfo==null)	chara="count";
 					else chara = charainfo[0];
 				}

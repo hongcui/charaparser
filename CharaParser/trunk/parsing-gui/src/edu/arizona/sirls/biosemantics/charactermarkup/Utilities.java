@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.UUID;
 
 import edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
@@ -27,6 +28,11 @@ import java.util.ArrayList;
 import java.util.regex.*;
 
 import org.apache.log4j.Logger;
+import org.jdom.Element;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
+import org.jdom.xpath.XPath;
+
 /**
  * @author hongcui
  *
@@ -736,12 +742,19 @@ public class Utilities {
 				w = w.replaceFirst("shaped", "-shaped");
 			}
 
+			String[] ws = w.split("-or-"); //palm_or_fern_like
+			w = ws[ws.length-1];
 
-			if(w.indexOf('-')>0){
-				String[] ws = w.split("-+");
+			if(w.indexOf('-')>0 && !w.endsWith("like")){
+			    ws = w.split("-+");
 				w = ws[ws.length-1];
 			}
+			
+			
 			ch = lookup(w, conn, characterhash, glosstable, wc, prefix);
+			if(ch == null && w.endsWith("like")){//pani_culiform
+				ch = new String[]{"shape", ""};
+			}
 			if(ch == null && wc.indexOf('-')>0){//pani_culiform
 				ch = lookup(wc.replaceAll("-", ""), conn, characterhash, glosstable, wc, prefix);
 			}
@@ -1263,8 +1276,75 @@ public class Utilities {
 		return str;
 	}
 
+	/**
+	 * trace part_of relations of structid to get all its parent structures,
+	 * separated by , in order
+	 * 
+	 * TODO limit to 3 commas
+	 * TODO treat "in|on" as part_of? probably not
+	 * @param root
+	 * @param xpath
+	 *            : "//relation[@name='part_of'][@from='"+structid+"']"
+	 * @count number of rounds in the iteration
+	 * @return
+	 */
+	public static String getStructureChain(Element root, String xpath, int count) {
+		String path = "";
+		try{
+			List<Element> relations = XPath.selectNodes(root, xpath);			
+			xpath = "";
+			for (Element r : relations) {
+				String pid = r.getAttributeValue("to");
+				path += Utilities.getStructureName(root, pid) + ",";
+				String[] pids = pid.split("\\s+");
+				for (String id : pids) {
+					if (id.length() > 0)
+						xpath += "//relation[@name='part_of'][@from='" + id + "']|//relation[@name='in'][@from='" + id + "']|//relation[@name='on'][@from='" + id + "']|";
+				}
+			}
+			if (xpath.length() > 0 && count < 3) {
+				xpath = xpath.replaceFirst("\\|$", "");
+				path += getStructureChain(root, xpath, count++);
+			} else {
+				return path.replaceFirst(",$", "");
+			}
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+			LOGGER.error(sw.toString());
+		}
+		return path.replaceFirst(",$", "");
+	}
 
+	/**
+	 * Get structure names for 1 or more structids from the XML results of CharaParser.
+	 * 
+	 * @param root
+	 * @param structids
+	 *            : 1 or more structids
+	 * @return
+	 */
+	public static String getStructureName(Element root, String structids) {
+		String result = "";
 
+		String[] ids = structids.split("\\s+");
+		for (String structid : ids) {
+			try{
+				Element structure = (Element) XPath.selectSingleNode(root, "//structure[@id='" + structid + "']");
+				String sname = "";
+				if (structure == null) {
+					LOGGER.error("found no structure in "+(new XMLOutputter(Format.getPrettyFormat())).outputString(root));
+				} else {
+					sname = ((structure.getAttribute("constraint") == null ? "" : structure.getAttributeValue("constraint")) + " " + structure.getAttributeValue("name").replaceAll("\\s+", "_"));
+				}
+				result += sname + ",";
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(sw.toString());
+			}
+		}
+		result = result.replaceAll("\\s+", " ").replaceFirst(",$", "").trim();
+		return result;
+	}
 
 
 	public static void main(String[] argv){
@@ -1278,7 +1358,7 @@ public class Utilities {
 			e.printStackTrace();
 		}
 
-		String[] result = Utilities.lookupCharacter("pale_c_cream", conn, new Hashtable<String, String[]>(), "gg_noschema_fnaglossaryfixed", "gg_noschema");
+		String[] result = Utilities.lookupCharacter("palm_or_fern_like", conn, new Hashtable<String, String[]>(), "fnaglossaryfixed", "cycad_demo");
 		for(String r: result){
 			System.out.println(r);
 		}

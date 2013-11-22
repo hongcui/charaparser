@@ -89,6 +89,8 @@ public class POSTagger4StanfordParser {
 	//end mohan declaration
 	private static Pattern asaspattern = Pattern.compile("(.*?\\b)(as\\s+[\\w{}<>]+\\s+as)(\\b.*)");
 	private static Pattern modifierlist = Pattern.compile("(.*?\\b)(\\w+ly\\s+(?:to|or)\\s+\\w+ly)(\\b.*)");
+	private static Pattern vaguenumberptn1 = Pattern.compile("(.*?)\\b((?:equal[ _-]to|(?:more|greater|less|fewer) than|or| )+) ([\\d.]+)(.*)");
+	private static Pattern vaguenumberptn2 = Pattern.compile("(.*?)0(-[\\d.]+)( \\w+ )(?:and|but) ([\\d.]+)\\+(.*)");
 	private static String negations = "not|never|seldom";//not -ly words. -ly words are already treated in character list patterns
 	private static String[] modifierphrases = new String[] {"at first"};
 	public static ArrayList<String> modifiertokens = new ArrayList<String>();
@@ -122,8 +124,8 @@ public class POSTagger4StanfordParser {
 				str = str.replaceAll("\\s+or\\s+-\\{", "-or-").replaceAll("\\s+to\\s+-\\{", "-to-").replaceAll("\\s+-\\{", "-{");
 			}*/
 
-			if(str.matches(".*?-(or|to)\\b.*") || str.matches(".*?\\b(or|to)-.*") ){//1–2-{pinnately} or-{palmately} {lobed} => {1–2-pinnately-or-palmately} {lobed}
-				str = str.replaceAll("\\}?-or\\s+\\{?", "-or-").replaceAll("\\}?\\s+or-\\{?", "-or-").replaceAll("\\}?-to\\s+\\{?", "-to-").replaceAll("\\}?\\s+to-\\{?", "-to-").replaceAll("-or\\} \\{", "-or-").replaceAll("-to\\} \\{", "-to-");
+			if(str.matches(".*?[_-](or|to)\\b.*") || str.matches(".*?\\b(or|to)[_-].*") ){//1–2-{pinnately} or-{palmately} {lobed} => {1–2-pinnately-or-palmately} {lobed}
+				str = str.replaceAll("\\}?[_-]or\\s+\\{?", "_or_").replaceAll("\\}?\\s+or[_-]\\{?", "_or_").replaceAll("\\}?[_-]to\\s+\\{?", "_to_").replaceAll("\\}?\\s+to[_-]\\{?", "_to_").replaceAll("[_-]or\\} \\{", "_or_").replaceAll("[_-]to\\} \\{", "_to_");
 			}
 			//{often} 2-, 3-, or 5-{ribbed} ; =>{often} {2-,3-,or5-ribbed} ;  635.txt-16
 			Matcher m = hyphenedtoorpattern.matcher(str);
@@ -228,7 +230,9 @@ public class POSTagger4StanfordParser {
 				//str = handleBrackets(str);
 
 				//str = Utilities.handleBrackets(str);
-
+				if(str.matches(".*?\\d.*")){
+					str = normalizeVagueNumbers(str); //more than 5, less than 5
+				}
 				stmt.execute("update "+this.tableprefix+"_markedsentence set rmarkedsent ='"+str+"' where source='"+src+"'");	
 				
 				if(containsArea){
@@ -356,7 +360,39 @@ public class POSTagger4StanfordParser {
 	}
 		
 
-		
+		/**
+		 * more|greater than 5 => 5+
+		 * more than or equal to 5 => 5+
+		 * less|fewer than 5 => 0-5	
+		 * @param str
+		 * @return
+		 */
+		private String normalizeVagueNumbers(String str) {
+
+			Matcher m = vaguenumberptn1.matcher(str);
+			while(m.matches()){
+				if(m.group(2).matches(".*?\\b(more|greater)\\b.*")){
+					str = m.group(1)+" "+m.group(3)+"+"+m.group(4);
+				}else if(m.group(2).matches(".*?\\b(less|fewer)\\b.*")){
+					str = m.group(1)+" 0-"+m.group(3)+m.group(4);
+				}else{
+					return str; //not contain a vague number
+				}
+				m = vaguenumberptn1.matcher(str);
+			}
+			str = str.replaceAll("\\s+", " ");
+			//4+ and 0-6 => 4-6
+			str = str.replaceAll("(?<=\\d)\\+ (and|but) 0(?=-\\d)", "");
+			//0-6 feet and 4+ =>4-6
+			
+			Matcher m2 = vaguenumberptn2.matcher(str);
+			while(m2.matches()){
+				str = m2.group(1)+" "+m2.group(4)+m2.group(2)+" "+m2.group(3)+" "+m2.group(5);
+				m2 = vaguenumberptn2.matcher(str);
+			}
+			return str.replaceAll("\\s+", " ").trim();
+		}
+
 	/**
 	 * shallowly to deeply pinnatifid
 	 * => //shallowly~to~deeply pinnatifid	
