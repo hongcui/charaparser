@@ -149,8 +149,8 @@ public class SentenceOrganStateMarker {
 				//stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
 				if(colors==null){
 					colors = this.colorsFromGloss().trim();
-					if(colors.length()==0) colors += "shades_of";
-					else colors += "|shades_of";
+					if(colors.length()==0) colors += "shades[_-]of";
+					else colors += "|shades[_-]of";
 					pt = "\\b(?<="+colors+")\\s+(?="+colors+")\\b";
 					colorpattern = Pattern.compile(pt); //spaces that surrounded by colors
 				}
@@ -861,6 +861,7 @@ public class SentenceOrganStateMarker {
 				String term = rs.getString("term").trim();
 				if(term == null){continue;}
 				term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
+				term = term.replaceAll("[_-]", "[_-]");
 				colors.append(term+"|");
 			}
 		}catch(Exception e){
@@ -921,7 +922,8 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "gg_noschema", "gg_noschema_fnaglossaryfixed", true, null, null);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "cycad_2_hong", "fnaglossaryfixed", true, null, null);
+		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "gg_noschema", "gg_noschema_fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
