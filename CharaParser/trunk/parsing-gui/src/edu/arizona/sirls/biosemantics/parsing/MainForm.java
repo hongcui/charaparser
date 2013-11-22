@@ -111,7 +111,7 @@ public class MainForm {
 	static {
 		//Set the Log File path
 		try {
-			ApplicationUtilities.setLogFilePath();
+			//ApplicationUtilities.setLogFilePath();
 		} catch (Exception exe) {
 	        exe.printStackTrace();	
 		}
@@ -6078,7 +6078,7 @@ public class MainForm {
 		}else if(glosstype.compareToIgnoreCase("nematodes")==0){
 			return "nematodesglossaryfixed";
 		}else  if(glosstype.compareToIgnoreCase("algea")==0){
-			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+"algea glossary is not ready yet");
+			return "diatomglossaryfixed";
 		}
 		LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+glosstype+" glossary is not ready yet");
 		return null;
@@ -6100,9 +6100,9 @@ public class MainForm {
 		}else if(glosstype.compareToIgnoreCase("nematodes")==0){
 			return null;
 		}else  if(glosstype.compareToIgnoreCase("algea")==0){
-			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+"algea glossary is not ready yet");
+			return null;
 		}
-		LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+glosstype+" glossary is not ready yet");
+		//LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+glosstype+" glossary is not ready yet");
 		return null;
 	}
 	/**

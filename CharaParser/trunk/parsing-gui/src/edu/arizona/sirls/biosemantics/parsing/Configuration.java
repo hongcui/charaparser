@@ -19,7 +19,7 @@ public class Configuration {
 	static {
 		//Set the Log File path
 		try {
-			ApplicationUtilities.setLogFilePath();
+			//ApplicationUtilities.setLogFilePath();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

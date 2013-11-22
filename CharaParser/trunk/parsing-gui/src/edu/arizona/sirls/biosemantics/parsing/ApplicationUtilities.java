@@ -40,10 +40,10 @@ public class ApplicationUtilities {
 	static {
 		try {
 						
-		/*fstream = new FileInputStream(System.getProperty("user.dir")
-					+"/application.properties");*/
+		fstream = new FileInputStream(System.getProperty("user.dir")
+					+"/application.properties");
 					
-		fstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream("application.properties");
+		//fstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream("application.properties");
 		//notepadstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream("notepad.properties");
 		notepadstream = new BufferedInputStream(new FileInputStream(System.getProperty("user.dir")+"/notepad.properties"));	
 		} //catch (FileNotFoundException e) {
@@ -110,7 +110,6 @@ public class ApplicationUtilities {
 			properties = new Properties();
 			notepadproperties = new Properties();
 			try {
-				
 				notepadproperties.load(notepadstream);
 				properties.load(fstream);
 			} catch (IOException e) {
