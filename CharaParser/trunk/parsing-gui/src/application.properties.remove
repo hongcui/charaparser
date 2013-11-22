@@ -1,3 +1,7 @@
+##notes
+#Transformation:file names for description text must not contain "-".
+
+
 #Local database info
 
 #Example database info
@@ -8,33 +12,35 @@
 #database.url=jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword&connectTimeout=0&socketTimeout=0&autoReconnect=true
 
 #Fill in database.name, database.url, database.username, and database.password. See example above.
-database.name=
-database.username=
-database.password=
+database.name=markedupdatasets
+database.username=termsuser
+database.password=termspassword
 #Replace DATABSE.NAME, DATABASE.USERNAME, DATABASE.PASSWORD with the values entered. See example above
-database.url=jdbc:mysql://localhost/DATABSE.NAME?user=DATABASE.USERNAME&password=DATABASE.PASSWORD&connectTimeout=0&socketTimeout=0&autoReconnect=true
+database.url=jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword&connectTimeout=0&socketTimeout=0&autoReconnect=true
 database.driverPath=com.mysql.jdbc.Driver
 
-#OTO server access. 
-#If you don't use OTO functions, you can disregard the following two parameters
-#Otherwise, request credentials from CharaParser distributor and fill in server.password and server.username: 
-server.password=
-server.username=
+#OTO server. 
+#Fill in server.password and server.username
+server.password=HaoHao(3)Sui
+server.username=hongcui
+
 #properties of source documents
 #Fl. as flowering time, like 'fl . may \u2013 jun , fr . jul \u2013 aug .' at the end of description paragraph
 source.fl = false
 #what should n=20 be marked up as?
-source.n = chromosome
-#source.n = sample
+#source.n = chromosome
+source.n = sample
 source.type=type4
 source.subtype=taxonx
-attachparentorgan=true
+attachparentorgan=false
+
 
 #ontology use
 #location of serialized anatomy ontology phrases
-ontophrases.bin=
+#ontophrases.bin=C:/Users/updates/CharaParserTest/Ontologies/po_terms.bin
+#ontophrases.p2s.bin=
 #names of all tables holding anatomy ontology terms should end  with this suffix
-ontophrases.table.suffix=_onto_structures
+#ontophrases.table.suffix=_onto_structures
 
 #unknown structure placeholder
 unknown.structure.name=whole_organism
@@ -42,21 +48,20 @@ unknown.structure.name=whole_organism
 server.name=biosemantics.arizona.edu
 
 #charaparser version
-CharaParser.version=0.1
+CharaParser.version=development
 
 #charaparser running mode
-charaparser.finalize=true
-charaparser.standalone=false
-initial.run=false
-
+charaparser.finalize=false
+charaparser.standalone=true
+#intial run or rerun with term review results from OTO
+initial.run=true
 #stanford parser file paths
-prefix=test_4
-target=C:/Users/updates/CharaParserTest/2012BiosemanticsWorkshopTest/FNAv8Ericaceae/target/
+prefix=cycad_demo
+target=C:/Users/updates/CharaParserTest/CycadType2Demo/target
 
 # Data individual to mark up
-
 taxon.list=TaxaList.txt
-taxon.indexer=TaxonIndexer.bin	
+taxon.indexer=TaxonIndexer.bin
 instr.names=InstrNames.bin
 style.mapping=style-mapping.properties
 MARKEDUP=markedup
@@ -225,14 +230,14 @@ OTO.downloadable.dir=/home/sirls/hongcui/WebFilesForTomcat/OTO/downloadFiles/
 
 #labels
 labelSelectProject=Select the folder for the project :
-datasetprefix=Choose dataset prefix and the subject of the dataset (the prefix must be in lower case, not include "." or "-", and cannot end with "_"): 
+datasetprefix=Choose dataset prefix and the subject of the dataset (the prefix must be in lower case, not include "." or "-", and cannot end with "_"):
 stepsComplete= All steps are completed.
 stepsTobeCompletedLbl=Steps to be completed :
 loadPrjLbl=Your last project is loaded. Project Folder:
 datasetLbl=with Dataset Prefix:
 glossaryLbl=and Glossary :
 upload2OTO=Automatically load learned terms to OTO.
-generateMatrix=Generate taxon-character matrix with parsed descriptions (under construction).
+generateMatrix=Generate taxon-character matrix with parsed descriptions.
 ContainIndexedParts=This document collection contains number-indexed organ parts, such as "rib 5" (meaning the fifth rib and not 5 ribs).
 ContainIndexedParts1=This document collection contains number-indexed organ parts, 
 ContainIndexedParts2=such as "rib 5" (meaning the fifth rib and not 5 ribs).
