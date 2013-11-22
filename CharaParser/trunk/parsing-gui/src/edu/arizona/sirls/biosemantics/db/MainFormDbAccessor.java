@@ -177,10 +177,7 @@ public class MainFormDbAccessor {
 		}
 	}
 	
-	
-	
-	
-	
+
 	public void updateContextData(int sentid, StyledText contextStyledText) throws SQLException, ParsingException {
 		
 		//Connection conn = null;
@@ -822,7 +819,7 @@ public class MainFormDbAccessor {
 		try {
 			//Class.forName(driverPath);
 			//conn = DriverManager.getConnection(url);
-			word = word.replaceAll("_", "-");
+			word = word.replaceAll("[_-]", "[ _-]");
 			String sql = "select source,originalsent from "+this.prefix+"_sentence where originalsent rlike '[[:<:]]"+word+"[[:>:]]'";
 			//String sql = "select source,originalsent from "+this.prefix+"_sentence where originalsent rlike '[[:<:]]"+word+"[[:>:]]' or tag = '"+word+"'";
 			stmt = conn.prepareStatement(sql);
