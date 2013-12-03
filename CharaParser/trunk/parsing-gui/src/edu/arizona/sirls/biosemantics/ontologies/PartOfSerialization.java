@@ -62,8 +62,8 @@ public class PartOfSerialization {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String input = "Lactarius_part_of.txt";
-		String output = "Lactarius_part_of.bin";
+		String input = "Lactarius_part_of_preferredtermsonly.txt";
+		String output = "Lactarius_part_of_preferredtermsonly.bin";
 		String folder = ApplicationUtilities.getProperty("ontology.dir");
 		PartOfSerialization pos = new PartOfSerialization(folder+input, folder+output);
 

@@ -770,12 +770,14 @@ public class Utilities {
 				ch = lookup(wc, conn, characterhash, glosstable, wc, prefix);
 			}
 		}
-		
+		//ch[0]: chara1_or_chara2, ch[1]: preferedterm_chara1, perferredterm_chara2
 		if(ch!=null && ch[1].length()>0){ //has syn
-			Term original = new Term(orig, ch[0]);
+			String[] chars = ch[0].split("_or_");
 			String[] synterms = ch[1].split("\\s*,\\s*");
+			int i = 0;
 			for(String synterm: synterms){ //#
 				String[] syninfo = synterm.split("#");
+				Term original = new Term(orig, chars[i++]);
 				Term preferred = new Term(syninfo[0], syninfo[1]);
 				Utilities.syncache.put(original, preferred); 
 			}
@@ -855,9 +857,16 @@ public class Utilities {
 	 */
 	@SuppressWarnings("null")
 	public static String getPreferredTerm(String term, String category){
-		Term preferred = Utilities.syncache.get(new Term(term, category));
-		if(preferred == null) return term;  //multi-category cases falls here
-		return preferred.getTerm();
+		if(Utilities.syncache!=null){
+			ArrayList<String> cats = new ArrayList<String>();
+			cats.addAll(Arrays.asList(category.split("_or_")));
+			//for the time being, use first cat only
+			//TODO: handle multi-category cases. How?
+			Term preferred = Utilities.syncache.get(new Term(term, cats.get(0)));
+			if(preferred == null) return term;  //multi-category cases falls here
+			return preferred.getTerm();
+		}
+		return term;
 	}
 	
 	

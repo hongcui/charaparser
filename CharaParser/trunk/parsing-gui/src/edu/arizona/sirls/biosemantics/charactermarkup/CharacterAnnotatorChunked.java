@@ -3026,6 +3026,8 @@ public class CharacterAnnotatorChunked {
 				else type = constraintType(w, o);
 				if(type!=null){
 					organ[j] = "";
+					if(type.compareTo("parent_organ")==0) w = Utilities.getPreferredTerm(w.replaceAll("[()]", ""), "structure");
+					
 					constraint = w+" " +constraint; //plain
 					//fancy:
 					/*if(type.equals("type")){

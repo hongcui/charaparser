@@ -291,6 +291,7 @@ public class StructureNameNormalizer {
 			XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
 			File[] files = new File(inputdir).listFiles();
 			for(File file: files){
+				if(file.getName().compareTo("dry.pdf.4matrix-after-partoftable_preferredterms.xml")!=0) continue;
 				SAXBuilder builder = new SAXBuilder();
 				Document doc = builder.build(file);
 				Element root = doc.getRootElement();
