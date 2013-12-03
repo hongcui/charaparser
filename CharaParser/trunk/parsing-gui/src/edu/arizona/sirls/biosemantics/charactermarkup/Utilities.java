@@ -57,6 +57,9 @@ public class Utilities {
 	public static boolean debugPOS = false;
 	public static ArrayList<String> glossarytables;
 	public static ArrayList<String> ontostructuretables;
+	public static Hashtable<Term, Term> syncache = new Hashtable<Term, Term> ();
+	public static boolean structuresyn = false;
+	public static String notInModifier = "a|an|the";
 	//special cases
 	/**
 	 * word must be a verb if
@@ -724,6 +727,11 @@ public class Utilities {
 	 * @return null if not found; string[2]: string[0]: chara1_or_chara2, string[1]: preferedterm_chara1, perferredterm_chara2
 	 */
 	public static String[] lookupCharacter(String w, Connection conn, Hashtable<String, String[]> characterhash, String glosstable, String prefix) {
+		if(!Utilities.structuresyn){
+			collectStructureSyn(conn, glosstable, prefix);
+			Utilities.structuresyn = true;
+		}
+		String orig = w;
 		if(w.trim().length()==0 || w.matches("\\W+")) return null; //w = "?"
 		if(w.contains("[")) return null;
 		if(w.indexOf(" ")>0) w = w.substring(w.lastIndexOf(" ")+1).trim();
@@ -762,16 +770,104 @@ public class Utilities {
 				ch = lookup(wc, conn, characterhash, glosstable, wc, prefix);
 			}
 		}
+		
+		if(ch!=null && ch[1].length()>0){ //has syn
+			Term original = new Term(orig, ch[0]);
+			String[] synterms = ch[1].split("\\s*,\\s*");
+			for(String synterm: synterms){ //#
+				String[] syninfo = synterm.split("#");
+				Term preferred = new Term(syninfo[0], syninfo[1]);
+				Utilities.syncache.put(original, preferred); 
+			}
+		}
 		return ch;
 	}
 
+	/**
+	 * add synonyms of structures in Utilities.syncache
+	 */
+	@SuppressWarnings("resource")
+	private static void collectStructureSyn(Connection conn, String glosstable, String prefix) {
+		Statement stmt = null;
+		ResultSet rs = null;
+		Statement stmt1 = null;
+		ResultSet rs1 = null;
+		try{
+			stmt = conn.createStatement();
+			stmt1 = conn.createStatement();
+			//check glossarytable
+			rs = stmt.executeQuery("select term, hasSyn from "+glosstable+" where category='structure'");
+			while(rs.next()){
+				String term = rs.getString("term");
+				int hassyn = rs.getInt("hasSyn");
+				if(hassyn == 1){
+					Term orig = new Term(term, "structure");
+					rs1 = stmt1.executeQuery("select term from "+glosstable.replace("fixed", "syns") + 
+							" where synonym ='"+term+"'");
+					while(rs1.next()){
+						Term preferred = new Term(rs1.getString("term"), "structure");
+						Utilities.syncache.put(orig, preferred);
+					}					
+				}
+
+			}
+			//check _term_category table, terms in the table may have number suffix such as linear_1, linear_2, 
+			rs = stmt.executeQuery("select term, hasSyn from "+prefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" where category='structure'");
+			while(rs.next()){
+				String term = rs.getString("term");
+				int hassyn = rs.getInt("hasSyn");
+				if(hassyn == 1){
+					Term orig = new Term(term, "structure");
+					rs1 = stmt1.executeQuery("select term from "+glosstable.replace("fixed", "syns") + 
+							" where synonym ='"+term+"'");
+					while(rs1.next()){
+						Term preferred = new Term(rs1.getString("term"), "structure");
+						Utilities.syncache.put(orig, preferred);
+					}					
+				}
+
+			}
+
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+				if(rs1!=null) rs1.close();
+				if(stmt1!=null) stmt1.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
+		}
+	
+		
+	}
+
+	/**
+	 * 
+	 * @param term
+	 * @param category: cat1 or cat1_or_cat2
+	 * @return 
+	 */
+	@SuppressWarnings("null")
+	public static String getPreferredTerm(String term, String category){
+		Term preferred = Utilities.syncache.get(new Term(term, category));
+		if(preferred == null) return term;  //multi-category cases falls here
+		return preferred.getTerm();
+	}
+	
+	
 	/**
 	 * 
 	 * @param ck
 	 * @return true if a bracketed chunk is a reference/citation, refers to figs or tables, otherwise false
 	 */
 	public static boolean isProvenanceChunk(Chunk ck) {
-		String content = ck.toString();
+		String content = ck.toString().replaceAll("(\\w\\[|\\]|\\(|\\))", ""); //z[(fig)] . 12.1b .
 		boolean is =false;
 		if(content.matches(".*?\\b(fig\\s*\\.?\\s*|table|tab\\s*\\.\\s*)\\b?\\s*\\d.*")) is = true;
 		if(content.matches(".*?\\b(figs|tables)\\s*[,\\.]?\\s*\\d+.{0,2}\\s*(\\.|,|\\band\\b|-)\\s*\\d+.*")) is = true;
@@ -828,7 +924,7 @@ public class Utilities {
 	 * @param glosstable
 	 * @param wc
 	 * @param prefix
-	 * @return null if not found; string[2]: string[0]: chara1_or_chara2, string[1]: preferedterm_chara1, perferredterm_chara2
+	 * @return null if not found; string[2]: string[0]: chara1_or_chara2, string[1]: preferedterm#chara1, perferredterm#chara2
 	 */
 	private static String[] lookup(String w, Connection conn,
 			Hashtable<String, String[]> characterhash, String glosstable,
@@ -856,7 +952,7 @@ public class Utilities {
 					rs1 = stmt1.executeQuery("select term, synonym from "+glosstable.replace("fixed", "syns") + 
 							" where synonym ='"+term+"'");
 					while(rs1.next()){
-						syns.add(rs1.getString("term")+"_"+cat); //find preferred term
+						syns.add(rs1.getString("term")+"#"+cat); //find preferred term
 					}					
 				}
 
@@ -878,7 +974,7 @@ public class Utilities {
 					rs1 = stmt1.executeQuery("select term, synonym from "+prefix+ "_syns" + 
 							" where synonym ='"+term+"'");
 					while(rs1.next()){
-						syns.add(rs1.getString("term")+"_"+cat); //find preferred term
+						syns.add(rs1.getString("term")+"#"+cat); //find preferred term
 					}					
 				}
 
@@ -1286,7 +1382,7 @@ public class Utilities {
 	 * @param xpath
 	 *            : "//relation[@name='part_of'][@from='"+structid+"']"
 	 * @count number of rounds in the iteration
-	 * @return
+	 * @return ,-separated organs from part to whole
 	 */
 	public static String getStructureChain(Element root, String xpath, int count) {
 		String path = "";
@@ -1347,6 +1443,48 @@ public class Utilities {
 	}
 
 
+	/**
+	 * if attribute exist, attach the new value after the existing value, separating them with ";"
+	 * @param e
+	 * @param attribute
+	 * @param value
+	 */
+	public static void addAttribute(Element e, String attribute, String value) {
+		if(value==null || value.trim().length()==0) return;
+		//shape~list~4-lobed~or~minutely~2-toothed
+		if(value.contains("~list~")){
+			value = value.replaceFirst(".*~list~", "").replaceAll("~", " ").trim();
+		}
+		if(value.contains("_c_")){
+			value = value.replaceAll("_c_", " ").trim();
+		}
+		if(value.contains("_")){
+			value = value.replaceAll("(?<!\\d)_", " ").trim();
+		}
+		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\)|<|>)", "").replaceAll("\\s+;\\s+", ";").replaceAll("\\[", "").trim();
+		if(value.indexOf("LRB-")>0) value = NumericalHandler.originalNumForm(value);
+		value = value.replaceAll("\\b("+Utilities.notInModifier+") ", "").trim(); //not match a in "a. livermorensis" (taxon name)
+		if(/*this.evaluation &&*/attribute.startsWith("constraint_")) attribute="constraint"; 
+		if(value.length()>0){
+			if(value.indexOf("moreorless")>=0){
+				value = value.replaceAll("moreorless", "more or less");
+			}
+			//value = value.replaceAll("-", " "); //bad idea: figs 400-403 => figs 400 403
+			value = value.replaceAll(" , ", ", ").trim();
+			String v = e.getAttributeValue(attribute);
+			if(v==null || !v.matches(".*?(^|; )"+value+"(;|$).*")){
+				if(v !=null && v.trim().length() > 0){
+					v = v.trim()+ ";"+value;
+				}else{
+					v = value;
+				}
+				if(attribute.equals("constraintid")) v = v.replaceAll("\\W", " "); //IDREFS are space-separated
+				e.setAttribute(attribute, v);
+			}
+		}
+	}
+
+
 	public static void main(String[] argv){
 		Connection conn = null;
 		try{
@@ -1358,7 +1496,7 @@ public class Utilities {
 			e.printStackTrace();
 		}
 
-		String[] result = Utilities.lookupCharacter("palm_or_fern_like", conn, new Hashtable<String, String[]>(), "fnaglossaryfixed", "cycad_demo");
+		String[] result = Utilities.lookupCharacter("stipe", conn, new Hashtable<String, String[]>(), "gg_noschema_fnaglossaryfixed", "gg_noschema");
 		for(String r: result){
 			System.out.println(r);
 		}

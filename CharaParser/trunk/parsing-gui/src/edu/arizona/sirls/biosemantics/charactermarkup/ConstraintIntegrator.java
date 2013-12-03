@@ -591,7 +591,7 @@ public class ConstraintIntegrator {
 					String[] characters = characterstring.replace("'", "").split(" and ");
 					for(String acharacter : characters){
 						String[] info = acharacter.split("=");
-						character.setAttribute(info[0], info[1]);
+						character.setAttribute(info[0], Utilities.getPreferredTerm(info[1], info[0]));
 					}
 					for(Element astructure: structures){
 						astructure.addContent(character);

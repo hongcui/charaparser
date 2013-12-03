@@ -61,7 +61,7 @@ public class CharacterAnnotatorChunked {
 	private String glosstable = null;
 	//private boolean inbrackets = false; //repeated by the scope approach (dealing with parenthetical expressions)  
 	private String text  = null;
-	private String notInModifier = "a|an|the";
+	
 	private boolean partofinference = false;
 	private ArrayList<Element> pstructures = new ArrayList<Element>();//parent structures
 	private ArrayList<Element> cstructures = new ArrayList<Element>();//children structures
@@ -338,7 +338,7 @@ public class CharacterAnnotatorChunked {
 						parents += ps[i]+" ";
 					}
 					parents = parents.trim();
-					this.addAttribute(structure, "constraint", parents);
+					Utilities.addAttribute(structure, "constraint", parents);
 				}
 			}			
 		} catch (JDOMException e) {
@@ -377,15 +377,15 @@ public class CharacterAnnotatorChunked {
 		        if(!negaterelation){
             		 List<Element> characters = s.getChildren("character");
             		 for(Element character: characters){
-            			 this.addAttribute(character, "modifier", "not"); //add modifier="not" for characters
+            			 Utilities.addAttribute(character, "modifier", "not"); //add modifier="not" for characters
             			 negatecharacter = true;
             		 }
             		 if(!negatecharacter){
                 		negatecharacter = false;
                 		Element count = new Element("character");
-                		this.addAttribute(count, "name", "count");
-                		this.addAttribute(count, "value", "present");
-                		this.addAttribute(count, "modifier", "not");
+                		Utilities.addAttribute(count, "name", "count");
+                		Utilities.addAttribute(count, "value", "present");
+                		Utilities.addAttribute(count, "modifier", "not");
                 		s.addContent(count);
                 	 }
 		        }
@@ -431,7 +431,7 @@ public class CharacterAnnotatorChunked {
         				if(text.matches(".*?"+value+" [\\w -]*"+name_o+"\\b.*")){ //may have other words (not puncts) in btw value and name_original
         					//remove this character
         					//add character as a constraint to the structure
-        					this.addAttribute(character.getParentElement(), "constraint", value);
+        					Utilities.addAttribute(character.getParentElement(), "constraint", value);
         					tobedetached.add(chara);
         				}
         			}
@@ -509,7 +509,7 @@ public class CharacterAnnotatorChunked {
 					structure.setAttribute("name_original", "");
 					Element ch = new Element("character");
 					ch.setAttribute("name", "life_style");
-					ch.setAttribute("value", name);
+					ch.setAttribute("value", Utilities.getPreferredTerm(name, "life_style"));
 					structure.addContent(ch);
 				}
 				//keep each life_style structure
@@ -617,7 +617,7 @@ public class CharacterAnnotatorChunked {
 								v = v.replaceFirst("\\w{2,}\\[.*?~list~","").replaceAll("punct", ",").replaceAll("~", " ");
 							}
 							v = v.replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\)|<|>)", "");
-							e.setAttribute("value", v);
+							e.setAttribute("value", Utilities.getPreferredTerm(v, cname));
 							addClauseModifierConstraint(cs, e);
 							this.addScopeConstraints(cs, e);
 							last.getParentElement().addContent(e);
@@ -691,7 +691,7 @@ public class CharacterAnnotatorChunked {
 					if(sameobject){
 						Element relation = this.latestelements.get(this.latestelements.size()-1);
 						bracketedprep = bracketedprep.replaceAll("(\\w\\[|\\]|\\{|\\})", "").trim();
-						this.addAttribute(relation, "alter_name", bracketedprep);
+						Utilities.addAttribute(relation, "alter_name", bracketedprep);
 					}else{
 						this.latestelements = copy;
 						//-LRB-/-LRB- or r[p[with]] very {obscure} -RRB-/-RRB-
@@ -735,7 +735,7 @@ public class CharacterAnnotatorChunked {
 					if(sameobject){
 						Element relation = relations.get(relations.size()-1);
 						bracketedprep = bracketedprep.replaceAll("(\\w\\[|\\]|\\{|\\})", "").replaceAll("-[LR][RS]B-/-[LR][RS]B-", "").trim();
-						this.addAttribute(relation, "alter_name", bracketedprep);
+						Utilities.addAttribute(relation, "alter_name", bracketedprep);
 					}else{
 						//c[{proximal}] r[p[to] o[-LRB-/-LRB- i . e . , outside-of or {abaxial} to -RRB-/-RRB- the (florets)]]
 						this.latestelements = copy;
@@ -926,11 +926,11 @@ public class CharacterAnnotatorChunked {
 				updateLatestElements(chars);
 			}else if(ck instanceof ChunkChrom){
 				Element structure = new Element("structure");
-				this.addAttribute(structure, "clausestart", this.clausestart+"");
+				Utilities.addAttribute(structure, "clausestart", this.clausestart+"");
 				this.clausestart = false;
-				this.addAttribute(structure, "name", ApplicationUtilities.getProperty("source.n"));
+				Utilities.addAttribute(structure, "name", ApplicationUtilities.getProperty("source.n"));
 				structure.setAttribute("name_original", "");
-				this.addAttribute(structure, "id", "o"+this.structid);
+				Utilities.addAttribute(structure, "id", "o"+this.structid);
 				this.structid++;
 				ArrayList<Element> parents = new ArrayList<Element>();
 				parents.add(structure); //create chromosome element
@@ -970,15 +970,15 @@ public class CharacterAnnotatorChunked {
 						Attribute scp = null;
 						if(this.text.contains(bracketed) && ! attname.equals("taxon_constraint")){ //bracketed text is not proper noun
 							for(Element chara : charas){
-								this.addAttribute(chara, "other_constraint", bracketed);
-								if(note!=null) this.addAttribute(chara, "note", note);
-								if(inbracket) this.addAttribute(chara, "in_bracket", "true");
+								Utilities.addAttribute(chara, "other_constraint", bracketed);
+								if(note!=null) Utilities.addAttribute(chara, "note", note);
+								if(inbracket) Utilities.addAttribute(chara, "in_bracket", "true");
 							}
 						}else{
 							for(Element chara : charas){
-								this.addAttribute(chara, attname, bracketed);
-								if(note!=null) this.addAttribute(chara, "note", note);
-								if(inbracket) this.addAttribute(chara, "in_bracket", "true");
+								Utilities.addAttribute(chara, attname, bracketed);
+								if(note!=null) Utilities.addAttribute(chara, "note", note);
+								if(inbracket) Utilities.addAttribute(chara, "in_bracket", "true");
 							}
 						}						
 					}
@@ -991,7 +991,7 @@ public class CharacterAnnotatorChunked {
 				String content = ck.toString();
 				Element lastelement = this.latestelements.get(this.latestelements.size()-1);
 				if(lastelement!=null && lastelement.getName().compareTo("character") == 0){
-					this.addAttribute(lastelement, "modifier", content);
+					Utilities.addAttribute(lastelement, "modifier", content);
 				}else{
 					cs.unassignedmodifier = content;
 				}
@@ -1049,7 +1049,7 @@ public class CharacterAnnotatorChunked {
 					if(this.latestelements.get(this.latestelements.size()-1).getName().compareTo("character")==0){
 						Iterator<Element> it = this.latestelements.iterator();
 						while(it.hasNext()){
-							this.addAttribute(it.next(), "modifier", modifier);
+							Utilities.addAttribute(it.next(), "modifier", modifier);
 						}
 					}else{ 
 						if(newcs!=null) newcs.unassignedmodifier = "m["+modifier+"]";//this when clause is a modifier for the subclause
@@ -1097,18 +1097,18 @@ public class CharacterAnnotatorChunked {
 				String content = ck.toString().replaceAll("[^\\d()\\[\\],+ -]", "").trim();
 				//Element structure = new Element(ApplicationUtilities.getProperty("source.n"));
 				Element structure = new Element("structure");
-				this.addAttribute(structure, "clausestart", this.clausestart+"");
+				Utilities.addAttribute(structure, "clausestart", this.clausestart+"");
 				this.clausestart = false;
-				this.addAttribute(structure, "name", ApplicationUtilities.getProperty("source.n"));
+				Utilities.addAttribute(structure, "name", ApplicationUtilities.getProperty("source.n"));
 				structure.setAttribute("name_original", ""); //what value should it be?
-				this.addAttribute(structure, "id", "o"+this.structid);
+				Utilities.addAttribute(structure, "id", "o"+this.structid);
 				this.structid++;
 				ArrayList<Element> list = new ArrayList<Element>();
 				list.add(structure);
 				this.annotateNumericals(content, "count", "", list, false, cs);
 				/*for(int i = 0; i<counts.length; i++){
 					Element character = new Element("character");
-					this.addAttribute(character, "count", counts[i]);
+					Utilities.addAttribute(character, "count", counts[i]);
 					structure.addContent(character);
 				}*/
 				addClauseModifierConstraint(cs, structure);
@@ -1117,18 +1117,18 @@ public class CharacterAnnotatorChunked {
 				String content = ck.toString().replaceAll("[^\\d()\\.\\[\\],+ -]", "").trim();
 				//Element structure = new Element(ApplicationUtilities.getProperty("source.n"));
 				Element structure = new Element("structure");
-				this.addAttribute(structure, "clausestart", this.clausestart+"");
+				Utilities.addAttribute(structure, "clausestart", this.clausestart+"");
 				this.clausestart = false;
-				this.addAttribute(structure, "name", "Q");
+				Utilities.addAttribute(structure, "name", Utilities.getPreferredTerm("Q", "structure"));
 				structure.setAttribute("name_original", "Q"); //what value should it be?
-				this.addAttribute(structure, "id", "o"+this.structid);
+				Utilities.addAttribute(structure, "id", "o"+this.structid);
 				this.structid++;
 				ArrayList<Element> list = new ArrayList<Element>();
 				list.add(structure);
 				this.annotateNumericals(content, "ratio", "", list, false, cs);
 				/*for(int i = 0; i<counts.length; i++){
 					Element character = new Element("character");
-					this.addAttribute(character, "count", counts[i]);
+					Utilities.addAttribute(character, "count", counts[i]);
 					structure.addContent(character);
 				}*/
 				addClauseModifierConstraint(cs, structure);
@@ -1137,7 +1137,7 @@ public class CharacterAnnotatorChunked {
 				String content = ck.toString();
 				Element lastelement = this.latestelements.get(this.latestelements.size()-1);
 				if(lastelement!=null && lastelement.getName().compareTo("character") == 0){
-					this.addAttribute(lastelement, "modifier", content);
+					Utilities.addAttribute(lastelement, "modifier", content);
 				}else{
 					cs.unassignedmodifier = content;
 				}				
@@ -1172,7 +1172,7 @@ public class CharacterAnnotatorChunked {
 										relation = r;
 									}
 								}
-								if(relation !=null)	 this.addAttribute(relation, "modifier", cs.unassignedmodifier);
+								if(relation !=null)	 Utilities.addAttribute(relation, "modifier", cs.unassignedmodifier);
 								//TODO: otherwise, categorize modifier and create a character for the structure e.g.{thin} {dorsal} {median} <septum> {centrally} only ;
 							}catch(Exception e){
 							
@@ -1183,7 +1183,7 @@ public class CharacterAnnotatorChunked {
 					}else if(lastelement.getName().compareTo("character") == 0){
 						Iterator<Element> it = this.latestelements.iterator();
 						while(it.hasNext()){
-							this.addAttribute(it.next(), "modifier", cs.unassignedmodifier);
+							Utilities.addAttribute(it.next(), "modifier", cs.unassignedmodifier);
 						}
 					}
 					}
@@ -1207,7 +1207,7 @@ public class CharacterAnnotatorChunked {
 		}else{
 			Element last = this.latestelements.get(this.latestelements.size()-1);
 			if(last.getName().compareTo("character")==0 || last.getName().compareTo("relation")==0){
-				this.addAttribute(last, "taxon_constaint", ckstring.replaceAll("(\\w\\[|\\])", ""));
+				Utilities.addAttribute(last, "taxon_constaint", ckstring.replaceAll("(\\w\\[|\\])", ""));
 			}else{
 				//save ckstring, which later may be used as a taxon_constraint or a reference
 				cs.addScopeAttributes(new Attribute("taxon_constraint", ckstring));
@@ -1223,7 +1223,7 @@ public class CharacterAnnotatorChunked {
 		if(Utilities.isProvenanceChunk(ck)){
 			if(this.latestelements.size()>0){
 				Element lastelement = this.latestelements.get(this.latestelements.size()-1);
-				this.addAttribute(lastelement, "provenance", ck.toString().replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+", " ").trim());
+				Utilities.addAttribute(lastelement, "provenance", ck.toString().replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+", " ").trim());
 			}
 			return;
 		}
@@ -1235,6 +1235,9 @@ public class CharacterAnnotatorChunked {
 		int size = content.split("\\s+").length;
 		if(size<=3 && (token.endsWith(">")||token.endsWith(")")) && token.indexOf("]")<0){
 			singlephrase = true; //organ
+		}
+		if(size<=3 && (token.startsWith("u[o[") || token.startsWith("z[o[")) && content.indexOf("r[p[")<0){
+			singlephrase = true; 
 		}
 		if(size<=5 && content.matches("(r\\[p\\[)?except.*") && content.matches(".*\\)\\]*")){
 			organconstraint = true; //r[p[except] o[r[p[in] o[{sterile} (fruits)]]]]
@@ -1256,12 +1259,14 @@ public class CharacterAnnotatorChunked {
 			}else{ //find the character associated with the lastelement
 				targets.addAll(charrel(lastelement));
 			}
-			for(Element target: targets) this.addAttribute(target, "organ_constraint", content.replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+", " ").trim());
+			for(Element target: targets) Utilities.addAttribute(target, "organ_constraint", content.replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+", " ").trim());
 		}else if(singlephrase){
 			if(lastelement!=null && lastelement.getName().compareTo("character") == 0){ //character or relation
-				this.addAttribute(lastelement, "organ_constraint", content.replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+", " ").trim());
+				Utilities.addAttribute(lastelement, "organ_constraint", content.replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+", " ").trim());
 			}else{
-				this.addAttribute(lastelement, "alter_name", content.replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+", " ").trim());
+				String altername = content.replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+", " ").trim();
+				altername = altername.replaceAll("\\b("+ChunkedSentence.stop+")\\b", "").trim();
+				Utilities.addAttribute(lastelement, "alter_name", altername);
 			}
 		}else{
 			Attribute bracket = new Attribute("in_brackets", "true");//create a constraint attribute
@@ -1296,11 +1301,11 @@ public class CharacterAnnotatorChunked {
 		}else{
 			Element lastelement = this.latestelements.get(this.latestelements.size()-1);
 			if(lastelement!=null && lastelement.getName().compareTo("structure") != 0){ //character or relation
-				this.addAttribute(lastelement, "taxon_constraint", taxon);
+				Utilities.addAttribute(lastelement, "taxon_constraint", taxon);
 			}else{ //lastelement is a structure, find the relation/character associated with the structure
 				List<Element> targets = this.charrel(lastelement);
 				for(Element target: targets){
-					this.addAttribute(target, "taxon_constraint", taxon);
+					Utilities.addAttribute(target, "taxon_constraint", taxon);
 				}				
 			}
 		}
@@ -1316,10 +1321,10 @@ public class CharacterAnnotatorChunked {
 		}
 		Element type = new Element("character");
 		laste.addContent(type);
-		//if(this.inbrackets) this.addAttribute(type, "in_bracket", "true");
-		this.addAttribute(type, "name", "type");
-		this.addAttribute(type, "value", o);
-		if(m.length()>0) this.addAttribute(type, "modifier", m);
+		//if(this.inbrackets) Utilities.addAttribute(type, "in_bracket", "true");
+		Utilities.addAttribute(type, "name", "type");
+		Utilities.addAttribute(type, "value", o);
+		if(m.length()>0) Utilities.addAttribute(type, "modifier", m);
 
 	}
 
@@ -1354,10 +1359,10 @@ public class CharacterAnnotatorChunked {
 		ArrayList<String> cm = cs.getClauseModifierConstraint();
 		if(cm!=null){
 			if(cm.size()>1){//is a constraint
-				this.addAttribute(e, "constraint", cm.get(0));
-				this.addAttribute(e, "constraintid", cm.get(1));
+				Utilities.addAttribute(e, "constraint", cm.get(0));
+				Utilities.addAttribute(e, "constraintid", cm.get(1));
 			}else{
-				this.addAttribute(e, "modifier", cm.get(0));
+				Utilities.addAttribute(e, "modifier", cm.get(0));
 			}
 		}
 	}
@@ -1365,7 +1370,7 @@ public class CharacterAnnotatorChunked {
 	private void addScopeConstraints(ChunkedSentence cs, Element e){
 		ArrayList<Attribute> scopes = cs.getScopeAttributes();
 		for(Attribute scope: scopes){
-			this.addAttribute(e,scope.getName(), scope.getValue());
+			Utilities.addAttribute(e,scope.getName(), scope.getValue());
 		}
 	}
 	/**
@@ -1389,7 +1394,7 @@ public class CharacterAnnotatorChunked {
 		text = text.replaceAll("SG", "").replaceAll("\\W+", " ").replaceAll("\\s+", " ").trim();
 		text = text.replaceFirst("\\s+so$", "");
 		afteror = (Element)beforeor.clone();
-		this.addAttribute(afteror, "modifier", text);
+		Utilities.addAttribute(afteror, "modifier", text);
 		return afteror;
 	}
 
@@ -1419,11 +1424,11 @@ public class CharacterAnnotatorChunked {
 					e.removeAttribute("from_unit");
 				}
 			}
-			if(modifier !=null && modifier.compareTo("")!=0){this.addAttribute(e, "modifier", modifier);}
+			if(modifier !=null && modifier.compareTo("")!=0){Utilities.addAttribute(e, "modifier", modifier);}
 			//if(this.inbrackets){e.setAttribute("in_bracket", "true");}
 			/*
 			if(this.unassignedmodifiers != null && this.unassignedmodifiers.compareTo("") !=0){
-				this.addAttribute(e, "modifier", this.unassignedmodifiers);
+				Utilities.addAttribute(e, "modifier", this.unassignedmodifiers);
 				this.unassignedmodifiers = "";
 			}*/
 			addClauseModifierConstraint(cs, e);
@@ -1594,12 +1599,12 @@ public class CharacterAnnotatorChunked {
 				while(it.hasNext()){
 					Element e = it.next();
 					//if(parts[1].indexOf("(")>=0){
-					//	this.addAttribute(e, "constraint", this.listStructureNames(parts[1]));
+					//	Utilities.addAttribute(e, "constraint", this.listStructureNames(parts[1]));
 					//}else{
-						this.addAttribute(e, "constraint", parts[1].replaceAll("(\\(|\\)|\\{|\\}|\\w*\\[|\\])", ""));
+						Utilities.addAttribute(e, "constraint", parts[1].replaceAll("(\\(|\\)|\\{|\\}|\\w*\\[|\\])", ""));
 				   //}
 					if(object!=null){
-						this.addAttribute(e, "constraintid", this.listStructureIds(structures));//TODO: check: some constraints are without constraintid
+						Utilities.addAttribute(e, "constraintid", this.listStructureIds(structures));//TODO: check: some constraints are without constraintid
 					}
 				}
 				
@@ -1962,8 +1967,8 @@ public class CharacterAnnotatorChunked {
 		String tomodifier = to.replaceFirst(tovalue, "").trim();
 		if(tomodifier.length() == 0) tomodifier = frommodifier;
 		
-		rangecharacter.setAttribute("from", from.replaceAll("_c_", " ")); //a or b to c => b to c
-		rangecharacter.setAttribute("to", to.replaceAll("_c_", " "));
+		rangecharacter.setAttribute("from", Utilities.getPreferredTerm(from.replaceAll("_c_", " "), charactername)); //a or b to c => b to c
+		rangecharacter.setAttribute("to", Utilities.getPreferredTerm(to.replaceAll("_c_", " "), charactername));
 		
 		boolean usedm = false;
 		Iterator<Element> it = parents.iterator();
@@ -1972,7 +1977,7 @@ public class CharacterAnnotatorChunked {
 			Element arangecharacter = (Element)rangecharacter.clone();
 			arangecharacter.detach();
 			if(frontmodifier.trim().length() >0){
-				addAttribute(rangecharacter, "modifier", frommodifier.trim()); //may not have modifier
+				Utilities.addAttribute(rangecharacter, "modifier", frommodifier.trim()); //may not have modifier
 				usedm = true;
 			}
 			results.add(arangecharacter); //add to results
@@ -2119,7 +2124,7 @@ public class CharacterAnnotatorChunked {
 			Element e = it.next();
 			character = (Element)character.clone();
 			if(modifiers.trim().length() >0){
-				addAttribute(character, "modifier", modifiers.trim()); //may not have
+				Utilities.addAttribute(character, "modifier", modifiers.trim()); //may not have
 				usedm = true;
 			}
 			results.add(character); //add to results
@@ -2302,14 +2307,14 @@ public class CharacterAnnotatorChunked {
 					for(Element count: counts){
 						Attribute att = count.getAttribute("name");
 						att.setValue("count");
-						this.addAttribute(count, "constraint", ckstring.replaceAll("(\\w\\[|\\])", ""));
+						Utilities.addAttribute(count, "constraint", ckstring.replaceAll("(\\w\\[|\\])", ""));
 					}
 					return;
 				}else if(lastelement.getAttribute("from")!=null || lastelement.getAttribute("to")!=null || 
 						(lastelement.getAttribute("value")!=null && lastelement.getAttributeValue("value").matches(".*?\\d.*"))){
 					Attribute att = lastelement.getAttribute("name");
 					att.setValue("count");
-					this.addAttribute(lastelement, "constraint", ckstring.replaceAll("(\\w\\[|\\])", ""));
+					Utilities.addAttribute(lastelement, "constraint", ckstring.replaceAll("(\\w\\[|\\])", ""));
 					return;
 				}
 			}
@@ -2423,9 +2428,9 @@ public class CharacterAnnotatorChunked {
 			//contains no organ, e.g. "at flowering"
 			//Element last = this.latestelements.get(this.latestelements.size()-1);
 			if(lastIsStruct){
-				addAttribute(lastelement, "constraint", ckstring.replaceAll("(\\w\\[|\\]|\\{|\\})", ""));//TODO 5/16/2011 <corollas> r[p[of] o[{sterile} {much} {expanded} and {exceeding} (corollas)]] This should not be happening.z[{equaling} (phyllaries)] r[p[at] o[{flowering}]]
+				Utilities.addAttribute(lastelement, "constraint", ckstring.replaceAll("(\\w\\[|\\]|\\{|\\})", ""));//TODO 5/16/2011 <corollas> r[p[of] o[{sterile} {much} {expanded} and {exceeding} (corollas)]] This should not be happening.z[{equaling} (phyllaries)] r[p[at] o[{flowering}]]
 			}else if(lastIsChara){ //character element
-				addAttribute(lastelement, "modifier", ckstring.replaceAll("(\\w\\[|\\]|\\{|\\})", ""));
+				Utilities.addAttribute(lastelement, "modifier", ckstring.replaceAll("(\\w\\[|\\]|\\{|\\})", ""));
 			}
 			//addPPAsAttributes(ckstring);
 		}
@@ -2575,11 +2580,11 @@ public class CharacterAnnotatorChunked {
 					&& pp.matches("("+ChunkedSentence.locationpp+")")){
 				lastelement.setAttribute("name", "location");
 			}
-			//addAttribute(lastelement, "constraint", (pp+" "+base+" "+listStructureNames(structures)).replaceAll("\\s+", " ").replaceAll("(\\{|\\})", "")); //a, b, c
-			addAttribute(lastelement, "constraint", (pp+" "+listStructureNames(object)).replaceAll("\\s+", " ").replaceAll("(\\w+\\[|\\(|\\)|\\{|\\}|\\])", ""));
-			addAttribute(lastelement, "constraintid", listStructureIds(structures));//1, 2, 3
+			//Utilities.addAttribute(lastelement, "constraint", (pp+" "+base+" "+listStructureNames(structures)).replaceAll("\\s+", " ").replaceAll("(\\{|\\})", "")); //a, b, c
+			Utilities.addAttribute(lastelement, "constraint", (pp+" "+listStructureNames(object)).replaceAll("\\s+", " ").replaceAll("(\\w+\\[|\\(|\\)|\\{|\\}|\\])", ""));
+			Utilities.addAttribute(lastelement, "constraintid", listStructureIds(structures));//1, 2, 3
 			if(modifier.length()>0){
-				addAttribute(lastelement, "modifier", modifier);
+				Utilities.addAttribute(lastelement, "modifier", modifier);
 			}
 		}else{
 			ArrayList<Element> entity1 = null;
@@ -2715,7 +2720,7 @@ public class CharacterAnnotatorChunked {
 			}
 			constraint.trim().replaceFirst("\\s*,$", "");
 			for(int i = 0; i<latests.size(); i++){
-				addAttribute(latests.get(i), "constraint", constraint); //base, of leaves, petals; apex, of leaves, petals
+				Utilities.addAttribute(latests.get(i), "constraint", constraint); //base, of leaves, petals; apex, of leaves, petals
 			}
 		}*/
 	}
@@ -2734,7 +2739,7 @@ public class CharacterAnnotatorChunked {
 		//rela.setAttribute("inference_method", inferencemethod);
 		//if(modifier.length()>0 && modifier.indexOf("m[")>=0){
 		if(modifier.length()>0){
-			addAttribute(rela, "modifier", modifier.replaceAll("m\\[|\\]", ""));
+			Utilities.addAttribute(rela, "modifier", modifier.replaceAll("m\\[|\\]", ""));
 		}
 		addClauseModifierConstraint(cs, rela);
 		this.addScopeConstraints(cs, rela);
@@ -2757,47 +2762,6 @@ public class CharacterAnnotatorChunked {
 			return differentiateOf(organsbeforepp, organsafterpp);
 		}
 		return pp;
-	}
-
-	/**
-	 * if attribute exist, attach the new value after the existing value, separating them with ";"
-	 * @param e
-	 * @param attribute
-	 * @param value
-	 */
-	void addAttribute(Element e, String attribute, String value) {
-		if(value==null || value.trim().length()==0) return;
-		//shape~list~4-lobed~or~minutely~2-toothed
-		if(value.contains("~list~")){
-			value = value.replaceFirst(".*~list~", "").replaceAll("~", " ").trim();
-		}
-		if(value.contains("_c_")){
-			value = value.replaceAll("_c_", " ").trim();
-		}
-		if(value.contains("_")){
-			value = value.replaceAll("(?<!\\d)_", " ").trim();
-		}
-		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\)|<|>)", "").replaceAll("\\s+;\\s+", ";").replaceAll("\\[", "").trim();
-		if(value.indexOf("LRB-")>0) value = NumericalHandler.originalNumForm(value);
-		value = value.replaceAll("\\b("+this.notInModifier+") ", "").trim(); //not match a in "a. livermorensis" (taxon name)
-		if(this.evaluation && attribute.startsWith("constraint_")) attribute="constraint"; 
-		if(value.length()>0){
-			if(value.indexOf("moreorless")>=0){
-				value = value.replaceAll("moreorless", "more or less");
-			}
-			//value = value.replaceAll("-", " "); //bad idea: figs 400-403 => figs 400 403
-			value = value.replaceAll(" , ", ", ").trim();
-			String v = e.getAttributeValue(attribute);
-			if(v==null || !v.matches(".*?(^|; )"+value+"(;|$).*")){
-				if(v !=null && v.trim().length() > 0){
-					v = v.trim()+ ";"+value;
-				}else{
-					v = value;
-				}
-				if(attribute.equals("constraintid")) v = v.replaceAll("\\W", " "); //IDREFS are space-separated
-				e.setAttribute(attribute, v);
-			}
-		}
 	}
 
 	/**
@@ -2982,7 +2946,7 @@ public class CharacterAnnotatorChunked {
 			o = o.replaceAll("(\\w\\[|\\]|\\(|\\)|\\{|\\})", "").trim();
 			//create element, 
 			Element e = new Element("structure");
-			this.addAttribute(e, "clausestart", this.clausestart+"");
+			Utilities.addAttribute(e, "clausestart", this.clausestart+"");
 			this.clausestart = false;
 			String strid = "o"+this.structid;
 			this.structid++;
@@ -2993,7 +2957,7 @@ public class CharacterAnnotatorChunked {
 			o = o.trim();
 			if(o.contains("taxonname-")){ //taxonname as structure name
 				String n = o.replaceAll("-taxonname-", ". ").replaceAll("taxonname-", "");
-				e.setAttribute("name", n); //use the original
+				e.setAttribute("name", Utilities.getPreferredTerm(n, "structure")); //use the original
 				e.setAttribute("name_original", n); 	
 			}
 			else if(o.indexOf("_")>0) {
@@ -3001,21 +2965,21 @@ public class CharacterAnnotatorChunked {
 				if(o.matches("(.*?_[\\divx]+)|(.*?_[\\divx]+-[\\divx]+)")){
 					//handle abc_i-iii, abc_2_to_5, abc_3_and_5, abc_3,4-5... 
 					e.setAttribute("type","multi");
-					e.setAttribute("name", adjustUnderscore(o));//make sure "_" is used only before the indexes, not btw words of a phrase
+					e.setAttribute("name", Utilities.getPreferredTerm(adjustUnderscore(o), "structure"));//make sure "_" is used only before the indexes, not btw words of a phrase
 					e.setAttribute("name_original", o.replaceAll("_", " "));
 				}else{
 					if(isPrematched(o)){
-						e.setAttribute("name", getSingularPhrase(o.replaceAll("_", " ")).trim()); //prematched phrases from ontology: multi_word phrase connected by "_"
+						e.setAttribute("name", Utilities.getPreferredTerm(getSingularPhrase(o.replaceAll("_", " ")).trim(), "structure")); //prematched phrases from ontology: multi_word phrase connected by "_"
 						e.setAttribute("name_original", o.replaceAll("_", " ").trim());
 					}
 					else{
-						e.setAttribute("name", o); //hyphenated phrases in original text such as pubis_ischium
+						e.setAttribute("name", Utilities.getPreferredTerm(o, "structure")); //hyphenated phrases in original text such as pubis_ischium
 						e.setAttribute("name_original", o);
 					}
 				}
 			}else{
 				e.setAttribute("name_original", o); //add structure name as the original text
-				e.setAttribute("name", Utilities.toSingular(o, MainForm.conn));
+				e.setAttribute("name", Utilities.getPreferredTerm(Utilities.toSingular(o, MainForm.conn), "structure"));
 			}
 
 			//e.setAttribute("name", o.contains("taxonname-")? o.replaceAll("-taxonname-", ". ").replaceAll("taxonname-", "") : Utilities.toSingular(o.trim())); //must have. //corolla lobes
@@ -3027,11 +2991,11 @@ public class CharacterAnnotatorChunked {
 			if(bracketed !=null){
 				bracketed = bracketed.trim();
 				String text = bracketed.replaceAll("-[RL][RS]B-/-[RL][RS]B-", "").trim();
-				this.addAttribute(e, "alter_name", text);
+				Utilities.addAttribute(e, "alter_name", text);
 				if(bracketed.startsWith("-LSB-")){
-					this.addAttribute(e, "geographical_constraint", "outside of North American");
+					Utilities.addAttribute(e, "geographical_constraint", "outside of North American");
 				}else{
-					this.addAttribute(e, "in_bracket", "true");
+					Utilities.addAttribute(e, "in_bracket", "true");
 				}
 			}
 			
@@ -3072,12 +3036,12 @@ public class CharacterAnnotatorChunked {
 							e1.setAttribute("id", "o"+this.structid);
 							this.structid++;
 							e1.setAttribute("name", Utilities.toSingular(o.trim())); //must have. //corolla lobes
-							addAttribute(e1, "constraint_"+type, w.replaceAll("(\\(|\\))", "").trim()); //may not have.	
+							Utilities.addAttribute(e1, "constraint_"+type, w.replaceAll("(\\(|\\))", "").trim()); //may not have.	
 							this.statement.addContent(e1);
 							results.add(e1); //results only adds e
 							distribute = false;
 						}else{
-							addAttribute(e, "constraint_"+type, w.replaceAll("(\\(|\\))", "").trim()); //may not have.	
+							Utilities.addAttribute(e, "constraint_"+type, w.replaceAll("(\\(|\\))", "").trim()); //may not have.	
 						}
 					}else{//"parent_organ": collect all until a null constraint is found
 						String constraint = w;
@@ -3091,7 +3055,7 @@ public class CharacterAnnotatorChunked {
 								organ[j] = "";
 							}
 							else{
-								addAttribute(e, "constraint_parent_organ", constraint.replaceAll("(\\(|\\))", "").trim()); //may not have.
+								Utilities.addAttribute(e, "constraint_parent_organ", constraint.replaceAll("(\\(|\\))", "").trim()); //may not have.
 								terminate = true;
 								if(this.partofinference){
 									driveRelationFromStructrueContraint(strid, "part_of", constraint);
@@ -3101,7 +3065,7 @@ public class CharacterAnnotatorChunked {
 							}
 						}
 						if(constraint.length()>0){
-							addAttribute(e, "constraint_parent_organ", constraint.replaceAll("(\\(|\\)|\\}|\\{)", "").trim()); //may not have.
+							Utilities.addAttribute(e, "constraint_parent_organ", constraint.replaceAll("(\\(|\\)|\\}|\\{)", "").trim()); //may not have.
 							terminate = true;
 							if(this.partofinference){
 								driveRelationFromStructrueContraint(strid, "part_of", constraint);
@@ -3117,7 +3081,7 @@ public class CharacterAnnotatorChunked {
 			j++;
 			//plain
 			if(constraint.trim().length() >0){
-				addAttribute(e, "constraint", constraint.replaceAll("(\\(|\\))", "").trim()); //may not have.
+				Utilities.addAttribute(e, "constraint", constraint.replaceAll("(\\(|\\))", "").trim()); //may not have.
 			}
 			//plain
 			
@@ -3317,7 +3281,7 @@ public class CharacterAnnotatorChunked {
 						newelements.removeAll(localresults);
 						localresults.addAll(results);
 						for(Element newelement : newelements)
-							this.addAttribute(newelement, "constraint", bracketed.replaceAll("-[RL][RS]B-/-[RL][RS]B-?", "").replaceAll("(\\w+\\[|\\]|\\(|\\))", "").trim());
+							Utilities.addAttribute(newelement, "constraint", bracketed.replaceAll("-[RL][RS]B-/-[RL][RS]B-?", "").replaceAll("(\\w+\\[|\\]|\\(|\\))", "").trim());
 					}else{
 						createCharacterElement(parents, results,
 								"", bracketed.trim(), "", "",cs);
@@ -3365,7 +3329,7 @@ public class CharacterAnnotatorChunked {
 						String[] charainfo = (Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable, tableprefix));
 						if(charainfo==null && w.matches("no")){			
 							for(Element parent: parents){
-								this.addAttribute(parent, "negation", "true");
+								Utilities.addAttribute(parent, "negation", "true");
 							}
 						}
 						if(charainfo==null && Utilities.isAdv(w, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){//TODO: can be made more efficient, since sometimes character is already given
@@ -3445,8 +3409,8 @@ public class CharacterAnnotatorChunked {
 				String[] values = cvalue.split("-");
 				character.setAttribute("char_type", "range_value");
 				character.setAttribute("name", cname);
-				character.setAttribute("from", values[0]);
-				character.setAttribute("to", values[1]);
+				character.setAttribute("from", Utilities.getPreferredTerm(values[0], cname));
+				character.setAttribute("to", Utilities.getPreferredTerm(values[1], cname));
 			}else{
 				if(cname.compareTo("size")==0){
 					String value = cvalue.replaceFirst("\\b("+ChunkedSentence.units+")\\b", "").trim(); //5-10 mm
@@ -3464,7 +3428,7 @@ public class CharacterAnnotatorChunked {
 					character.setAttribute("char_type", char_type);
 				}
 				character.setAttribute("name", cname);
-				character.setAttribute("value", cvalue);
+				character.setAttribute("value", Utilities.getPreferredTerm(cvalue, cname));
 			}
 			boolean usedm = false;
 			//what if parents is empty?
@@ -3480,7 +3444,7 @@ public class CharacterAnnotatorChunked {
 				Element e = it.next();
 				character = (Element)character.clone();
 				if(modifiers.trim().length() >0){
-					addAttribute(character, "modifier", modifiers.trim()); //may not have
+					Utilities.addAttribute(character, "modifier", modifiers.trim()); //may not have
 					usedm = true;
 				}
 				results.add(character); //add to results
@@ -3558,10 +3522,10 @@ public class CharacterAnnotatorChunked {
 				if(lastelement.getName().compareTo("character")==0){
 					ArrayList<Element> structures = processObject("o["+text+"]", cs);
 					for(Element structure: structures){
-						addAttribute(structure, "in_brackets", "true");
+						Utilities.addAttribute(structure, "in_brackets", "true");
 					}
-					addAttribute(lastelement, "constraint", text.replaceAll("\\s+", " ").replaceAll("(\\w+\\[|\\(|\\)|\\{|\\}|\\])", ""));
-					addAttribute(lastelement, "constraintid", listStructureIds(structures));//1, 2, 3
+					Utilities.addAttribute(lastelement, "constraint", text.replaceAll("\\s+", " ").replaceAll("(\\w+\\[|\\(|\\)|\\{|\\}|\\])", ""));
+					Utilities.addAttribute(lastelement, "constraintid", listStructureIds(structures));//1, 2, 3
 				}
 			}else{
 				processChunkBracketed(new ChunkBracketed(text), cs);
@@ -3574,7 +3538,7 @@ public class CharacterAnnotatorChunked {
 			if(character==null){
 				character = results.get(results.size()-1);
 			}
-			this.addAttribute(character, "other_constraint", parenthetical);
+			Utilities.addAttribute(character, "other_constraint", parenthetical);
 			*/
 		}
 		return modifiers;
@@ -3599,10 +3563,10 @@ public class CharacterAnnotatorChunked {
 		count.setAttribute("name", "count");
 		count.setAttribute("value", number);
 		if(modifiers.length()>0){
-			this.addAttribute(count, "modifier", modifiers);
+			Utilities.addAttribute(count, "modifier", modifiers);
 		}
 		if(modifier.length()>0){
-			this.addAttribute(count, "modifier", modifier.replaceAll("(m\\[|\\])", ""));
+			Utilities.addAttribute(count, "modifier", modifier.replaceAll("(m\\[|\\])", ""));
 		}
 		Iterator<Element> it= parents.iterator();
 		while(it.hasNext()){
@@ -3631,16 +3595,21 @@ public class CharacterAnnotatorChunked {
 		String[] chinfo = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, this.glosstable, tableprefix);
 		if(chinfo!=null && chinfo[0].matches(".*?_?(position|insertion|structure_type)_?.*") && w.compareTo("low")!=0) return "type";
 		String singlew = Utilities.toSingular(w, MainForm.conn);
+		String[] strinfo = Utilities.lookupCharacter(singlew, conn, ChunkedSentence.characterhash, this.glosstable, tableprefix);
+		if(strinfo!=null && strinfo[0].matches("structure")) return "parent_organ";
+
+		//tag info is not as reliable as the glossary and reviewed term_category tables.
 		Statement stmt = null;
 		ResultSet rs = null;
 		try{
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where tag = '"+w+"' or tag='"+singlew+"'");
-			if(rs.next()){
-				return "parent_organ";
-			}
-			//rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where modifier = '"+w+"' or modifier like '"+w+" %' or modifier like '% "+w+" %' or modifier like '% "+w+"'");
-			rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where modifier = '"+w+"'");
+			//rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where tag = '"+w+"' or tag='"+singlew+"'");
+			//if(rs.next()){
+			//	return "parent_organ";
+			//}
+
+			rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where modifier = '"+w+"' or modifier like '"+w+" %' or modifier like '% "+w+" %' or modifier like '% "+w+"'");
+			//rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where modifier = '"+w+"'");
 			if(rs.next()){
 				return "type";
 			}

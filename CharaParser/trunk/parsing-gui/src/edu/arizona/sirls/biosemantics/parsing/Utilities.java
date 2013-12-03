@@ -9,8 +9,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.jdom.Element;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
+import org.jdom.xpath.XPath;
 
 public class Utilities {
 	private static final Logger LOGGER = Logger.getLogger(Utilities.class);
@@ -62,6 +67,118 @@ public class Utilities {
     	}
 		return false;
 	}
+    
+    /**
+	 * trace part_of relations of structid to get all its parent structures,
+	 * separated by , in order
+	 * 
+	 * TODO limit to 3 commas
+	 * TODO treat "in|on" as part_of? probably not
+	 * @param root
+	 * @param xpath
+	 *            : "//relation[@name='part_of'][@from='"+structid+"']"
+	 * @count number of rounds in the iteration
+	 * @return organ, organ, organ (from specific to more general parent organ)
+	 */
+	@SuppressWarnings("unchecked")
+	public static String getStructureChain(Element root, String xpath, int count) {
+		String path = "";
+		try{
+			List<Element> relations = XPath.selectNodes(root, xpath);			
+			xpath = "";
+			for (Element r : relations) {
+				String pid = r.getAttributeValue("to");
+				path += Utilities.getStructureName(root, pid) + ",";
+				String[] pids = pid.split("\\s+");
+				for (String id : pids) {
+					if (id.length() > 0)
+						xpath += "//relation[@name='part_of'][@from='" + id + "']|//relation[@name='in'][@from='" + id + "']|//relation[@name='on'][@from='" + id + "']|";
+				}
+			}
+			if (xpath.length() > 0 && count < 3) {
+				xpath = xpath.replaceFirst("\\|$", "");
+				path += getStructureChain(root, xpath, count++);
+			} else {
+				return path.replaceFirst(",$", "");
+			}
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+			LOGGER.error(sw.toString());
+		}
+		return path.replaceFirst(",$", "");
+	}
+
+	/**
+	 * trace part_of relations of structid to get all its parent structure ids,
+	 * separated by , in order
+	 * 
+	 * TODO limit to 3 commas
+	 * TODO treat "in|on" as part_of? probably not
+	 * @param root
+	 * @param xpath
+	 *            : "//relation[@name='part_of'][@from='"+structid+"']"
+	 * @return
+	 */
+	/*@SuppressWarnings("unchecked")
+	public static String getStructureChainIds(Element root, String xpath, int count) {
+		String path = "";
+		try{
+			List<Element> relations = XPath.selectNodes(root, xpath);			
+			xpath = "";
+			for (Element r : relations) {
+				String pid = r.getAttributeValue("to");
+				path += pid + ",";
+				String[] pids = pid.split("\\s+");
+				for (String id : pids) {
+					if (id.length() > 0)
+						xpath += "//relation[@name='part_of'][@from='" + id + "']|//relation[@name='in'][@from='" + id + "']|//relation[@name='on'][@from='" + id + "']|";
+				}
+			}
+			if (xpath.length() > 0 && count < Utilities.relationlength ) {
+				xpath = xpath.replaceFirst("\\|$", "");
+				path += getStructureChainIds(root, xpath, count++);
+			} else {
+				return path.replaceFirst(",$", "");
+			}
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+			LOGGER.error(sw.toString());
+		}
+		return path.replaceFirst(",$", "").trim();
+	}*/
+
+	/**
+	 * Get structure names for 1 or more structids from the XML results of CharaParser.
+	 * 
+	 * @param root
+	 * @param structids
+	 *            : 1 or more structids
+	 * @return
+	 */
+	public static String getStructureName(Element root, String structids) {
+		String result = "";
+
+		String[] ids = structids.split("\\s+");
+		for (String structid : ids) {
+			try{
+				Element structure = (Element) XPath.selectSingleNode(root, "//structure[@id='" + structid + "']");
+				String sname = "";
+				if (structure == null) {
+					System.out.println((new XMLOutputter(Format.getPrettyFormat())).outputString(root));
+					sname = "ERROR"; // this should never happen
+				} else {
+					sname = ((structure.getAttribute("constraint") == null ? "" : structure.getAttributeValue("constraint")) + " " + structure.getAttributeValue("name").replaceAll("\\s+", "_"));
+				}
+				result += sname + ",";
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(sw.toString());
+			}
+		}
+		result = result.replaceAll("\\s+", " ").replaceFirst(",$", "").trim();
+		return result;
+	}
+
 	
 	public static void main(String[] args) {
     	String text = "Trees, aromatic and resinous, glabrous or with simple hairs. Bark gray-brown, deeply furrowed; liquid, and Arabic ambar, amber] twigs and branches sometimes corky-winged. Dormant buds scaly, pointed, shiny, resinous, sessile. Leaves long-petiolate. Leaf blade fragrant when crushed, (3-)5(-7)-lobed, palmately veined, base deeply cordate to truncate, margins glandular-serrate, apex of each lobe long-acuminate. Inflorescences terminal, many-flowered heads; staminate heads in pedunculate racemes, each head a cluster of many stamens; pistillate heads pendent, long-pedunculate, the flowers ± coalesced. Flowers unisexual, staminate and pistillate on same plant, appearing with leaves; calyx and corolla absent. Staminate flowers: anthers dehiscing longitudinally; staminodes absent. Pistillate flowers pale green to greenish yellow; staminodes 5-8; styles indurate and spiny in fruit, incurved. Capsules many, fused at base into long-pedunculate, spheric, echinate heads, 2-beaked, glabrous, septicidal. Seeds numerous, mostly aborting, 1-2 viable in each capsule, winged. x = 16.";

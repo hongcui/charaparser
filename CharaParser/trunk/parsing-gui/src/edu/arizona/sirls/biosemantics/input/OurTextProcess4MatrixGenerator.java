@@ -159,6 +159,10 @@ public class OurTextProcess4MatrixGenerator {
 		String input ="C:\\Users\\updates\\CharaParserTest\\Abebe_FreshwaterNematodes\\target\\final";
 		String output = "C:\\Users\\updates\\CharaParserTest\\Abebe_FreshwaterNematodes\\target\\final4matrix";	
 		String spfile = "C:\\Users\\updates\\CharaParserTest\\Abebe_FreshwaterNematodes\\target\\singluar-plural.txt";	
+		//manual copy
+		//String input = "C:/Users/updates/CharaParserTest/GoldenGATE_no_schema/target/final";
+		//String output = "C:/Users/updates/CharaParserTest/GoldenGATE_no_schema/target/final4matrix";
+		//String spfile = "C:/Users/updates/CharaParserTest/GoldenGATE_no_schema/target/singular-plural.txt";
 		OurTextProcess4MatrixGenerator t4m = new OurTextProcess4MatrixGenerator(input, output, spfile);
 
 	}

@@ -683,8 +683,9 @@ public class SentenceOrganStateMarker {
 			stmt = conn.createStatement();
 
 			//rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos ='b'");
-			rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole ='c' ");
-
+			rs = stmt.executeQuery("select word from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+" where semanticrole ='c' and"
+					+ " word not in  (select distinct term from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+
+					" where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'life_style', 'taxon_name'))");
 			while(rs.next()){
 				String w = rs.getString("word");
 				if(!w.matches("\\W+") && !w.matches("("+ChunkedSentence.stop+")") &&!w.matches("("+ChunkedSentence.prepositions+")")){
@@ -824,9 +825,9 @@ public class SentenceOrganStateMarker {
 	protected void organNameFromGloss(StringBuffer tags, Statement stmt) {
 		ResultSet rs = null;
 		try{
-			rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('STRUCTURE', 'SUBSTANCE', 'nominative', 'structure', 'taxon_name')"
+			rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('structure', 'substance', 'nominative', 'structure', 'taxon_name')"
 					+" union "+
-					" select distinct term from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" where category in ('STRUCTURE', 'SUBSTANCE', 'nominative', 'taxon_name')");
+					" select distinct term from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" where category in ('structure', 'substance', 'nominative', 'taxon_name')");
 			while(rs.next()){
 				String term = rs.getString("term").trim();
 				if(term == null){continue;}
@@ -922,7 +923,7 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "cycad_2_hong", "fnaglossaryfixed", true, null, null);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "nematodes_12_hong", "nematodesglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "gg_noschema", "gg_noschema_fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);

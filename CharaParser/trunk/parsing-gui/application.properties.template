@@ -35,6 +35,8 @@ source.subtype=taxonx
 ontophrases.bin=
 #names of all tables holding anatomy ontology terms should end  with this suffix
 ontophrases.table.suffix=_onto_structures
+#partof is Hashtable<String, ArrayList<String>>: part => list of parent organs
+ontopartof.bin=
 
 #unknown structure placeholder
 unknown.structure.name=whole_organism
@@ -47,6 +49,7 @@ CharaParser.version=0.1
 #charaparser running mode
 charaparser.finalize=true
 charaparser.standalone=false
+#intial run = set 'feature' as the default category
 initial.run=false
 attachparentorgan=false
 

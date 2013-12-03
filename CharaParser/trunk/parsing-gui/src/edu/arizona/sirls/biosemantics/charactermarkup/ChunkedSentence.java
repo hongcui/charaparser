@@ -2463,7 +2463,7 @@ public class ChunkedSentence {
 				return new ChunkOrgan(token);
 			}
 			//at-{least} should not be matched by preppostions
-			if(token.matches(".*?\\b("+ChunkedSentence.prepositions+")[ \\]].*") || token.matches(".*?[,;:\\.].*")){
+			if(token.matches(".*?\\b("+ChunkedSentence.prepositions+")[ \\]].*") || token.matches(".*?[,;:\\.].*") || token.startsWith("b[v[")){
 				break;
 			}
 			if(found && token.matches("\\b(and|or)\\b")){

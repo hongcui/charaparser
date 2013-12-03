@@ -700,8 +700,8 @@ public class POSTagger4StanfordParser {
 				}
 			}
 		}
-		result[0] = text.replace("x", "×");//{oblanceolate} , 15-70×30-150+cm , {flat}  
-		result[1] = text2.replace("x", "×");//{oblanceolate} , 15-70×30-150+ , {flat} 
+		result[0] = text.replaceAll("x(?=\\.?\\d)", "×");//{oblanceolate} , 15-70×30-150+cm , {flat}  
+		result[1] = text2.replaceAll("x(?=\\.?\\d)", "×");//{oblanceolate} , 15-70×30-150+ , {flat} 
 		return result;
 }
 	

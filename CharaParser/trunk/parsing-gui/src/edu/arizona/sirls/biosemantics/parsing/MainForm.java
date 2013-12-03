@@ -21,8 +21,10 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -3231,10 +3233,11 @@ public class MainForm {
 				stmt = conn.createStatement();
 				//update dataprefix_term_category dataprefix_syns
 				//save local version of term_category table
-				stmt.execute("drop table if exists "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_local");
+				String local = (new Timestamp(new Date().getTime())+"").replaceAll("[^\\d]", "");
+				stmt.execute("drop table if exists "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_"+local);
 				stmt.execute("drop table if exists "+dataprefix+"_syns");
 				try{
-					stmt.execute("alter table "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" RENAME TO "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_local");
+					stmt.execute("alter table "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" RENAME TO "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_"+local);
 				}catch(Exception e){
 					//ignore the error _term_category not exist
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
@@ -3278,7 +3281,22 @@ public class MainForm {
 					}*/
 					//add "structure" terms from term_category_local to term_category
 					stmt.execute("insert into "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+" (term, category) " +
-						"select term, category from "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_local where category in ('structure', 'character')");	
+						"select term, category from "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+"_"+local+" where category in ('structure', 'character')");	
+					
+					//make a copy of wordrolestable
+					stmt.execute("create table "+dataprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+"_"+local+
+							"(select * from "+dataprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+")");					
+					
+					//update wordroles table: structures from downloaded TERMCATEGORY should be updated with 'op'
+					stmt.execute("update "+dataprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+" set semanticrole='op' "
+							+ "where word in (select distinct term from "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+ " "
+									+ "where category='structure')");
+					
+					//update wordroles table: non-structure/non-taxonname from downloaded TERMCATEGORY should be updated with 'c'
+					stmt.execute("update "+dataprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+" set semanticrole='c' "
+							+ "where word in (select distinct term from "+dataprefix+"_"+ApplicationUtilities.getProperty("TERMCATEGORY")+ " "
+									+ "where category not in ('structure', 'taxon_name'))");
+					
 					Label text = new Label(MainForm.grpTermSets, SWT.NONE);
 					text.setText("CharaParser term set has been updated for term set "+dataprefix +". You can now proceed directly to step 7.");
 					text.setBounds(23, position, 700, 23);								
@@ -3305,6 +3323,10 @@ public class MainForm {
 
 				}
 			}
+			
+
+			
+			
 		}
 	}
 
@@ -6067,8 +6089,8 @@ public class MainForm {
 	 */
 	public static String getGlossary(String glosstype) {
 		if(glosstype.compareToIgnoreCase("plant")==0){
-			//return "gg_noschema_fnaglossaryfixed";
-			return "fnaglossaryfixed";
+			return "gg_noschema_fnaglossaryfixed";
+			//return "fnaglossaryfixed";
 		}else if(glosstype.compareToIgnoreCase("hymenoptera")==0){
 			return "antglossaryfixed";
 		}else if(glosstype.compareToIgnoreCase("fossil")==0){
