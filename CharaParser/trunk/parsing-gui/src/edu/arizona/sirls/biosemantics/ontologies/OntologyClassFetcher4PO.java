@@ -33,7 +33,7 @@ import  edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
  *
  */
 public class OntologyClassFetcher4PO extends OntologyClassFetcher {
-	private boolean debug = true;
+	private boolean debug = false;
 	/**
 	 * @param ontoURL
 	 * @param conn

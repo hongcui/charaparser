@@ -34,7 +34,7 @@ public class NumericalHandler  {
 	//static public Pattern numberpattern = Pattern.compile("[()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%\\?]{2,}(?![a-z{}])"); //added , and ? for chromosome counts
 	static public Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{2,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts
 	static public Pattern numberpattern = Pattern.compile("[()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{2,}(?![a-z{}])"); //added , and ? for chromosome counts
-	static private boolean debug = true;
+	static private boolean debug = false;
 	private static final Logger LOGGER = Logger.getLogger(NumericalHandler.class);
 	
 	public NumericalHandler() {

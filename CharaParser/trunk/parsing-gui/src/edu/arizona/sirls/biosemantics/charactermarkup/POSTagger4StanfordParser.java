@@ -39,9 +39,9 @@ public class POSTagger4StanfordParser {
 	private ArrayList<String> chunkedtokens = null;
 	private ArrayList<String> charactertokensReversed = null;
 	//public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
-	private boolean printCharacterList = true;
-	private boolean printColorList = true;
-	private boolean printArea = true;
+	private boolean printCharacterList = false;
+	private boolean printColorList = false;
+	private boolean printArea = false;
 	private String tableprefix = null;
 	private String glosstable = null;
 	private String src;

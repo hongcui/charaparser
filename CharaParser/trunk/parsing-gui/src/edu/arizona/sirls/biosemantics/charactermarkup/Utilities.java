@@ -4,6 +4,7 @@
  */
 package edu.arizona.sirls.biosemantics.charactermarkup;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.DriverManager;
@@ -16,6 +17,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import edu.arizona.sirls.biosemantics.parsing.ApplicationUtilities;
@@ -23,12 +25,18 @@ import edu.arizona.sirls.biosemantics.parsing.MainForm;
 import edu.arizona.sirls.biosemantics.parsing.PhraseMarker;
 import edu.arizona.sirls.biosemantics.parsing.state.StateCollector;
 import edu.arizona.sirls.biosemantics.parsing.state.WordNetWrapper;
+import edu.smu.tspell.wordnet.NounSynset;
+import edu.smu.tspell.wordnet.Synset;
+import edu.smu.tspell.wordnet.SynsetType;
+import edu.smu.tspell.wordnet.WordNetDatabase;
 
 import java.util.ArrayList;
 import java.util.regex.*;
 
 import org.apache.log4j.Logger;
+import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
@@ -40,7 +48,6 @@ import org.jdom.xpath.XPath;
 @SuppressWarnings({ "unused" })
 public class Utilities {
 	public static String or = "_or_";
-
 	public static Hashtable<String, String> singulars = new Hashtable<String, String>();
 	public static Hashtable<String, String> plurals = new Hashtable<String, String>();
 	public static Hashtable<String, String> inGO = new Hashtable<String, String>();
@@ -60,7 +67,111 @@ public class Utilities {
 	public static Hashtable<Term, Term> syncache = new Hashtable<Term, Term> ();
 	public static boolean structuresyn = false;
 	public static String notInModifier = "a|an|the";
-	//special cases
+	
+	static{
+		//System.setProperty("wordnet.database.dir", System.getProperty("user.dir")+"/wn21dict");
+		singulars.put("rachis", "rachis");
+	    //special cases
+		singulars.put("anthocyathia", "anthocyathus");
+		singulars.put("axis", "axis");
+		singulars.put("axes", "axis");
+		singulars.put("bases", "base");
+		singulars.put("brit", "brit");
+		singulars.put("boss", "boss");
+		singulars.put("buttress", "buttress");
+		singulars.put("callus", "callus");
+		singulars.put("catenabe", "catena");
+		singulars.put("coremata", "corematis");
+		singulars.put("corpora", "corpus");
+		singulars.put("crepides", "crepis");
+		singulars.put("ephyre", "ephyra");
+		singulars.put("ephyrae", "ephyra");
+		singulars.put("ephyrula", "ephyra");
+		singulars.put("falces", "falx");
+		singulars.put("forceps", "forceps");
+		singulars.put("fusules", "fusula");
+		singulars.put("frons", "frons");
+		singulars.put("fry", "fry");
+		singulars.put("genera", "genus");
+		singulars.put("glochines", "glochis");
+		singulars.put("grooves", "groove");
+		singulars.put("incudes", "incus");
+		singulars.put("interstices", "interstice");
+		singulars.put("irises", "iris");
+		singulars.put("irides", "iris");
+		singulars.put("latera", "latus");
+		singulars.put("lens", "len");
+		singulars.put("malli", "malleus");
+		singulars.put("media", "media");
+		singulars.put("midnerves", "midnerve");
+		singulars.put("mollusks", "mollusca");
+		singulars.put("molluscs", "mollusca");
+		singulars.put("parasides", "parapsis");
+		singulars.put("perradia", "perradius");
+		singulars.put("pharynges", "pharynx");
+		singulars.put("pharynxes", "pharynx");
+		singulars.put("proboscises", "proboscis");
+		singulars.put("process", "process");
+		singulars.put("ptyxis", "ptyxis");
+		singulars.put("proglottides", "proglottis");
+		singulars.put("pseudocoelomata", "pseudocoelomates");
+		singulars.put("series", "series");
+		singulars.put("setules", "setula");
+		singulars.put("species", "species");
+		singulars.put("sperm", "sperm");
+		singulars.put("teeth", "tooth");
+		singulars.put("themselves", "themselves");
+		singulars.put("valves", "valve");
+
+		plurals.put("anthocyathus","anthocyathia");
+		plurals.put("axis", "axes");
+		plurals.put("base", "bases");
+		plurals.put("brit", "brit");
+		plurals.put("boss", "bosses");
+		plurals.put("buttress", "buttresses");
+		plurals.put("callus", "calluses");
+		plurals.put("catena","catenabe");
+		plurals.put("corematis","coremata");
+		plurals.put("corpus","corpora");
+		plurals.put("crepis","crepides");
+		plurals.put("ephyra","ephyre");
+		plurals.put("ephyra","ephyrae");
+		plurals.put("ephyra","ephyrula");
+		plurals.put("falx","falces");
+		plurals.put("forceps", "forceps");
+		plurals.put("frons", "fronses");
+		plurals.put("fry", "fry");
+		plurals.put("fusula","fusules");
+		plurals.put("genus","genera");
+		plurals.put("glochis","glochines");
+		plurals.put("groove", "grooves");
+		plurals.put("incus","incudes");
+		plurals.put("interstice", "interstices");
+		plurals.put("iris","irises");
+		plurals.put("iris","irides");
+		plurals.put("latus","latera");
+		plurals.put("len", "lens");
+		plurals.put("malleus","malli");
+		plurals.put("media", "media");
+		plurals.put("midnerve", "midnerves");
+		plurals.put("mollusca","mollusks");
+		plurals.put("mollusca","molluscs");
+		plurals.put("parapsis","parasides");
+		plurals.put("perradius","perradia");
+		plurals.put("pharynx","pharynges");
+		plurals.put("pharynx","pharynxes");
+		plurals.put("proboscis","proboscises");
+		plurals.put("proglottis","proglottides");
+		plurals.put("process", "processes");
+		plurals.put("pseudocoelomates","pseudocoelomata");
+		plurals.put("ptyxis", "ptyxis");
+		plurals.put("series", "series");
+		plurals.put("setula","setules");
+		plurals.put("species", "species");
+		plurals.put("sperm", "sperm");
+		plurals.put("tooth", "teeth");
+		plurals.put("valve", "valves");
+	}
 	/**
 	 * word must be a verb if
 	 * 1. its pos is "verb" only, or
@@ -170,7 +281,7 @@ public class Utilities {
 			rs = stmt.executeQuery("select word from "+wordrolesable+" where semanticrole in ('os', 'op') and word='"+term+"'");		
 			if(rs.next()){
 				isOrgan.put(term, "true");
-				if(debugPOS) System.out.println(term+" is an organ");
+				//if(debugPOS) System.out.println(term+" is an organ");
 				return true;
 			}
 		}catch(Exception e){
@@ -223,7 +334,9 @@ public class Utilities {
 	public static String toSingular(String word, Connection conn){
 		String s = null;
 		word = word.toLowerCase().replaceAll("[(){}]", "").trim(); //bone/tendon
-
+		
+		if(word.matches(NumericalHandler.numberpattern.toString()) || NumericalHandler.isNumerical(word)) return word;
+		
 		s = singulars.get(word);
 		if(s!=null) return s;
 
@@ -256,7 +369,7 @@ public class Utilities {
 			if(debug) System.out.println("["+word+"]'s singular is "+wordcopy);
 			return wordcopy;
 		}else{//word not in wn
-
+			//if(word.contains("rachis")) 	System.out.println("rachis landed in else block ");
 			Pattern p1 = Pattern.compile("(.*?[^aeiou])ies$");
 			Pattern p2 = Pattern.compile("(.*?)i$");
 			Pattern p3 = Pattern.compile("(.*?)ia$");
@@ -529,6 +642,11 @@ public class Utilities {
 	 */
 	///////////////////////////////////////////////////////////////////////
 
+	/**
+	 * to be replaced by WordNet API
+	 * @param strings
+	 * @return
+	 */
 	public static String checkWN(String[] strings){
 		try{
 			Runtime r = Runtime.getRuntime();	
@@ -550,13 +668,19 @@ public class Utilities {
 
 			// any error???
 			int exitVal = proc.waitFor();
-			//System.out.println("ExitValue: " + exitVal);
+			//System.out.println("WN ExitValue: " + exitVal + " on word "+strings[1]);
 
 			StringBuffer sb = new StringBuffer();
+
+			//for(int i = 0; i<errors.size(); i++){
+			//	sb.append(errors.get(i)+" ");
+			//}
+			
 			for(int i = 0; i<outputs.size(); i++){
-				//sb.append(errors.get(i)+" ");
 				sb.append(outputs.get(i)+" ");
 			}
+			
+			//if(sb.toString().trim().length()==0) System.out.println("WN Result: " + sb.toString()+ " on word "+strings[1]);
 			return sb.toString();
 
 		}catch(Exception e){
@@ -574,6 +698,7 @@ public class Utilities {
 	public static String checkWN4Singular(String word){
 
 		String result = checkWN(new String[]{"wn", word, "-over"});
+		if(word.contains("rachis")) 	System.out.println(word+" WN result is "+result);
 		if (result.length()==0){//word not in WN
 			return null;
 		}
@@ -1492,6 +1617,33 @@ public class Utilities {
 			}
 		}
 	}
+	
+	public static void listStructureNames(String dir, Connection conn){
+		try{
+			File[] files = new File(dir).listFiles();
+			TreeSet<String> names = new TreeSet<String>();
+			for(File file: files){
+				SAXBuilder builder = new SAXBuilder();
+				Document doc = builder.build(file);
+				Element root = doc.getRootElement();
+				List<Element> structures = XPath.selectNodes(root, "//structure");
+				for(Element struct: structures){
+					String id = struct.getAttributeValue("id");
+					String name = Utilities.getStructureName(root, id);
+					names.add(name);
+					if(name.contains("seed") || name.contains("cliff")){
+						System.out.println(name+":"+file.getName());
+					}
+				}
+			}
+			for(String name: names){
+				System.out.println(name);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+			
+	}
 
 
 	public static void main(String[] argv){
@@ -1504,11 +1656,30 @@ public class Utilities {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		
+		//System.out.println(toSingular("species", conn));
 
-		String[] result = Utilities.lookupCharacter("stipe", conn, new Hashtable<String, String[]>(), "gg_noschema_fnaglossaryfixed", "gg_noschema");
+		//String dir = "C:/Users/updates/CharaParserTest/CycadType2/target/final";
+		//listStructureNames(dir, conn);
+		
+		System.setProperty("wordnet.database.dir", System.getProperty("user.dir")+"/wn21dict");
+
+		NounSynset nounSynset; 
+		NounSynset[] hyponyms; 
+
+		WordNetDatabase database = WordNetDatabase.getFileInstance(); 
+		Synset[] synsets = database.getSynsets("trees", SynsetType.NOUN); 
+		for (int i = 0; i < synsets.length; i++) { 
+		    nounSynset = (NounSynset)(synsets[i]); 
+		    hyponyms = nounSynset.getHyponyms(); 
+		    
+		    System.out.println(nounSynset.getWordForms()[0] + 
+		            ": " + nounSynset.getDefinition() + ") has " + hyponyms.length + " hyponyms"); 
+		}
+		/*String[] result = Utilities.lookupCharacter("stipe", conn, new Hashtable<String, String[]>(), "gg_noschema_fnaglossaryfixed", "gg_noschema");
 		for(String r: result){
 			System.out.println(r);
-		}
+		}*/
 		//System.out.println(Utilities.isNoun(",", new ArrayList<String>()));
 		//System.out.println(Utilities.plural("disc"));
 		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));

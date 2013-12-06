@@ -1439,14 +1439,15 @@ public class ChunkedSentence {
 						npcopy = npcopy == null? np : npcopy;
 						ctcopy = ctcopy == null? (ArrayList<String>)this.chunkedtokens.clone():ctcopy;
 					}
-					if(ishardstop(j)) break;
+					
 					if(startn && !foundorgan && ishardstop(j)){
 						//hard stop encountered, break
 						//ns = nscopy;
-						np = npcopy;
+						np = npcopy == null? np : npcopy;
 						this.chunkedtokens = ctcopy;
 						break;
 					}
+					if(ishardstop(j)) break; //this should be after "startn && !foundorgan && ishardstop(j)"
 					
 					if(foundorgan && t.indexOf('<')<0 && t.indexOf('(')<0){ //test whole t, not the last word once a noun has been found
 						break; //break, the end of the search is reached, found organ as object
@@ -1526,13 +1527,13 @@ public class ChunkedSentence {
 						this.chunkedtokens = copy;
 						//if np =~ ^or and the next token is a prep chunk, then merge np and the chunk: r[i[throughout or only in] o[ultimate branches]]
 						String nextoken = this.chunkedtokens.get(j);
-						if(np.startsWith("or ") && nextoken.startsWith("r[")){
+						if(np!=null && np.startsWith("or ") && nextoken.startsWith("r[")){
 							token ="r[p["+token+" "+np.trim()+" "+nextoken.replaceFirst("^r\\[\\w\\[", "");
 							this.chunkedtokens.set(i,  token);
 							for(int k = i+1; k<=j; k++){
 								this.chunkedtokens.set(k, "");
 							}
-						}else{
+						}else if(np!=null){
 							//np = np.replaceAll("\\s+", " ").trim();
 							String head = token.replaceFirst("\\]+$", "").trim();//assuming token is like r[p[in]]
 							String brackets = token.replace(head, "").replaceFirst("\\]$", "").trim();
@@ -1549,7 +1550,7 @@ public class ChunkedSentence {
 									this.chunkedtokens.set(k, "");
 								}
 								while(this.chunkedtokens.get(k).length()==0)k++;
-								if(this.chunkedtokens.get(k).startsWith("r[p[")){//join
+								if(!startn && this.chunkedtokens.get(k).startsWith("r[p[")){//join
 									token = token.replaceAll("(\\w\\[|\\])", "");
 									token = chunkedtokens.get(k).replaceFirst("r\\[p\\[", "r[p["+token+" ");
 									this.chunkedtokens.set(k, token);

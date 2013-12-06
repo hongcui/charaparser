@@ -74,7 +74,7 @@ public class ConstraintIntegrator {
 	private static XPath provenanceattribute;
 	private static XPath inbracketsattribute;
 	
-	private boolean debug = true;
+	private boolean debug = false;
 
 	static{
 		try{

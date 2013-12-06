@@ -2441,21 +2441,25 @@ public class CharacterAnnotatorChunked {
 
 	/**
 	 * 
-	 * @param ckstring:r[p[in] o[outline]], r[p[with] o[a {diameter} 15-65 um]]
+	 * @param ckstring: true: r[p[in] o[outline]], r[p[with] o[a {diameter} 15-65 um]], r[p[in] o[{diameter}]]
+	 * false:  r[p[for 80-100% of] o[{length}]] 
 	 * @return
 	 */
 	private boolean characterPrep(String ckstring, ChunkedSentence cs) {
 		boolean done =false;
 		if(ckstring.indexOf(" ") < 0) return done;
-		String lastword = ckstring.substring(ckstring.lastIndexOf(" ")).replaceAll("\\]", "").trim();
-		if(lastword.matches("("+StanfordParser.characters+")")){//r[p[in] o[outline]]
+		String lastword = ckstring.substring(ckstring.lastIndexOf(" ")).replaceAll("(\\w\\[|\\{|\\(|\\]|\\}|\\))", "").trim();
+		if(lastword.matches("("+StanfordParser.characters+")") && !ckstring.matches(".*?\\d.*")){//r[p[in] o[outline]]
 			Element lastelement = this.latestelements.get(this.latestelements.size()-1);
 			if(lastelement.getName().compareTo("character")==0){//shell oval in outline
 				Iterator<Element> it = this.latestelements.iterator();
 				while(it.hasNext()){
 					lastelement = it.next();
 					if(lastelement.getName().compareTo("comma")==0) continue;
-					lastelement.setAttribute("name", lastword);
+					if(lastelement.getAttributeValue("name").contains("atypical"))
+						lastelement.setAttribute("name", "atypical_"+lastword);
+					else
+						lastelement.setAttribute("name", lastword);
 				}
 				done = true;
 			}else if(lastelement.getName().compareTo("structure")==0){//shell in oval outline
@@ -3586,7 +3590,7 @@ public class CharacterAnnotatorChunked {
 	//if w has been seen used as a modifier to organ o
 	private String constraintType(String w, String o) {
 		String result = null;
-		
+		if(w.matches(NumericalHandler.numberpattern.toString()) || NumericalHandler.isNumerical(w)) return result;
 		//mohan code to make w keep all the tags for a preposition chunk
 		if(w.matches("\\{?r\\[p\\[.*"))//for cases such as "with the head in full face view, the midpoint blah blah....", "r[p[with head] {in-fullface-view}]" is treated as a "condition" constraint
 		{

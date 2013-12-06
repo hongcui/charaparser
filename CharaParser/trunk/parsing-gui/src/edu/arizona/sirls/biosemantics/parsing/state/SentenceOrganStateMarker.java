@@ -74,7 +74,7 @@ public class SentenceOrganStateMarker {
 	private StyledText charLog;
 	private boolean debug = false;
 	private boolean superlative = false;
-	private boolean printto = true;
+	private boolean printto = false;
 	private boolean printCompoundPP = false;
 	public static String taxonnames = null;
 	public static Pattern taxonnamepattern1 = null;
