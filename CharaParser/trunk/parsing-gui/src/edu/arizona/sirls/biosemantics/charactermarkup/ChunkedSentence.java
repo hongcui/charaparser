@@ -130,6 +130,7 @@ public class ChunkedSentence {
 		eqcharacters.put("broad", "width");
 		eqcharacters.put("diam", "diameter");
 		eqcharacters.put("high", "height");
+		eqcharacters.put("tall", "height");
 		eqcharacters.put("thick", "thickness");
 		//eqcharacters.put("diameter", "diameter");
 				
@@ -1405,8 +1406,10 @@ public class ChunkedSentence {
 				//boolean ofnumber = false;
 				//lookforward in chunkedtokens to find the object noun
 				int j = 0;
+				boolean foundposition = false;
 				for(j = i+1; j<this.chunkedtokens.size(); j++){
 					String t = this.chunkedtokens.get(j).trim();
+
 					if(!foundorgan && !startn && t.equals("-LRB-/-LRB-")){ //collect everything untill -RRB-
 						boolean findRRB = false;
 						do{
@@ -1453,6 +1456,16 @@ public class ChunkedSentence {
 						break; //break, the end of the search is reached, found organ as object
 					}
 					
+					/*if(foundposition){
+						npcopy = npcopy == null? np : npcopy;
+						ctcopy = ctcopy == null? (ArrayList<String>)this.chunkedtokens.clone():ctcopy;
+					}*/
+					if(foundposition && (t.compareTo(",")==0 || ishardstop(j))){
+						foundorgan = true;
+						break;
+					}
+	
+					
 					np +=t+" "; //any word in betweens
 					this.chunkedtokens.set(j, "");
 					
@@ -1461,6 +1474,11 @@ public class ChunkedSentence {
 						foundorgan = true;
 					}
 					
+					String[] charinfo = Utilities.lookupCharacter(t, conn, characterhash, this.glosstable, this.tableprefix);
+					if(!foundposition && charinfo!=null && charinfo[0].contains("position")){
+						foundposition = true;
+					}
+
 					if(!foundorgan && Utilities.isNoun(t, nouns, notnouns)){ //t may have []<>{}
 						startn = true; //won't affect the value of foundorgan, after foundorgan is true, "plus" problem
 						if(Utilities.isPlural(t, MainForm.conn)){
