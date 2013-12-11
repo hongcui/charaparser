@@ -325,7 +325,7 @@ public class UploadTerms2OTO{
     		        // send '\0'
     		        buf[0]=0; out.write(buf, 0, 1); out.flush();
     		      }
-
+    		      channel.disconnect();
     		      session.disconnect();
     		      return true;
     		    }

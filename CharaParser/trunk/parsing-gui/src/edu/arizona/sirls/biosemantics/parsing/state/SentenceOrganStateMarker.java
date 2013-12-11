@@ -74,7 +74,7 @@ public class SentenceOrganStateMarker {
 	private StyledText charLog;
 	private boolean debug = false;
 	private boolean superlative = false;
-	private boolean printto = false;
+	private boolean printto = true;
 	private boolean printCompoundPP = false;
 	public static String taxonnames = null;
 	public static Pattern taxonnamepattern1 = null;
@@ -176,7 +176,7 @@ public class SentenceOrganStateMarker {
 					text = StanfordParser.ratio2number(text);
 					text = toNumber(text);
 					text = text.replaceAll("\\b(ca|c)\\s*\\.?\\s*(?=\\d)", "");
-					text = formatNumericalRange(text);
+					text = formatNumericalRange(text, source);
 					text = text.replaceAll("more or less", "moreorless");
 					text = text.replaceAll("&#176;", "°");
 					//text = text.replaceAll("\\bca\\s*\\.", "ca");
@@ -264,7 +264,7 @@ public class SentenceOrganStateMarker {
 	 * @param text
 	 * @return
 	 */
-	private String formatNumericalRange(String text) {
+	private String formatNumericalRange(String text, String src) {
 		String copy = text;
 		text = text.replaceAll("\\bone\\b\\s?\\b(?=to\\s?\\d)", "1 "); //one to 3 valves
 		if(text.contains("from") || text.contains("between")){
@@ -282,8 +282,8 @@ public class SentenceOrganStateMarker {
 			text = text.replaceAll(" 0 - (?=[\\d\\.\\ ]{1,8} [-–])", " ");// 0 - 1 . 3  - 2 . 0 => 1 . 3 - 2 . 0
 		}
 		if(!copy.equals(text) && printto){
-			System.out.println("[to range original] "+copy);
-			System.out.println("[to range now] "+text);
+			System.out.println(src+" [to range original] "+copy);
+			System.out.println(src+" [to range now] "+text);
 		}
 		
 		return text.replaceAll("\\s+", " ").trim();
@@ -297,7 +297,8 @@ public class SentenceOrganStateMarker {
 	 * @return
 	 */
 	private String to_Range(String text) {
-		Pattern torangeptn = Pattern.compile("(.*?)\\b(\\S+)? to ([\\d\\. ]{1,6} )(.*)");
+		Pattern torangeptn = Pattern.compile("(.*?)\\b(\\S+)? to ([\\d\\. ]{1,6} )(.*)");// doesn't match "elongate , to 10 cm in diameter" because of '\b' not matching ','
+		//Pattern torangeptn = Pattern.compile("(.*?)\\b?(\\S+)? to ([\\d\\. ]{1,6} )(.*)");
 		Matcher m = torangeptn.matcher(text);
 		while(m.matches()){
 			if(m.group(2).compareTo("up")==0 || ! Utilities.isVerb(m.group(2), ChunkedSentence.verbs, ChunkedSentence.notverbs)){
