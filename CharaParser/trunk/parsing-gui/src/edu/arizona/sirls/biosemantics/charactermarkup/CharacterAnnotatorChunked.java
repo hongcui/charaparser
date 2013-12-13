@@ -1957,7 +1957,9 @@ public class CharacterAnnotatorChunked {
 		rangecharacter.setAttribute("char_type", "range_value");
 		rangecharacter.setAttribute("name", charactername);
 		
-		String fromvalue = getFirstCharacter(from);
+		String fromvalue = null;
+		if(from.compareTo("one")==0 && charactername.compareTo("count")==0) fromvalue = from; //"one to many" case
+		else fromvalue = getFirstCharacter(from);
 		String frommodifier = (frontmodifier+" "+from.replaceFirst(fromvalue, "")).trim();
 		String tovalue = getFirstCharacter(to);
 		

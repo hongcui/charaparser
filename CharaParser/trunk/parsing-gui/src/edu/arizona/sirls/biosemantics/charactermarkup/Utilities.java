@@ -1270,6 +1270,8 @@ public class Utilities {
 		return tokens;
 	}
 
+	//<petiole> 15-30(-53) cm {long} (20-30 ( -5 ) % of total <leaf> ) , <petiole> {glabrous} , {spinescent} for 20-35% of {length} .
+	//(20-30 ( -5 ) % of total <leaf> ) => (3 of total)
 	public static String threeingSentence(String str) {
 		//hide the numbers in count list: {count~list~9~or~less~} <fin> <rays>
 		ArrayList<String> lists = new ArrayList<String>();
@@ -1393,8 +1395,20 @@ public class Utilities {
 				if(cnt<0) return i; //first index with negative count
 			}
 		}
-
-		if(bracket == l){
+		
+		/*if(bracket == l){
+			for(int i = str.length()-1; i>=0; i--) {
+				if(str.charAt(i)== r){
+					cnt++;
+				}else if(str.charAt(i) == l){
+					cnt--; 
+				}			
+				if(cnt<0) return i; //first index with negative count
+			}
+		}*/
+		
+		/* wrong: returned 6 for "(20-30(-50)%"*/
+		 if(bracket == l){
 			int index = -1;
 			for(int i = 0; i < str.length(); i++) {
 				if(str.charAt(i)== l){
@@ -1662,7 +1676,7 @@ public class Utilities {
 		//String dir = "C:/Users/updates/CharaParserTest/CycadType2/target/final";
 		//listStructureNames(dir, conn);
 		
-		System.setProperty("wordnet.database.dir", System.getProperty("user.dir")+"/wn21dict");
+		/*System.setProperty("wordnet.database.dir", System.getProperty("user.dir")+"/wn21dict");
 
 		NounSynset nounSynset; 
 		NounSynset[] hyponyms; 
@@ -1675,7 +1689,7 @@ public class Utilities {
 		    
 		    System.out.println(nounSynset.getWordForms()[0] + 
 		            ": " + nounSynset.getDefinition() + ") has " + hyponyms.length + " hyponyms"); 
-		}
+		}*/
 		/*String[] result = Utilities.lookupCharacter("stipe", conn, new Hashtable<String, String[]>(), "gg_noschema_fnaglossaryfixed", "gg_noschema");
 		for(String r: result){
 			System.out.println(r);
@@ -1683,7 +1697,13 @@ public class Utilities {
 		//System.out.println(Utilities.isNoun(",", new ArrayList<String>()));
 		//System.out.println(Utilities.plural("disc"));
 		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));
-		//System.out.println(Utilities.indexOfunmatched(']', "2-]5-20[-30+]"));
+		System.out.println(Utilities.indexOfunmatched(']', "2-]5-20[-30+]")); //2
+		System.out.println(Utilities.indexOfunmatched('(', "(20-30(-50)%")); //0
+		System.out.println(Utilities.indexOfunmatched('(', "(20-30)(-50%")); //7
+		System.out.println(Utilities.indexOfunmatched('(', "20-30(-50%"));//5
+		System.out.println(Utilities.indexOfunmatched(')', "20-30)-50%")); //5
+		System.out.println(Utilities.indexOfunmatched('(', "(20-30)(-50%)"));//-1
+		System.out.println(Utilities.indexOfunmatched(')', "(20-30)-50%)"));//11
 	}
 
 

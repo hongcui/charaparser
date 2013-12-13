@@ -239,6 +239,7 @@ public class POSTagger4StanfordParser {
 					str = strnum;
 				}
 				str = Utilities.threeingSentence(str);
+				String cp = str;
 				if(Utilities.hasUnmatchedBrackets(str)){
 					System.out.println("unmatched: "+str);
 				}
@@ -724,6 +725,10 @@ public class POSTagger4StanfordParser {
 		ArrayList<String> amb = new ArrayList<String>();
 		for(int i = this.chunkedtokens.size()-1; i>=0; i--){
 			String word = this.chunkedtokens.get(i);
+			if(word.compareTo("one")==0 && encounteredCount()){
+				this.charactertokensReversed.add("count");
+				continue;
+			}
 			if(word.indexOf("~list~")>0){
 				String ch = word.substring(0, word.indexOf("~list~")).replaceAll("\\W", "").replaceFirst("ttt$", "");
 				this.charactertokensReversed.add(ch);
@@ -805,6 +810,14 @@ public class POSTagger4StanfordParser {
 		}
 	}
 	
+	private boolean encounteredCount() {
+		for(int i = this.charactertokensReversed.size()-1; i >=0; i--){
+			if(this.charactertokensReversed.get(i).matches(".*?\\w.*") && this.charactertokensReversed.get(i).compareTo("count")!=0) return false;
+			if(this.charactertokensReversed.get(i).compareTo("count")==0) return true;
+		}
+		return false;
+	}
+
 	private String getToken(String word){
 		if (word.indexOf('<')>=0){
 			return "#";

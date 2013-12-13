@@ -57,7 +57,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	static private int discoveredchunks = 0;
 	//private static Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%\\?]{1,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts, used {1, } to include single digit expressions such as [rarely 0]
 	private static Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d]?[()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{1,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts, used {1, } to include single digit expressions such as [rarely 0]
-	private static boolean printNormalizeBrackets = false;
+	private static boolean printNormalizeBrackets = true;
 
 	private File posedfile = null;
 	private File parsedfile = null;
@@ -178,7 +178,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				//if(src.compareTo("106.txt-3")!=0 /*&& src.compareTo("Rhapidophyllum.txt-6")!=0*/) continue;
 				//if(src.compareTo("1227.txt-16")!=0) continue;
 				//if(!src.startsWith("4. Exacum teres.txt-12")) continue;
-				//if(!src.startsWith("182.txtp0.txt-2")) continue;
+				//if(!src.startsWith("113.txtp0.txt-3")) continue;
 				try{
 					str = tagger.POSTag(str, src);
 				}catch(Exception e){
@@ -527,6 +527,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		return sb.toString();
 	}
 
+	/*challenging cases: 
+	 * <petiole> 15 - 30 ( - 53 ) cm {long} ( 20 - 30 ( - 50 ) % of total <leaf> ) , <petiole> {glabrous} , {spinescent} for 20 - 35 % of {length} .*/
 	public static String normalizeSpacesRoundNumbers(String sent) {
 		sent = sent.replaceAll("-+", "-");// 2--4 => 2-4
 		sent = sent.replaceAll("(- )+", "- ");// 2 - - 4 => 2 - 4
@@ -614,6 +616,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		return sent;
 	}
 
+	//<petiole> 15-30(-53) cm {long} (20-30(-50)% of total <leaf> ) , <petiole> {glabrous} , {spinescent} for 20-35% of {length} .
 	private static String normalizeBrackets(String sent, char bracket) {
 		char l ='('; char r=')';
 		switch (bracket){
@@ -667,11 +670,12 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			matcher = numbergroup.matcher(sent);
 		}
 		fixed +=sent;
+		fixed = fixed.replaceAll("\\s+", " ");
 		if(printNormalizeBrackets  && !fixed.equals(sentorig)){
 			System.out.println("orig : "+sentorig);
 			System.out.println("fixed: "+fixed);
 		}
-		return fixed.replaceAll("\\s+", " ");
+		return fixed;
 	}
 	
 
@@ -950,8 +954,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String prefix = "sponges_1";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "spongeglossaryfixed", false);	
 		*/
-		//sp.POSTagging();
-		//sp.parsing();
+		sp.POSTagging();
+		sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
