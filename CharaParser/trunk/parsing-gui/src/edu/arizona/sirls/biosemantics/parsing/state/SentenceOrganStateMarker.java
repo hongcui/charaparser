@@ -246,6 +246,7 @@ public class SentenceOrganStateMarker {
 		this.adjnounslist = this.adjnounslist.trim().length()==0? null : "[<{]*"+this.adjnounslist.replaceFirst("\\|$", "").replaceAll("\\|+", "|").replaceAll("\\|", "[}>]*|[<{]*").replaceAll(" ", "[}>]* [<{]*")+"[}>]*";
 		this.organnames = collectOrganNames();
 		this.statenames = collectStateNames();
+		//System.out.println(this.statenames);
 	}
 	
 	private String toNumber(String text) {
@@ -297,8 +298,8 @@ public class SentenceOrganStateMarker {
 	 * @return
 	 */
 	private String to_Range(String text) {
-		Pattern torangeptn = Pattern.compile("(.*?)\\b(\\S+)? to ([\\d\\. ]{1,6} )(.*)");// doesn't match "elongate , to 10 cm in diameter" because of '\b' not matching ','
-		//Pattern torangeptn = Pattern.compile("(.*?)\\b?(\\S+)? to ([\\d\\. ]{1,6} )(.*)");
+		//Pattern torangeptn = Pattern.compile("(.*?)\\b(\\S+)? to ([\\d\\. ]{1,6} )(.*)");// doesn't match "elongate , to 10 cm in diameter" because of '\b' not matching ','
+		Pattern torangeptn = Pattern.compile("(.*?)\\b?(\\S+)? to ([\\d\\. ]{1,6} )(.*)");
 		Matcher m = torangeptn.matcher(text);
 		while(m.matches()){
 			if(m.group(2).compareTo("up")==0 || ! Utilities.isVerb(m.group(2), ChunkedSentence.verbs, ChunkedSentence.notverbs)){
@@ -689,6 +690,7 @@ public class SentenceOrganStateMarker {
 					" where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'life_style', 'taxon_name'))");
 			while(rs.next()){
 				String w = rs.getString("word");
+				//w = w.replaceAll("-+", "_");//"-" connected phrase should not occur. orange-red => orange_red
 				if(!w.matches("\\W+") && !w.matches("("+ChunkedSentence.stop+")") &&!w.matches("("+ChunkedSentence.prepositions+")")){
 					statestring += "|"+ w; 
 				}
@@ -702,6 +704,7 @@ public class SentenceOrganStateMarker {
 				String term = rs.getString("term").trim();
 				if(term == null){continue;}
 				term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
+				term = term.replaceAll("-+", "_"); //orange-red => orange_red
 				if(!statestring.matches(".*\\b"+term+"\\b.*"))
 					statestring+=("|"+ term);
 			}
@@ -833,6 +836,7 @@ public class SentenceOrganStateMarker {
 				String term = rs.getString("term").trim();
 				if(term == null){continue;}
 				term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
+				term = term.replaceAll("-+", "_"); //leaf-blade => leaf_blade
 				tags.append(term+"|");
 			}
 		}catch(Exception e){

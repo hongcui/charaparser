@@ -1396,7 +1396,7 @@ public class Utilities {
 			}
 		}
 		
-		/*if(bracket == l){
+		if(bracket == l){
 			for(int i = str.length()-1; i>=0; i--) {
 				if(str.charAt(i)== r){
 					cnt++;
@@ -1405,10 +1405,10 @@ public class Utilities {
 				}			
 				if(cnt<0) return i; //first index with negative count
 			}
-		}*/
+		}
 		
 		/* wrong: returned 6 for "(20-30(-50)%"*/
-		 if(bracket == l){
+		/* if(bracket == l){
 			int index = -1;
 			for(int i = 0; i < str.length(); i++) {
 				if(str.charAt(i)== l){
@@ -1420,7 +1420,7 @@ public class Utilities {
 				if(cnt==0) index = -1; //first index with negative count
 			}
 			return index;
-		}
+		}*/
 		return -1;
 	}
 
@@ -1690,20 +1690,20 @@ public class Utilities {
 		    System.out.println(nounSynset.getWordForms()[0] + 
 		            ": " + nounSynset.getDefinition() + ") has " + hyponyms.length + " hyponyms"); 
 		}*/
-		/*String[] result = Utilities.lookupCharacter("stipe", conn, new Hashtable<String, String[]>(), "gg_noschema_fnaglossaryfixed", "gg_noschema");
+		String[] result = Utilities.lookupCharacter("orange", conn, new Hashtable<String, String[]>(), "gg_noschema_fnaglossaryfixed", "gg_noschema");
 		for(String r: result){
 			System.out.println(r);
-		}*/
+		}
 		//System.out.println(Utilities.isNoun(",", new ArrayList<String>()));
 		//System.out.println(Utilities.plural("disc"));
 		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));
-		System.out.println(Utilities.indexOfunmatched(']', "2-]5-20[-30+]")); //2
+		/*System.out.println(Utilities.indexOfunmatched(']', "2-]5-20[-30+]")); //2
 		System.out.println(Utilities.indexOfunmatched('(', "(20-30(-50)%")); //0
 		System.out.println(Utilities.indexOfunmatched('(', "(20-30)(-50%")); //7
 		System.out.println(Utilities.indexOfunmatched('(', "20-30(-50%"));//5
 		System.out.println(Utilities.indexOfunmatched(')', "20-30)-50%")); //5
 		System.out.println(Utilities.indexOfunmatched('(', "(20-30)(-50%)"));//-1
-		System.out.println(Utilities.indexOfunmatched(')', "(20-30)-50%)"));//11
+		System.out.println(Utilities.indexOfunmatched(')', "(20-30)-50%)"));//11*/
 	}
 
 
