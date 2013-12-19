@@ -838,7 +838,9 @@ public class ChunkedSentence {
 		if(subjecto || i==-1){ 
 			chunk = "z["+chunk.trim().replaceAll("<", "(").replaceAll(">", ")")+"]";
 		}else{
-			chunk = "u["+chunk.trim().replaceFirst("[<(]", "o[(").replaceFirst("[)>]$", ")]").replaceAll("<", "(").replaceAll(">", ")").replaceAll("[{}]", "")+"]";//<leaf><blade> => u[o[(leaf)(blade)]]
+			//coloration[{coloration~list~commonly~yellow~punct~orange~or~brown}] {fleshy} {outer} <sarcotesta>
+			chunk = "u["+chunk.trim().replaceFirst("[<(]", "o[(").replaceFirst("[)>]$", ")]").replaceAll("<", "(").replaceAll(">", ")")+"]";//<leaf><blade> => u[o[(leaf)(blade)]]
+			//chunk = "u["+chunk.trim().replaceFirst("[<(]", "o[(").replaceFirst("[)>]$", ")]").replaceAll("<", "(").replaceAll(">", ")").replaceAll("[{}]", "")+"]";//<leaf><blade> => u[o[(leaf)(blade)]]
 		}
 		
 		//reset from i+2 to last

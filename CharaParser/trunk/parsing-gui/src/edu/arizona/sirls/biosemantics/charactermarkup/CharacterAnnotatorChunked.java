@@ -1923,7 +1923,7 @@ public class CharacterAnnotatorChunked {
 					frontmodifier = (frontmodifier+" "+ statemodifier).trim();
 					statemodifier = frontmodifier;
 				}
-				if(statemodifier.length() == 0 && key.equals("or") && frontmodifier.matches("(not|never)\\b.*")) statemodifier = frontmodifier;
+				if(statemodifier.length() == 0 && key.equals("or") && frontmodifier.matches("(not|never|.*\\bless\\b)\\b.*")) statemodifier = frontmodifier;
 				if(i!=0 && key.equals("to") ) frontmodifier = "";
 				
 				if(i == orstates.length-1){//last state, apply aftermodifier
@@ -3322,7 +3322,10 @@ public class CharacterAnnotatorChunked {
 =======*/
 					tokens[j] = NumericalHandler.originalNumForm(tokens[j]);
 					if(tokens[j].indexOf("~list~")>=0){
-						results = this.processCharacterList(tokens[j], parents, cs);// 7-12-02 add cs
+						String list = tokens[j];
+						if(modifiers.length()>0) list = "m["+modifiers.trim()+"] "+list; 
+						results = this.processCharacterList(list, parents, cs);// 7-12-02 add cs
+						modifiers="";
 //>>>>>>> .r1182
 					}else{
 						String w = tokens[j];
