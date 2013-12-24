@@ -2383,7 +2383,7 @@ public class CharacterAnnotatorChunked {
 		}	
 		Element lastelement = this.latestelements.get(this.latestelements.size()-1); 
 		if(lastelement.getName().compareTo("structure") == 0){//latest element is a structure
-			/*if(lastelement.getAttributeValue("name").equals(""+ApplicationUtilities.getProperty("unknown.structure.name")+"")){ //this is case is dealt with in other ways.
+			/*if(lastelement.getAttributeValue("name").equals(""+ApplicationUtilities.getProperty("unknown.structure.name")+"")){ //this case is dealt with in other ways.
 				//case of "width of interocular area ..."
 				this.latestelements.remove(this.latestelements.size()-1);				
 				if(this.subjects.size()>=1){
@@ -2470,8 +2470,13 @@ public class CharacterAnnotatorChunked {
 				while(it.hasNext()){
 					lastelement = it.next();
 					if(lastelement.getName().compareTo("comma")==0) continue;
-					lastelement.setAttribute("name", lastword);
-					lastelement.setAttribute("value", cvalue);
+					Element chara = lastelement;
+					if(lastelement.getName().compareTo("structure")==0){
+						chara = new Element("character");
+						lastelement.addContent(chara);
+					}
+					chara.setAttribute("name", lastword);
+					chara.setAttribute("value", cvalue.trim());
 				}
 				done = true;
 			}

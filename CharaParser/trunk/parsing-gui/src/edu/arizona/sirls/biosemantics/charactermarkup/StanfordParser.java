@@ -945,7 +945,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String posedfile = ApplicationUtilities.getProperty("target")+"/"+prefix+"_posedsentences.txt";
 		String parsedfile = ApplicationUtilities.getProperty("target")+"/"+prefix+"_parsedsentences.txt";
 		String transformedir=ApplicationUtilities.getProperty("target")+ "/transformed";
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "nematodesglossaryfixed", false);
 		
 		/*String database = "markedupdatasets";
 		String posedfile = "C:\\Users\\updates\\CharaParserTest\\Sponges\\sponges-11mar13\\target\\sponges_1__posedsentences.txt";
