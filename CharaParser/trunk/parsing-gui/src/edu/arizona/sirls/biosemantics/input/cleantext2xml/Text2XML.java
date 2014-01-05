@@ -26,11 +26,15 @@ import edu.arizona.sirls.biosemantics.parsing.ParsingUtil;
  */
 public class Text2XML {
 
-	String processorname = "Cui, Hong using Text2XML java application init commit, validated against beeSchema.xsd revision f0a80a8516a06e51224d01314403eb26d60f881d";
+	String processorname = "Cui, Hong using Text2XML java application init commit r82, validated against beeSchema.xsd revision f0a80a8516a06e51224d01314403eb26d60f881d";
 	public static String ranks = "family\\b|genus\\b|species\\b|var\\."; //\. and \b won't match at the same time.
 	public static int keycount = 0;
 	static int numberh = 0;
 	static int numberl = 0;
+	
+	//fullDescription, TaxonDescriptionProcessor
+	//isDescription
+	//isTaxonPara
 	/**
 	 * 
 	 */
@@ -91,6 +95,19 @@ public class Text2XML {
 			   }
 		   }	   
 		}
+		//last doc
+		if(doc.getRootElement().getChild("taxon_identification")!=null || 
+				   doc.getRootElement().getChild("full_description")!=null  ){
+			   tnprocessor.process(doc.getRootElement()); //process name first
+			   tdprocessor.process(doc.getRootElement());
+			   String title = doc.getRootElement().getChild("taxon_identification").getChild("taxon_hierarchy").getTextNormalize().replaceAll("\\W", "_").replaceFirst("_+$", "");
+			   Element number =  doc.getRootElement().getChild("number");
+			   if(number != null)
+				   title = (number.getTextNormalize()+" "+title).trim();
+			   writeDocument(doc, outfoldert, title);
+			   doc = newdocument(source);
+		   }
+		
 		br.close();
 		}catch(Exception e){
 			e.printStackTrace();
@@ -112,7 +129,7 @@ public class Text2XML {
 		if(m.matches())
 			return m.group(1).trim();
 		
-		p = Pattern.compile(".*?([A-Z]\\S+) .*"); //ALLCAP is a genus
+		p = Pattern.compile(".*?([A-Z]\\S+)($|.*)"); //ALLCAP is a genus
 		m = p.matcher(name);
 		if(m.matches() && m.group(1).matches("[^a-z1-9]{3,}"))
 			return "genus";
@@ -145,6 +162,7 @@ public class Text2XML {
 	 */
 	private boolean fullDescription(String line) {
 		return line.indexOf("—")>0;
+		
 	}
 
 	/**
@@ -253,10 +271,15 @@ public class Text2XML {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String inputpath = "C:/Users/updates/CharaParserTest/Gleason_and_Cronquist/Gleason_and_Cronquist_Rosaceae_1991-reformated.txt";
-		String source = "Gleason and Cronquist 1991";
-		String outfoldert = "C:/Users/updates/CharaParserTest/Gleason_and_Cronquist/taxonomy";
-		String outfolderk = "C:/Users/updates/CharaParserTest/Gleason_and_Cronquist/key";
+		//String inputpath = "C:/Users/updates/CharaParserTest/Gleason_and_Cronquist/Gleason_and_Cronquist_Rosaceae_1991-reformated.txt";
+		//String source = "Gleason and Cronquist 1991";
+		//String outfoldert = "C:/Users/updates/CharaParserTest/Gleason_and_Cronquist/taxonomy";
+		//String outfolderk = "C:/Users/updates/CharaParserTest/Gleason_and_Cronquist/key";
+		
+		String inputpath="C:/Users/updates/CharaParserTest/hogdon_steele1966/hogdon_steele1966_reformatted.txt";
+		String source="Hogdon Steele 1996";
+		String outfoldert="C:/Users/updates/CharaParserTest/hogdon_steele1966/taxonomy";
+		String outfolderk="C:/Users/updates/CharaParserTest/hogdon_steele1966/key";
 		Text2XML t2x = new Text2XML(inputpath, source, outfoldert, outfolderk);
 	}
 

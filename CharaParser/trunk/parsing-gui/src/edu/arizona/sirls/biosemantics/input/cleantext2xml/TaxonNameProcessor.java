@@ -72,6 +72,7 @@ public class TaxonNameProcessor {
 		ti.addContent(new Element("species_name").addContent(n));
 		String rest = namestr.substring(namestr.indexOf(" ")).trim(); //authority and common name
 		//L. Sour cherry, pie-cherry.
+		if(rest.length()>0)
 		markupRest(ti, rank, rest);
 	}
 
@@ -122,10 +123,12 @@ public class TaxonNameProcessor {
 
 	private void markupGenusName(Element ti, String rank, String namestr) {
 		//PRUNUS L.C.SOMEONE. Sour cherry, pie-cherry.
+		namestr = namestr.trim()+" ";
 		String n = namestr.substring(0, namestr.indexOf(" ")).replaceAll("\\W+$", "");
 		ti.addContent(new Element(rank+"_name").addContent(n));
 		String rest = namestr.substring(namestr.indexOf(" ")).trim(); //authority and common name
-		markupRest(ti, rank, rest);
+		if(rest.length()>0)
+			markupRest(ti, rank, rest);
 	}
 
 	private void markupFamilyName(Element ti, String rank, String namestr) {
