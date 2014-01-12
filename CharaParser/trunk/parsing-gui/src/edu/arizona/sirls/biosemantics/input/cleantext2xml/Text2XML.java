@@ -22,11 +22,35 @@ import edu.arizona.sirls.biosemantics.parsing.ParsingUtil;
 /**
  * @author Hong Cui
  * created for Gleason_and_Cronquist_1991
+ * Expected format: 
+ * [Scientific Name, Description, OtherInfo]+
+ * Scientific Names: 
+ *       the name proper for a Family (or above Genus): must include rank e.g. 'Family'
+ *       the name proper for a Genus description: all CAPITAL.
+ *       the name proper for a Species description: follow a sequential number (e.g. 1. Genus Specific-epithet .)
+ *       the end of scientific name info, if followed by a description in a shared paragraph, is marked by '—'. 
+ * Descriptions:
+ *       descriptions that appear in the same paragraph as the name are enclosed in a pair of "—". (e.g. 1. Genus Specific-epithet Authority. —Description. —OtherInfo)
+ *       descriptions that appear in separate paragraphs
+ *                if all description info is contained in one paragraph, set numberOfDescriptionParagraph = 1
+ *                if multiple description paragraphs, set numberOfDescriptionParagraph = n, AND all non-description paragraphs should start with '—'.
+ * Identification keys:
+ *       The same format as FNA keys: all statements start with a number, end with either a determination or explicit/implicit next statement number. 
+ *       Expects at least three dots (...) before determination or an explicit next statement number.
+ *       
+ *       1 statement
+ *       2 statement .... 3
+ *       2 statement .... determination
+ *       3 statement 
+ *       4 statement .... determination
+ *       4 statement .....determination                      
  *
+ *       1 -> 2 -> 3 ->4 ->d, d
+ *            2 -> d
  */
 public class Text2XML {
 
-	String processorname = "Cui, Hong using Text2XML java application init commit r82, validated against beeSchema.xsd revision f0a80a8516a06e51224d01314403eb26d60f881d";
+	String processorname = "Cui, Hong using Text2XML java application init commit r83, validated against beeSchema.xsd revision f0a80a8516a06e51224d01314403eb26d60f881d";
 	public static String ranks = "family\\b|genus\\b|species\\b|var\\."; //\. and \b won't match at the same time.
 	public static int keycount = 0;
 	static int numberh = 0;
@@ -271,15 +295,16 @@ public class Text2XML {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		//String inputpath = "C:/Users/updates/CharaParserTest/Gleason_and_Cronquist/Gleason_and_Cronquist_Rosaceae_1991-reformated.txt";
-		//String source = "Gleason and Cronquist 1991";
-		//String outfoldert = "C:/Users/updates/CharaParserTest/Gleason_and_Cronquist/taxonomy";
-		//String outfolderk = "C:/Users/updates/CharaParserTest/Gleason_and_Cronquist/key";
 		
-		String inputpath="C:/Users/updates/CharaParserTest/hogdon_steele1966/hogdon_steele1966_reformatted.txt";
+		String inputpath = "C:/Users/updates/Dropbox/for Illyong/to be processed in ETC/plants(retyped)/Gleason_and_Cronquist/Gleason_and_Cronquist_Rosaceae_1991-reformated.txt";
+		String source = "Gleason and Cronquist 1991";
+		String outfoldert = "C:/Users/updates/Dropbox/for Illyong/to be processed in ETC/plants(retyped)/Gleason_and_Cronquist/taxonomy";
+		String outfolderk = "C:/Users/updates/Dropbox/for Illyong/to be processed in ETC/plants(retyped)/Gleason_and_Cronquist/key";
+		
+		/*String inputpath="C:/Users/updates/CharaParserTest/hogdon_steele1966/hogdon_steele1966_reformatted.txt";
 		String source="Hogdon Steele 1996";
 		String outfoldert="C:/Users/updates/CharaParserTest/hogdon_steele1966/taxonomy";
-		String outfolderk="C:/Users/updates/CharaParserTest/hogdon_steele1966/key";
+		String outfolderk="C:/Users/updates/CharaParserTest/hogdon_steele1966/key";*/
 		Text2XML t2x = new Text2XML(inputpath, source, outfoldert, outfolderk);
 	}
 
