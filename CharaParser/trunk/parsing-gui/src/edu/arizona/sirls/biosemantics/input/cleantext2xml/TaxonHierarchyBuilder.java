@@ -11,9 +11,9 @@ import edu.arizona.sirls.biosemantics.parsing.VolumeTransformer;
 
 public class TaxonHierarchyBuilder {
 	//for taxon hierarchy calculation
-	private static ArrayList<String> taxonranks = new ArrayList<String>(); // from high to low
-	private static ArrayList<String> taxonnames = new ArrayList<String>(); // names corresponding to ranks
-	public static ArrayList<String> ranksinorder = new ArrayList<String>(); //from high to low
+	private static ArrayList<String> taxonranks = new ArrayList<String>(); // from high to low, keep the current taxon_hierarchy.
+	private static ArrayList<String> taxonnames = new ArrayList<String>(); // names corresponding to the ranks in the current hierarchy.
+	public static ArrayList<String> ranksinorder = new ArrayList<String>(); //fixed order from high to low
 	private static final Logger LOGGER = Logger.getLogger(TaxonHierarchyBuilder.class);
 	static{
 		ranksinorder.add("family");
@@ -22,10 +22,13 @@ public class TaxonHierarchyBuilder {
 		ranksinorder.add("subtribe");
 		ranksinorder.add("genus");
 		ranksinorder.add("subgenus");
-		ranksinorder.add("section");
+		ranksinorder.add("section");	
+		ranksinorder.add("series");
 		ranksinorder.add("species");
 		ranksinorder.add("subspecies");
 		ranksinorder.add("variety");
+		ranksinorder.add("form");
+		ranksinorder.add("forma"); //forma = form
 	}
 	
 	public TaxonHierarchyBuilder() {
@@ -52,6 +55,27 @@ public class TaxonHierarchyBuilder {
 	public Element taxonHierarchy(Element taxonid) {
 		String th = "";
 		List<Element> children = taxonid.getChildren();
+		for(int i = children.size()-1; i>=0; i--){ //search backwards
+			Element child = children.get(i);
+			String name = child.getName();
+			if(name.endsWith("_name") && name.compareTo("other_name")!=0){
+				String rank = name.substring(0, name.indexOf("_"));
+				String tname = child.getTextTrim();
+				th = getHigherTaxonNames(rank, tname);
+				//System.out.println("ranks are:");
+				//for(String r: taxonranks)
+				 //  System.out.println(r);
+				th += rank +" "+ tname+";";
+				break;
+			}
+		}	
+		Element e = new Element(ApplicationUtilities.getProperty("taxonhierarchy"));
+		e.setText(th);
+		return e;
+		
+		
+		/*String th = "";
+		List<Element> children = taxonid.getChildren();
 		for(Element child: children){
 			String name = child.getName();
 			if(name.endsWith("_name") && name.compareTo("other_name")!=0){
@@ -66,7 +90,7 @@ public class TaxonHierarchyBuilder {
 		}	
 		Element e = new Element(ApplicationUtilities.getProperty("taxonhierarchy"));
 		e.setText(th);
-		return e;
+		return e;*/
 	}
 
 	
