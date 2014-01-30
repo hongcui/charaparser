@@ -54,7 +54,7 @@ import edu.arizona.sirls.biosemantics.parsing.ParsingUtil;
  */
 public class Text2XML {
 
-	String processorname = "Cui, Hong using Text2XML java application init commit r83, validated against beeSchema.xsd revision f0a80a8516a06e51224d01314403eb26d60f881d";
+	String processorname = "Cui, Hong using Text2XML java application init commit r85, validated against beeSchema.xsd revision f0a80a8516a06e51224d01314403eb26d60f881d";
 	public static String ranks = "family\\b|fam\\.|tribe\\b|subtribe\\b|genus\\b|subgen\\.|section\\b|series\\b|species\\b|subspecies\\b|var\\.|forma\\b"; //\. and \b won't match at the same time.
 	public static int keycount = 0;
 	static int numberh = 0;
@@ -64,6 +64,7 @@ public class Text2XML {
 	static Pattern headingptn;
 	public static String lastgenusname;
 	public static int sequence = 0;
+	public GrayAbbreviationHandler gah;
 
 
 	//fullDescription, TaxonDescriptionProcessor
@@ -73,6 +74,7 @@ public class Text2XML {
 	 * 
 	 */
 	public Text2XML(String inputpath, String source, String outfoldert, String outfolderk, String nondescheadings) {
+		gah = new GrayAbbreviationHandler();
 		//check outfoldert
 		File outt = new File(outfoldert);
 		if(!outt.exists()){
@@ -306,6 +308,21 @@ public class Text2XML {
 					}
 				}
 
+				//replace abbreviations in key-statements and descriptions
+				//the simple replacement is problematic: as descriptions and statements also contains abbreviated authority (e.g., L.) which may be replaced with "Lake"
+				/*List<Element> elements = XPath.selectNodes(root, ".//description");
+				for(Element element: elements){
+					description.setText(gah.toFullSpelling(element.getText()));
+				}
+				elements = XPath.selectNodes(root, ".//key//statement");
+				for(Element element: elements){
+					statement.setText(gah.toFullSpelling(element.getText()));
+				}
+				elements = XPath.selectNodes(root, ".//habitat_elevation_distribution_or_ecology");
+				for(Element element: elements){
+					element.setText(gah.toFullSpelling(element.getText()));
+				}
+				*/
 			}catch(Exception e){
 				e.printStackTrace();
 			}
@@ -327,7 +344,13 @@ public class Text2XML {
 		//3 Cal deciduous; styles 3-4; fr scarcely 1 cm; intr .... 3. P. sieboldii.
 		//=>3###Cal deciduous; styles 3-4; fr scarcely 1 cm; intr ### 3. P. sieboldii.
 		line = line.trim().replaceFirst("(?<=^\\d+)[ \\.]", "###");
-		line = line.trim().replaceFirst("[...]{3,}", "@@@");
+		
+		String [] parts = line.split("\\s*[.]{3,}\\s*");
+		if(parts.length>1){
+			if(parts[1].matches("^\\d+\\.?")) line = parts[0]+"###"+parts[1]; //followed by next_statement_id
+			else line = parts[0]+"@@@"+parts[1]; //followed by a determination
+		}
+
 		doc.getRootElement().addContent(new Element("key").addContent(line));		
 	}
 
