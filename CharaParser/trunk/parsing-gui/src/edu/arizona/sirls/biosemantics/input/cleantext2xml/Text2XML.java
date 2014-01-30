@@ -54,7 +54,7 @@ import edu.arizona.sirls.biosemantics.parsing.ParsingUtil;
  */
 public class Text2XML {
 
-	String processorname = "Cui, Hong using Text2XML java application init commit r85, validated against beeSchema.xsd revision f0a80a8516a06e51224d01314403eb26d60f881d";
+	String processorname = "Cui, Hong using Text2XML java application init commit r86, validated against beeSchema.xsd revision f0a80a8516a06e51224d01314403eb26d60f881d";
 	public static String ranks = "family\\b|fam\\.|tribe\\b|subtribe\\b|genus\\b|subgen\\.|section\\b|series\\b|species\\b|subspecies\\b|var\\.|forma\\b"; //\. and \b won't match at the same time.
 	public static int keycount = 0;
 	static int numberh = 0;
@@ -277,8 +277,9 @@ public class Text2XML {
 		}else{
 			title = heading.getTextNormalize();
 		}
-		treatment.addContent(i, new Element("key_file").addContent(title));
-		writeDocument(new Document().addContent(key), outfolder, title);
+		//treatment.addContent(i, new Element("key_file").addContent(title));
+		treatment.addContent(i, key); //add the keys
+		//writeDocument(new Document().addContent(key), outfolder, title); //and write keyfiles
 
 	}
 
