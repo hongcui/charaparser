@@ -84,6 +84,7 @@ public class NumericalHandler  {
 	//public static ArrayList<Element> characterstate(String plaincharset, String state){
 	public static ArrayList<Element> parseNumericals(String numberexp, String suggestedcharaname){	
 		//new CharStateHandler();
+		numberexp = numberexp.replaceAll("–", "-");
 		if(debug) {
 			System.out.println();
 			System.out.println(">>>>>>>>>>>>>"+numberexp);
@@ -925,12 +926,16 @@ public class NumericalHandler  {
 		while ( matcher2.find()){
 			String unit = matcher2.group(1);
 			if(plaincharset.charAt(matcher2.start())==' '){
+			//if(plaincharset.charAt(matcher2.start(1))==' '){	
 				i=matcher2.start()+1;
+				//i=matcher2.start(1)+1;
 			}
 			else{
 				i=matcher2.start();
+				//i=matcher2.start(1);
 			}
 			j=matcher2.end();
+			//j=matcher2.end(1);
 			String extreme = plaincharset.substring(i,j);
 			i = 0;
 			j = extreme.length();
@@ -1095,10 +1100,18 @@ public class NumericalHandler  {
 		    	extract = matcher3.replaceAll("#");
 		    	matcher3.reset();
 		    	
+		    	boolean upperrestricted = ! extract.endsWith("+#");
 		    	Element character = new Element("character");
 				character.setAttribute("name", chara);
-				character.setAttribute("value", extract.substring(0,extract.indexOf('#')).trim());
-				character.setAttribute("unit", unit.trim());
+				if(!upperrestricted){
+					character.setAttribute("from", extract.substring(0,extract.indexOf("+#")).trim());
+					character.setAttribute("from_unit", unit.trim());
+					character.setAttribute("upper_restricted", upperrestricted+"");
+				}else{
+					character.setAttribute("value", extract.substring(0,extract.indexOf('#')).trim());
+					character.setAttribute("unit", unit.trim());
+				}
+			
 				innertagstate.add(character);
 		    	//innertagstate = innertagstate.concat("<character name=\"size\" value=\""+extract.substring(0,extract.indexOf('#')).trim()+"\" unit=\""+unit.trim()+"\"/>");
 				toval = extract.substring(0,extract.indexOf('#'));
@@ -1165,6 +1178,7 @@ public class NumericalHandler  {
 		//String str1 = "[5+]6";
 		//String str1 ="3-5 ×(0.6-)1.5-2 cm"; //
 		//String str1 = "5+";
+		//String str2 = "count";
 		//String str1 ="3 × 2 cm"; //
 		//String str1 = "[30-70+]"; //
 		//String str1 = "1-[2-10]";//todo
@@ -1176,8 +1190,10 @@ public class NumericalHandler  {
 		//String str2 = "area";	
 		//String str1 = "40–80(–150+) cm ";
 		//String str2 = "size";
-		String str1 = "1-3 (1-2)";//not dealt with by this class
-		String str2 = "size";
+		//String str1 = "1-3 (1-2)";//not dealt with by this class
+		//String str2 = "size";
+		String str1 = "2-5 cm× 5 + cm";
+		String str2 = "area";
 		ArrayList<Element> e = NumericalHandler.parseNumericals(str1, str2);
 		System.out.println(e);
 	}
