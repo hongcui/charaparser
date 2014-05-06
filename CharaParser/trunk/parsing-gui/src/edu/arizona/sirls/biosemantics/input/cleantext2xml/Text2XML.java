@@ -6,6 +6,7 @@ package edu.arizona.sirls.biosemantics.input.cleantext2xml;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,6 +17,7 @@ import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
+
 import java.text.Normalizer;
 
 import edu.arizona.sirls.biosemantics.parsing.ParsingUtil;
@@ -73,7 +75,7 @@ public class Text2XML {
 	/**
 	 * 
 	 */
-	public Text2XML(String inputpath, String source, String outfoldert, String outfolderk, String nondescheadings) {
+	public Text2XML(String inputpath, String source, String author, String date, String outfoldert, String outfolderk, String nondescheadings) {
 		gah = new GrayAbbreviationHandler();
 		//check outfoldert
 		File outt = new File(outfoldert);
@@ -119,7 +121,7 @@ public class Text2XML {
 			boolean intaxon = false;
 			String rank = "";
 
-			Document doc = newdocument(source);
+			Document doc = newdocument(source, author, date);
 			int taxonparacount = 0;
 			while ((line = br.readLine()) != null) {
 				line=line.trim();
@@ -141,7 +143,7 @@ public class Text2XML {
 						if(number != null)
 							title = (number.getTextNormalize()+" "+title).trim();
 						writeDocument(doc, outfoldert, title);
-						doc = newdocument(source);
+						doc = newdocument(source, author, date);
 					}
 					String cleanline = processNumberEtc(line, doc); //genus and below often has a number e.g. "1. PHYSOCARPUS"
 					rank = findRank(cleanline); //rank = "fam."
@@ -180,7 +182,7 @@ public class Text2XML {
 				if(number != null)
 					title = (number.getTextNormalize()+" "+title).trim();
 				writeDocument(doc, outfoldert, title);
-				doc = newdocument(source);
+				doc = newdocument(source, author, date);
 			}
 
 			br.close();
@@ -360,15 +362,26 @@ public class Text2XML {
 	 * @param source
 	 * @return
 	 */
-	private Document newdocument(String source) {
+	private Document newdocument(String source, String author, String date) {
 		Document doc = new Document();
 		Element treatment = new Element("treatment");
 		doc.addContent(treatment);
 		//meta
 		Element meta = new Element("meta");
-		meta.addContent(new Element("source").addContent(source));
-		Element processor = new Element("processor").setAttribute("process_type", "format_conversion");
-		meta.addContent(new Element("processed_by").addContent(processor.addContent(processorname)));
+		Element src = new Element("source");
+		src.addContent(new Element("author").addContent(author));
+		src.addContent(new Element("date").addContent(date));
+		src.addContent(new Element("title").addContent(source));
+		meta.addContent(src);
+		Element processedby = new Element("processed_by");
+		Element processor = new Element("processor");
+		processedby.addContent(processor);
+		processor.addContent(new Element("date").addContent((new Date()).toString()));
+		Element software = new Element("software").setAttribute("type", "format_conversion");
+		software.setAttribute("version", "");
+		processor.addContent(software);
+		processor.addContent(new Element("operator").addContent("Hong Cui"));
+		meta.addContent(processedby);
 		treatment.addContent(meta);
 		//taxon_identification
 		//treatment.addContent(new Element("taxon_identification"));
@@ -388,18 +401,20 @@ public class Text2XML {
 	 */
 	public static void main(String[] args) {
 
-		String inputpath = "C:/Users/updates/CharaParserTest/Gray's/Gray_1950_reformatted.txt";
+		/*String inputpath = "C:/Users/updates/CharaParserTest/Gray's/Gray_1950_reformatted.txt";
 		String source = "Gray 1950";
 		String outfoldert = "C:/Users/updates/CharaParserTest/Gray's/taxonomy";
 		String outfolderk = "C:/Users/updates/CharaParserTest/Gray's/key";
-		String nondescheadings ="";
+		String nondescheadings ="";*/
 		
-		/*String inputpath = "C:/Users/updates/CharaParserTest/proibioPilot/Fungi/descripciones primer volumen Agaricus inglés-formatted.txt";
+		String inputpath = "C:/Users/updates/CharaParserTest/proibioPilot/Fungi/descripciones primer volumen Agaricus inglés-formatted.txt";
 		String source = "descripciones primer volumen Agaricus inglés";
 		String outfoldert = "C:/Users/updates/CharaParserTest/proibioPilot/Fungi/taxonomy";
 		String outfolderk = "C:/Users/updates/CharaParserTest/proibioPilot/Fungi/key";
 		String nondescheadings ="Chemical reactions:|Habit, habitat and distribution:"; 
-		*/
+		String author = "unknown";
+		String date = "unknown";
+		
 
 		/*String inputpath = "C:/Users/updates/Dropbox/for Illyong/to be processed in ETC/plants(retyped)/Gleason_and_Cronquist/Gleason_and_Cronquist_Rosaceae_1991-reformated.txt";
 		String source = "Gleason and Cronquist 1991";
@@ -419,7 +434,7 @@ public class Text2XML {
 		String outfolderk="C:/Users/updates/CharaParserTest/hogdon_steele1966/key";
 		String nondescheadings =""; 
 		 */
-		Text2XML t2x = new Text2XML(inputpath, source, outfoldert, outfolderk, nondescheadings);
+		Text2XML t2x = new Text2XML(inputpath, source, author, date, outfoldert, outfolderk, nondescheadings);
 	}
 
 }

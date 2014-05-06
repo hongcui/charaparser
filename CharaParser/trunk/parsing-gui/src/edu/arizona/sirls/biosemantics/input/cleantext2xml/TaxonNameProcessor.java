@@ -215,9 +215,12 @@ public class TaxonNameProcessor {
 		if(rank.contains(".")) rank = spellOut(rank);
 		if(rank.equals("genus")) Text2XML.lastgenusname = n;
 		ti.addContent(new Element(rank+"_name").addContent(n));
-		String rest = namestr.substring(namestr.indexOf(" ")).trim(); //authority and common name
-		if(rest.length()>0)
-			markupRest(ti, rank, rest);
+		if(namestr.indexOf(" ")>0){
+			String rest = namestr.substring(namestr.indexOf(" ")).trim(); //authority and common name
+			if(rest.length()>0){
+				markupRest(ti, rank, rest);
+			}
+		}
 	}
 
 	private void markupFamilyName(Element ti, String rank, String namestr) {
